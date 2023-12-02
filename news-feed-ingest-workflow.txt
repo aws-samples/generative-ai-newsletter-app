@@ -1,0 +1,12 @@
+
+START
+- GET FEED DATA
+- PARSE RSS FEED
+- INSERT INTO S3 WITH HASH KEY
+- S3 Object Notifications on CREATE (not update)
+- Each crawls URL via lambda and put data in KB bbucket, and queue related crawling (fan out, but within restrictions)
+- Bedrock KB syncs to bbucket
+END INGEST
+
+https://pypi.org/project/bs4/
+https://github.com/flamingquaks/aws-genai-llm-chatbot/blob/main/lib/shared/layers/python-sdk/python/genai_core/websites/crawler.py

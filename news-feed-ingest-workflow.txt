@@ -8,5 +8,23 @@ START
 - Bedrock KB syncs to bbucket
 END INGEST
 
+Python
 https://pypi.org/project/bs4/
 https://github.com/flamingquaks/aws-genai-llm-chatbot/blob/main/lib/shared/layers/python-sdk/python/genai_core/websites/crawler.py
+
+
+Node
+https://www.npmjs.com/package/cheerio
+
+Crawler Lambda:
+    Scrapes New Site
+    Writes Content to S3
+    Queues External Links in SQS
+
+Crawler Lambda polls SQS for queued objects
+    Scrapes websites
+    Writes content to S3 under the articles content.
+        Queues external links for SQS 
+            Define a Max Depth (how many links of links removed from the original article)
+
+    

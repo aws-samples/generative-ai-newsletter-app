@@ -13,3 +13,7 @@ This document will be filled out more as the project evolves.
 * Develop a Front-End UI that leverages [Cloudscape](https://cloudscape.design) React framework
 * Aim to leverage newer technology that may not have samples, such as Bedrock Agents
 * Enable Newsletter subscriptions (users could get an emailed newsletter, a text with a link to a newsletter, a slack notification, etc)
+
+
+### Project Leads
+This project is currently lead by Addie Rudy ([awsrudy@](https://phonetool.amazon.com/users/awsrudy)) and Pete Conrad ([peteconr@](https://phonetool.amazon.com/users/peteconr))

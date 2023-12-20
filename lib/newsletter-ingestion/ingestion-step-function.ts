@@ -71,7 +71,7 @@ export class IngestionStepFunction extends Construct {
         effect: Effect.ALLOW
       })
     )
-    // Define the tasks the step function will execute
+
     const getSubscriptionDetailsJob = new DynamoGetItem(this, 'GetSubscriptionDetails', {
       key: {
         subscriptionId: DynamoAttributeValue.fromString(JsonPath.stringAt('$.subscriptionId')),
@@ -127,6 +127,7 @@ export class IngestionStepFunction extends Construct {
       .next(mapArticles)
 
     const stateMachine = new StateMachine(this, 'IngestionStateMachine', {
+      comment: 'State machine responsible for ingesting data from RSS feeds, summarizing the data, and storing the data',
       definitionBody: DefinitionBody.fromChainable(definition)
 
     })

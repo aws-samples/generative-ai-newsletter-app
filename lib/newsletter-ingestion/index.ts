@@ -47,6 +47,7 @@ export class NewsletterIngestionStack extends cdk.Stack {
     })
 
     const ingestionStepFunction = new IngestionStepFunction(this, 'IngestionStepFunction', {
+      description: 'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
       newsletterTable,
       dataIngestBucket
     })

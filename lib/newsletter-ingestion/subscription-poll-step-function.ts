@@ -62,6 +62,7 @@ export class SubscriptionPollStepFunction extends Construct {
     const definition = getSubscriptionsJob.next(mapSubscriptions)
 
     const stateMachine = new StateMachine(this, 'StateMachine', {
+      comment: 'State machine responsible for starting each feed\'s ingestion process',
       definitionBody: DefinitionBody.fromChainable(definition)
     })
     getSubscriptionsFunction.grantInvoke(stateMachine)

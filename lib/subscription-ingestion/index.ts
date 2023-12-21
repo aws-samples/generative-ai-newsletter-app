@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib'
-import { AttributeType, BillingMode, StreamViewType, Table } from 'aws-cdk-lib/aws-dynamodb'
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { ApplicationLogLevel, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
@@ -30,8 +30,7 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
         name: 'compoundSortKey',
         type: AttributeType.STRING
       },
-      billingMode: BillingMode.PAY_PER_REQUEST,
-      stream: StreamViewType.NEW_AND_OLD_IMAGES
+      billingMode: BillingMode.PAY_PER_REQUEST
     })
 
     newsSubscriptionTable.addLocalSecondaryIndex({
@@ -92,6 +91,5 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
     this.dataIngestBucket = newsDataIngestBucket
     this.ingestionStepFunctionStateMachine = ingestionStepFunction.stateMachine
     this.subscriptionPollStepFunctionStateMachine = subscriptionPollStepFunction.stateMachine
-    // this.ragEngine = ragEngine
   }
 }

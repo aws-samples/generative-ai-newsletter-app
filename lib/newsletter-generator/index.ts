@@ -1,19 +1,34 @@
-import * as cdk from 'aws-cdk-lib'
-import { type Table } from 'aws-cdk-lib/aws-dynamodb'
+import { Stack, type StackProps, RemovalPolicy, Duration } from 'aws-cdk-lib'
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { ApplicationLogLevel, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { type Construct } from 'constructs'
 
-interface NewsletterGeneratorProps extends cdk.StackProps {
+interface NewsletterGeneratorProps extends StackProps {
   newsSubscriptionTable: Table
   newsSubscriptionTableLSI: string
 }
 
-export class NewsletterGeneratorStack extends cdk.Stack {
+export class NewsletterGeneratorStack extends Stack {
+  public readonly newsletterTable: Table
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
+
+    const newsletterTable = new Table(this, 'NewsletterTable', {
+      tableName: 'NewsletterData',
+      removalPolicy: RemovalPolicy.DESTROY,
+      partitionKey: {
+        name: 'newsletterId',
+        type: AttributeType.STRING
+      },
+      sortKey: {
+        name: 'compoundSortKey',
+        type: AttributeType.STRING
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST
+    })
 
     const emailBucket = new Bucket(this, 'EmailBucket')
 
@@ -25,7 +40,7 @@ export class NewsletterGeneratorStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: cdk.Duration.minutes(5),
+      timeout: Duration.minutes(5),
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName,
@@ -35,5 +50,7 @@ export class NewsletterGeneratorStack extends cdk.Stack {
     })
     props.newsSubscriptionTable.grantReadData(emailGeneratorFunction)
     emailBucket.grantWrite(emailGeneratorFunction)
+
+    this.newsletterTable = newsletterTable
   }
 }

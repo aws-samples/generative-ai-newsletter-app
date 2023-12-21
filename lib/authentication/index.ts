@@ -1,4 +1,4 @@
-import { Stack, type StackProps } from 'aws-cdk-lib'
+import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
 
 interface AuthenticationStackProps extends StackProps {
@@ -12,7 +12,11 @@ export class AuthenticationStack extends Stack {
 
     if (props?.userPoolId === undefined) {
       const userPool = new UserPool(this, 'UserPool', {
-        selfSignUpEnabled: true
+        removalPolicy: RemovalPolicy.DESTROY,
+        selfSignUpEnabled: true,
+        signInAliases: {
+          email: true
+        }
       })
 
       this.userPool = userPool

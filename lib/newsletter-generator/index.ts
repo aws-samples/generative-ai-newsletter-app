@@ -45,10 +45,12 @@ export class NewsletterGeneratorStack extends Stack {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName,
         NEWS_SUBSCRIPTION_TABLE_LSI: props.newsSubscriptionTableLSI,
+        NEWS_LETTER_TABLE: newsletterTable.tableName,
         EMAIL_BUCKET: emailBucket.bucketName
       }
     })
     props.newsSubscriptionTable.grantReadData(emailGeneratorFunction)
+    newsletterTable.grantWriteData(emailGeneratorFunction)
     emailBucket.grantWrite(emailGeneratorFunction)
 
     this.newsletterTable = newsletterTable

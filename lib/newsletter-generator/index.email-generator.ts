@@ -1,13 +1,14 @@
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
-import { DynamoDBClient, QueryCommand, type QueryCommandInput } from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, QueryCommand, type QueryCommandInput, GetItemCommand, type GetItemCommandInput, PutItemCommand, type PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { NewsletterEmail } from './react-email-generator/emails/newsletter'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
+import { unmarshall } from '@aws-sdk/util-dynamodb'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -20,11 +21,11 @@ const s3 = tracer.captureAWSv3Client(new S3Client())
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const NEWS_SUBSCRIPTION_TABLE_LSI = process.env.NEWS_SUBSCRIPTION_TABLE_LSI
+const NEWS_LETTER_TABLE = process.env.NEWS_LETTER_TABLE
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 
 interface EmailGeneratorInput {
-  subscriptionIds: string[]
-  numberOfDaysToInclude: number
+  newsletterId: string
 }
 
 interface GeneratedEmailContents {
@@ -41,19 +42,46 @@ interface ArticleData {
 
 const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   logger.debug('Starting email generator', {
-    subscriptionIds: event.subscriptionIds,
-    numberOfDaysToInclude: event.numberOfDaysToInclude
+    newsletterId: event.newsletterId
   })
-  tracer.putMetadata('subscriptionIds', event.subscriptionIds)
-  tracer.putMetadata('numberOfDaysToInclude', event.numberOfDaysToInclude)
-  const articles = await getArticlesForSubscriptions(event.subscriptionIds, event.numberOfDaysToInclude)
+  tracer.putMetadata('subscriptionIds', event.newsletterId)
+  const { subscriptionIds, numberOfDaysToInclude } = await getNewsletterDetails(event.newsletterId)
+
+  tracer.putMetadata('numberOfDaysToInclude', numberOfDaysToInclude)
+  const articles = await getArticlesForSubscriptions(subscriptionIds, numberOfDaysToInclude)
   if (articles.length === 0) {
     logger.debug('No articles found')
     return
   }
+  const date = new Date()
+  const emailId = uuidv4()
   const emailContents = await generateEmail(articles)
-  await storeEmailInS3(emailContents)
+  await storeEmailInS3(emailContents, date, emailId)
+  await recordEmailDetails(event.newsletterId, emailId, date)
   logger.debug('Email generator complete')
+}
+
+const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number }> => {
+  console.debug('Getting newsletter details', { newsletterId })
+  const input: GetItemCommandInput = {
+    TableName: NEWS_LETTER_TABLE,
+    Key: {
+      newsletterId: { S: newsletterId },
+      compoundSortKey: { S: 'newsletter' }
+    }
+  }
+  const command = new GetItemCommand(input)
+  const response = await dynamodb.send(command)
+  console.debug('Newsletter details', { response })
+  if (response.Item === undefined) {
+    console.debug('No newsletter found')
+    throw new Error('No newsletter found')
+  }
+  const newsletterItem = unmarshall(response.Item)
+  return {
+    subscriptionIds: newsletterItem.subscriptionIds as string[],
+    numberOfDaysToInclude: newsletterItem.numberOfDaysToInclude as number
+  }
 }
 
 const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDaysToInclude: number): Promise<ArticleData[]> => {
@@ -122,13 +150,12 @@ const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailCon
   return { html, text }
 }
 
-const storeEmailInS3 = async (email: GeneratedEmailContents): Promise<void> => {
+const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<void> => {
   logger.debug('Storing email in S3 Email Bucket')
-  const date = new Date()
   const year = date.getUTCFullYear()
   const month = date.getUTCMonth()
   const day = date.getUTCDate()
-  const emailId = uuidv4()
+
   const emailKey = `NEWSLETTERS/${year}/${month}/${day}/${emailId}`
   const htmlUpload = new Upload({
     client: s3,
@@ -175,6 +202,24 @@ const storeEmailInS3 = async (email: GeneratedEmailContents): Promise<void> => {
     tracer.addErrorAsMetadata(error as Error)
     tracer.putAnnotation('textUploadComplete', false)
   }
+}
+
+const recordEmailDetails = async (newsletterId: string, emailId: string, date: Date): Promise<void> => {
+  console.debug('Recording email details')
+  const input: PutItemCommandInput = {
+    TableName: NEWS_LETTER_TABLE,
+    Item: {
+      newsletterId: { S: newsletterId },
+      compoundSortKey: {
+        S: 'email#' + emailId
+      },
+      createdAt: {
+        S: date.getUTCDate().toString()
+      }
+    }
+  }
+  const command = new PutItemCommand(input)
+  await dynamodb.send(command)
 }
 
 export const handler = middy()

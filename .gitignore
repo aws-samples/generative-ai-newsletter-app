@@ -12,5 +12,4 @@ cdk.out
 misc/
 
 ### Email Generator
-lib/newsletter-generator/react-email-generator/.react-email/.vscode
-lib/newsletter-generator/react-email-generator/.react-email/.next
+.react-email/

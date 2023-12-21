@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
-import { NewsletterIngestionStack } from '../lib/newsletter-ingestion'
+import { NewsSubscriptionIngestionStack } from '../lib/subscription-ingestion'
+import { NewsletterGeneratorStack } from '../lib/newsletter-generator'
 
 const app = new cdk.App()
-new NewsletterIngestionStack(app, 'NewsletterIngestionStack')
+const newsSubscriptionIngestionStack = new NewsSubscriptionIngestionStack(app, 'NewsletterIngestionStack')
+new NewsletterGeneratorStack(app, 'NewsletterGeneratorStack', {
+  newsSubscriptionTable: newsSubscriptionIngestionStack.newsSubscriptionTable,
+  newsSubscriptionTableLSI: newsSubscriptionIngestionStack.newsSubscriptionTableLSI
+})

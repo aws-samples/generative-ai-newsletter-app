@@ -1,0 +1,19 @@
+{
+  "name": "emails",
+  "version": "0.0.18",
+  "private": true,
+  "workspaces": [
+    ".react-email"
+  ],
+  "scripts": {
+    "dev": "email dev",
+    "export": "email export"
+  },
+  "dependencies": {
+    "@react-email/components": "0.0.12",
+    "react-email": "1.10.0"
+  },
+  "devDependencies": {
+    "@react-email/render": "^0.0.10"
+  }
+}

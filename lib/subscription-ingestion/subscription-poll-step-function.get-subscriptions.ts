@@ -12,8 +12,8 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
-const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
-const NEWSLETTER_TABLE_TYPE_INDEX = process.env.NEWSLETTER_TABLE_TYPE_INDEX
+const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
+const NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX = process.env.NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX
 
 interface SubscriptionsData {
   subscriptions: string[]
@@ -24,8 +24,8 @@ const lambdaHandler = async (): Promise<SubscriptionsData> => {
   logger.debug('Getting all subscriptions')
   try {
     const input: QueryCommandInput = {
-      TableName: NEWSLETTER_TABLE,
-      IndexName: NEWSLETTER_TABLE_TYPE_INDEX,
+      TableName: NEWS_SUBSCRIPTION_TABLE,
+      IndexName: NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX,
       KeyConditionExpression: '#type = :type',
       FilterExpression: '#enabled = :enabled',
       ExpressionAttributeNames: {

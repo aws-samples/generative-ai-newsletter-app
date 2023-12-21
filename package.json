@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.472.0",
+    "@react-email/render": "^0.0.10",
     "@types/aws-lambda": "^8.10.130",
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^29.5.8",

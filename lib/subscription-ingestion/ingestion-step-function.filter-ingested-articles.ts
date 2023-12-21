@@ -11,7 +11,7 @@ const logger = new Logger({ serviceName: SERVICE_NAME })
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
-const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
+const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 
 interface FilterIngestedArticlesInput {
   subscriptionId: string
@@ -31,7 +31,7 @@ const lambdaHandler = async (event: FilterIngestedArticlesInput): Promise<FeedAr
 const getExistingArticles = async (subscriptionId: string): Promise<string[]> => {
   logger.debug('Getting existing articles for subscription ' + subscriptionId)
   const input: QueryCommandInput = {
-    TableName: NEWSLETTER_TABLE,
+    TableName: NEWS_SUBSCRIPTION_TABLE,
     KeyConditionExpression: '#subscriptionId = :subscriptionId',
     FilterExpression: '#type = :type',
     ExpressionAttributeValues: {

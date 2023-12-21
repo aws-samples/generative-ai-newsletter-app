@@ -24,20 +24,21 @@ const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient())
 const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
 
 const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
-const INGEST_BUCKET = process.env.INGEST_BUCKET
-const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
+const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
+const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 
-interface WebsiteCrawlerInput {
+interface ArticleIngestorInput {
   link: string
   subscriptionId: string
   guid?: string
+  title: string
 }
 
-const lambdaHander = async (event: WebsiteCrawlerInput): Promise<void> => {
+const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
   await ingestArticle(event)
 }
 
-const ingestArticle = async (input: WebsiteCrawlerInput): Promise<void> => {
+const ingestArticle = async (input: ArticleIngestorInput): Promise<void> => {
   const subsegment = tracer.getSegment()?.addNewSubsegment('### ingestArticle')
   if (subsegment !== undefined) { tracer.setSegment(subsegment) }
   try {
@@ -60,7 +61,7 @@ const ingestArticle = async (input: WebsiteCrawlerInput): Promise<void> => {
     try {
       const summary = await generateArticleSummary(articleText)
       if (summary !== undefined) {
-        await saveArticleData(summary, input.subscriptionId, articleId, input.link)
+        await saveArticleData(summary, input.subscriptionId, articleId, input.link, input.title)
       }
     } catch (error) {
       logger.error('Failed to generate article summary for ' + input.link, { error })
@@ -104,7 +105,7 @@ const storeSiteContent = async (text: string, subscriptionId: string, articleId:
   const parallelUpload = new Upload({
     client: s3Client,
     params: {
-      Bucket: INGEST_BUCKET,
+      Bucket: NEWS_DATA_INGEST_BUCKET,
       Key: `${subscriptionId}/${articleId}`,
       Body: body
     }
@@ -114,7 +115,7 @@ const storeSiteContent = async (text: string, subscriptionId: string, articleId:
     await parallelUpload.done()
     tracer.putAnnotation('uploadComplete', true)
     tracer.putMetadata('S3SiteContents', {
-      bucket: INGEST_BUCKET,
+      bucket: NEWS_DATA_INGEST_BUCKET,
       key: `${subscriptionId}/${articleId}`
     })
   } catch (error) {
@@ -158,12 +159,12 @@ const generateArticleSummary = async (articleBody: string): Promise<string> => {
   }
 }
 
-const saveArticleData = async (articleSummary: string, subscriptionId: string, articleId: string, url: string): Promise<void> => {
+const saveArticleData = async (articleSummary: string, subscriptionId: string, articleId: string, url: string, title: string): Promise<void> => {
   tracer.putMetadata('subscriptionId', subscriptionId, 'articleInfo')
   tracer.putMetadata('articleId', articleId, 'articleInfo')
   tracer.putMetadata('url', url, 'articleInfo')
   const input: PutItemCommandInput = {
-    TableName: NEWSLETTER_TABLE,
+    TableName: NEWS_SUBSCRIPTION_TABLE,
     Item: marshall({
       subscriptionId,
       articleId,
@@ -171,7 +172,8 @@ const saveArticleData = async (articleSummary: string, subscriptionId: string, a
       articleSummary,
       createdAt: new Date().toISOString(),
       url,
-      type: 'article'
+      type: 'article',
+      title
     })
   }
   const command = new PutItemCommand(input)

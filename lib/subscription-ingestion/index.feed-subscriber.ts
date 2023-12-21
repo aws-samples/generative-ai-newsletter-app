@@ -17,7 +17,7 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
-const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
+const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const INGESTION_STEP_FUNCTION = process.env.INGESTION_STEP_FUNCTION
 
 interface FeedSubscriberInput {
@@ -63,7 +63,7 @@ const lambdaHander = async (event: FeedSubscriberInput): Promise<void> => {
 const storeSubscriptionData = async (subscriptionData: SubscriptionData): Promise<void> => {
   logger.debug('Storing subscription data', { data: subscriptionData })
   const input: PutItemInput = {
-    TableName: NEWSLETTER_TABLE,
+    TableName: NEWS_SUBSCRIPTION_TABLE,
     Item: marshall({
       subscriptionId: subscriptionData.id,
       url: subscriptionData.url,

@@ -11,9 +11,9 @@ import { SfnStateMachine as StateMachineTarget } from 'aws-cdk-lib/aws-events-ta
 import { Construct } from 'constructs'
 
 interface SubscriptionPollStepFunctionProps extends StackProps {
-  newsletterTable: Table
-  ingestionStateMachine: StateMachine
-  newsletterTableTypeIndex: string
+  newsSubscriptionTable: Table
+  newsIngestionStateMachine: StateMachine
+  newsSubscriptionTableTypeIndex: string
 }
 
 export class SubscriptionPollStepFunction extends Construct {
@@ -31,8 +31,8 @@ export class SubscriptionPollStepFunction extends Construct {
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: props.newsletterTable.tableName,
-        NEWSLETTER_TABLE_TYPE_INDEX: props.newsletterTableTypeIndex
+        NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName,
+        NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX: props.newsSubscriptionTableTypeIndex
       },
       timeout: cdk.Duration.seconds(30)
     })
@@ -46,7 +46,7 @@ export class SubscriptionPollStepFunction extends Construct {
     })
 
     const startIngestionStepFunctionJob = new StepFunctionsStartExecution(this, 'StartIngestionStepFunction', {
-      stateMachine: props.ingestionStateMachine,
+      stateMachine: props.newsIngestionStateMachine,
       integrationPattern: IntegrationPattern.RUN_JOB
     })
 
@@ -66,7 +66,7 @@ export class SubscriptionPollStepFunction extends Construct {
       definitionBody: DefinitionBody.fromChainable(definition)
     })
     getSubscriptionsFunction.grantInvoke(stateMachine)
-    props.newsletterTable.grantReadData(getSubscriptionsFunction)
+    props.newsSubscriptionTable.grantReadData(getSubscriptionsFunction)
 
     new Rule(this, 'SubscriptionCheckRule', {
       schedule: Schedule.rate(cdk.Duration.days(1)),

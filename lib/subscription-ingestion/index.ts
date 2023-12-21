@@ -5,21 +5,22 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import type { Construct } from 'constructs'
-import { IngestionStepFunction } from './ingestion-step-function'
+import { IngestionStepFunction as NewsIngestionStepFunction } from './ingestion-step-function'
 import { SubscriptionPollStepFunction } from './subscription-poll-step-function'
 import { type StateMachine } from 'aws-cdk-lib/aws-stepfunctions'
 
-export class NewsletterIngestionStack extends cdk.Stack {
-  public readonly newsletterTable: Table
+export class NewsSubscriptionIngestionStack extends cdk.Stack {
+  public readonly newsSubscriptionTable: Table
   public readonly dataIngestBucket: Bucket
   public readonly ingestionStepFunctionStateMachine: StateMachine
   public readonly subscriptionPollStepFunctionStateMachine: StateMachine
   public readonly feedSubscriberFunction: NodejsFunction
+  public readonly newsSubscriptionTableTypeIndex = 'type-index'
+  public readonly newsSubscriptionTableLSI = 'lsi-date-index'
   constructor (scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
-    const newsletterTableTypeIndex = 'type-index'
-    const newsletterTable = new Table(this, 'NewsletterTable', {
-      tableName: 'NewsletterData',
+    const newsSubscriptionTable = new Table(this, 'NewsSubscriptionTable', {
+      tableName: 'NewsSubscriptionData',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       partitionKey: {
         name: 'subscriptionId',
@@ -33,30 +34,38 @@ export class NewsletterIngestionStack extends cdk.Stack {
       stream: StreamViewType.NEW_AND_OLD_IMAGES
     })
 
-    newsletterTable.addGlobalSecondaryIndex({
-      indexName: newsletterTableTypeIndex,
+    newsSubscriptionTable.addLocalSecondaryIndex({
+      indexName: this.newsSubscriptionTableLSI,
+      sortKey: {
+        name: 'createdAt',
+        type: AttributeType.STRING
+      }
+    })
+
+    newsSubscriptionTable.addGlobalSecondaryIndex({
+      indexName: this.newsSubscriptionTableTypeIndex,
       partitionKey: {
         name: 'type',
         type: AttributeType.STRING
       }
     })
 
-    const dataIngestBucket = new Bucket(this, 'DataIngestBucket', {
+    const newsDataIngestBucket = new Bucket(this, 'NewsDataIngestBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true
     })
 
-    const ingestionStepFunction = new IngestionStepFunction(this, 'IngestionStepFunction', {
+    const ingestionStepFunction = new NewsIngestionStepFunction(this, 'IngestionStepFunction', {
       description: 'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
-      newsletterTable,
-      dataIngestBucket
+      newsSubscriptionTable,
+      newsDataIngestBucket
     })
 
     const subscriptionPollStepFunction = new SubscriptionPollStepFunction(this, 'SubscriptionPollStepFunction', {
       description: 'Step Function Responsible for getting enabled subscriptions and starting ingestion for each one.',
-      ingestionStateMachine: ingestionStepFunction.stateMachine,
-      newsletterTable,
-      newsletterTableTypeIndex
+      newsIngestionStateMachine: ingestionStepFunction.stateMachine,
+      newsSubscriptionTable,
+      newsSubscriptionTableTypeIndex: this.newsSubscriptionTableTypeIndex
     })
 
     const feedSubscriberFunction = new NodejsFunction(this, 'feed-subscriber', {
@@ -69,17 +78,18 @@ export class NewsletterIngestionStack extends cdk.Stack {
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: newsletterTable.tableName
+        NEWS_SUBSCRIPTION_TABLE: newsSubscriptionTable.tableName,
+        INGESTION_STEP_FUNCTION: ingestionStepFunction.stateMachine.stateMachineArn
       },
       timeout: cdk.Duration.minutes(1)
     })
 
-    newsletterTable.grantWriteData(feedSubscriberFunction)
+    newsSubscriptionTable.grantWriteData(feedSubscriberFunction)
     ingestionStepFunction.stateMachine.grantStartExecution(subscriptionPollStepFunction.stateMachine)
     ingestionStepFunction.stateMachine.grantStartExecution(feedSubscriberFunction)
 
-    this.newsletterTable = newsletterTable
-    this.dataIngestBucket = dataIngestBucket
+    this.newsSubscriptionTable = newsSubscriptionTable
+    this.dataIngestBucket = newsDataIngestBucket
     this.ingestionStepFunctionStateMachine = ingestionStepFunction.stateMachine
     this.subscriptionPollStepFunctionStateMachine = subscriptionPollStepFunction.stateMachine
     // this.ragEngine = ragEngine

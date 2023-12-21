@@ -11,8 +11,8 @@ import { DynamoAttributeValue, DynamoGetItem, LambdaInvoke } from 'aws-cdk-lib/a
 import { Construct } from 'constructs'
 
 interface IngestionStepFunctionProps extends StackProps {
-  newsletterTable: Table
-  dataIngestBucket: Bucket
+  newsSubscriptionTable: Table
+  newsDataIngestBucket: Bucket
 }
 
 export class IngestionStepFunction extends Construct {
@@ -44,7 +44,7 @@ export class IngestionStepFunction extends Construct {
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       timeout: cdk.Duration.minutes(5),
       environment: {
-        NEWSLETTER_TABLE: props.newsletterTable.tableName
+        NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName
       }
 
     })
@@ -58,9 +58,9 @@ export class IngestionStepFunction extends Construct {
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
-        INGEST_BUCKET: props.dataIngestBucket.bucketName,
+        NEWS_DATA_INGEST_BUCKET: props.newsDataIngestBucket.bucketName,
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: props.newsletterTable.tableName
+        NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName
       },
       timeout: cdk.Duration.minutes(5)
     })
@@ -77,7 +77,7 @@ export class IngestionStepFunction extends Construct {
         subscriptionId: DynamoAttributeValue.fromString(JsonPath.stringAt('$.subscriptionId')),
         compoundSortKey: DynamoAttributeValue.fromString(JsonPath.stringAt('$.subscriptionId'))
       },
-      table: props.newsletterTable,
+      table: props.newsSubscriptionTable,
       resultSelector: {
         url: JsonPath.stringAt('$.Item.url.S'),
         id: JsonPath.stringAt('$.Item.subscriptionId.S'),
@@ -108,7 +108,7 @@ export class IngestionStepFunction extends Construct {
       resultPath: '$.articlesData'
     })
 
-    props.newsletterTable.grantReadData(filterIngestedArticlesFunction)
+    props.newsSubscriptionTable.grantReadData(filterIngestedArticlesFunction)
 
     const ingestArticleJob = new LambdaInvoke(this, 'IngestArticle', {
       lambdaFunction: articleIngestionFunction,
@@ -131,12 +131,12 @@ export class IngestionStepFunction extends Construct {
       definitionBody: DefinitionBody.fromChainable(definition)
 
     })
-    props.newsletterTable.grantReadData(stateMachine)
+    props.newsSubscriptionTable.grantReadData(stateMachine)
     feedReaderFunction.grantInvoke(stateMachine)
     filterIngestedArticlesFunction.grantInvoke(stateMachine)
     articleIngestionFunction.grantInvoke(stateMachine)
-    props.newsletterTable.grantWriteData(articleIngestionFunction)
-    props.dataIngestBucket.grantPut(stateMachine)
+    props.newsSubscriptionTable.grantWriteData(articleIngestionFunction)
+    props.newsDataIngestBucket.grantPut(stateMachine)
     this.stateMachine = stateMachine
   }
 }

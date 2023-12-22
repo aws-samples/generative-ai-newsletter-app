@@ -21,7 +21,7 @@ const s3 = tracer.captureAWSv3Client(new S3Client())
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const NEWS_SUBSCRIPTION_TABLE_LSI = process.env.NEWS_SUBSCRIPTION_TABLE_LSI
-const NEWS_LETTER_TABLE = process.env.NEWS_LETTER_TABLE
+const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 
 interface EmailGeneratorInput {
@@ -64,7 +64,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
 const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number }> => {
   console.debug('Getting newsletter details', { newsletterId })
   const input: GetItemCommandInput = {
-    TableName: NEWS_LETTER_TABLE,
+    TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
       compoundSortKey: { S: 'newsletter' }
@@ -207,7 +207,7 @@ const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId
 const recordEmailDetails = async (newsletterId: string, emailId: string, date: Date): Promise<void> => {
   console.debug('Recording email details')
   const input: PutItemCommandInput = {
-    TableName: NEWS_LETTER_TABLE,
+    TableName: NEWSLETTER_TABLE,
     Item: {
       newsletterId: { S: newsletterId },
       compoundSortKey: {

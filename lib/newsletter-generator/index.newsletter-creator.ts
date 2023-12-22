@@ -6,6 +6,7 @@ import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { type CreateScheduleCommandInput, SchedulerClient, CreateScheduleCommand } from '@aws-sdk/client-scheduler'
+import { type CreateSegmentCommandInput, PinpointClient, CreateSegmentCommand } from '@aws-sdk/client-pinpoint'
 
 const SERVICE_NAME = 'newsletter-creator'
 
@@ -15,11 +16,13 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const scheduler = tracer.captureAWSv3Client(new SchedulerClient())
+const pinpoint = tracer.captureAWSv3Client(new PinpointClient())
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const NEWSLETTER_SCHEDULE_GROUP_NAME = process.env.NEWSLETTER_SCHEDULE_GROUP_NAME
 const EMAIL_GENERATOR_FUNCTION_ARN = process.env.EMAIL_GENERATOR_FUNCTION_ARN
-const EMAIL_GENERATOR_ROLE_ARN = process.env.EMGAIL_GENERATOR_ROLE_ARN
+const EMAIL_GENERATOR_SCHEDULER_ROLE_ARN = process.env.EMAIL_GENERATOR_SCHEDULER_ROLE_ARN
+const PINPOINT_APP_ID = process.env.PINPOINT_APP_ID
 
 interface NewsletterCreatorInput {
   newsletterTitle: string
@@ -33,6 +36,7 @@ const lambdaHandler = async (event: NewsletterCreatorInput): Promise<void> => {
   const newsletterId = uuidv4()
   const scheduleId = await createNewsletterSchedule(newsletterId, event.scheduleCronExpression)
   await storeNewsletterData(newsletterId, event.newsletterTitle, event.subscriptionIds, event.numberOfDaysToInclude, scheduleId)
+  await createEmailSegment(newsletterId)
 }
 
 const createNewsletterSchedule = async (newsletterId: string, scheduleCronExpression: string): Promise<string> => {
@@ -46,7 +50,7 @@ const createNewsletterSchedule = async (newsletterId: string, scheduleCronExpres
     Target: {
       Input: JSON.stringify({ newsletterId }),
       Arn: EMAIL_GENERATOR_FUNCTION_ARN,
-      RoleArn: EMAIL_GENERATOR_ROLE_ARN
+      RoleArn: EMAIL_GENERATOR_SCHEDULER_ROLE_ARN
     }
   }
   const command = new CreateScheduleCommand(input)
@@ -79,6 +83,32 @@ const storeNewsletterData = async (newsletterId: string, newsletterTitle: string
     metrics.addMetric('NewsletterCreationFailed', MetricUnits.Count, 1)
     logger.error('Error storing newsletter data', { response })
     throw new Error('Error storing newsletter data')
+  }
+}
+
+const createEmailSegment = async (newsletterId: string): Promise<void> => {
+  console.debug('Creating email segment')
+  const input: CreateSegmentCommandInput = {
+    ApplicationId: PINPOINT_APP_ID,
+    WriteSegmentRequest: {
+      Dimensions: {
+        UserAttributes: {
+          newsletters: {
+            AttributeType: 'CONTAINS',
+            Values: [newsletterId]
+          }
+        }
+      }
+    }
+  }
+  const command = new CreateSegmentCommand(input)
+  const response = await pinpoint.send(command)
+  if (response.SegmentResponse !== undefined) {
+    metrics.addMetric('EmailSegmentCreated', MetricUnits.Count, 1)
+  } else {
+    metrics.addMetric('EmailSegmentCreationFailed', MetricUnits.Count, 1)
+    logger.error('Error creating email segment', { response })
+    throw new Error('Error creating email segment')
   }
 }
 

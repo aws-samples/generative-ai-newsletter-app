@@ -86,7 +86,9 @@ export class NewsletterGeneratorStack extends Stack {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName,
         NEWSLETTER_SCHEDULE_GROUP_NAME: this.newsletterScheduleGroupName,
-        EMAIL_GENERATOR_FUNCTION_ARN: emailGeneratorFunction.functionArn
+        EMAIL_GENERATOR_FUNCTION_ARN: emailGeneratorFunction.functionArn,
+        EMAIL_GENERATOR_SCHEDULER_ROLE_ARN: emailGeneratorSchedulerInvokeRole.roleArn,
+        PINPOINT_APP_ID: pinpointApp.pinpointAppId
       }
     })
     emailGeneratorFunction.role?.attachInlinePolicy(pinpointApp.pinpointAddNewsletterSegmentPolicy)

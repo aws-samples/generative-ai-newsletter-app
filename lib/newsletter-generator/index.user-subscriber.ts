@@ -34,14 +34,6 @@ interface ExternalUserSubscriberInput extends UserSubscriberInput {
   userEmail: string
 }
 
-/**
- * TODO
- * Cognito User:
- *  1Check for Endpoint, if exists skip 2
- *  2Get Email Address from Cognito User
- *  3Update Endpoint in Pinpoint with new newsletterId in newsletter attribute. Need to include existing.
- */
-
 const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSubscriberInput): Promise<void> => {
   logger.debug('Starting User Subscriber', { event })
   const { newsletterId, cognitoUserId, externalUserId } = event

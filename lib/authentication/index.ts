@@ -1,5 +1,6 @@
 import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
+import { type Construct } from 'constructs'
 
 interface AuthenticationStackProps extends StackProps {
   userPoolId?: string
@@ -7,7 +8,7 @@ interface AuthenticationStackProps extends StackProps {
 
 export class AuthenticationStack extends Stack {
   public readonly userPool: UserPool
-  constructor (scope: Stack, id: string, props?: AuthenticationStackProps) {
+  constructor (scope: Construct, id: string, props?: AuthenticationStackProps) {
     super(scope, id, props)
 
     if (props?.userPoolId === undefined) {

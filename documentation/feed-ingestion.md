@@ -21,10 +21,11 @@ The `ingestion-step-function` is a Step Function workflow accepts a `subscriberI
 To subscribe to a RSS or ATOM feed, execute the `feed-subscriber` Lambda function. The input for the lambda should match the following format:
 ```json 
 {
-    "url":"https://aws.amazon.com/about-aws/whats-new/recent/feed/"
+    "newsletterId":"f76dce13-d510-49af-a5fb-876f556e7a2f"
 }
 ```
 `feed subscriber` will read the feed and store the information in dynamodb as a subscription that is enabled. It will then start an execution of `ingestion-step-function` with the `subscriptionId` that was generated and stored with the feed details. After the initial article ingestion, future ingestion will be in the scheduled daily poll.
+To find the `newsletterId`, see [newsletter-generation.md](newsletter-generation.md)
 
 ### Disable / Enable Subscription Checks
 To disable the system from checking a feed for future updates, locate the feed in the DynamoDB table and change `enabled` to `false`.

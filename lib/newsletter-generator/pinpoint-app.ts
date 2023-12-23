@@ -6,7 +6,7 @@ import { Stack } from 'aws-cdk-lib'
 export class PinpointApp extends Construct {
   public readonly pinpointAppId: string
   public readonly pinpointProjectAdminPolicy: Policy
-  public readonly pinpointAddNewsletterSegmentPolicy: Policy
+  public readonly pinpointAddNewsletterSegmentPolicyStatement: PolicyStatement
   constructor (scope: Construct, id: string) {
     super(scope, id)
 
@@ -47,8 +47,7 @@ export class PinpointApp extends Construct {
       ]
     })
 
-    const pinpointAddNewsletterSegmentPolicy = new Policy(this, 'AllowAddNewsletterSegmentPolicy', {
-      statements: [
+    const pinpointAddNewsletterSegmentPolicyStatement =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -60,10 +59,8 @@ export class PinpointApp extends Construct {
                   `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/segments/*`
           ]
         })
-      ]
-    })
 
     this.pinpointProjectAdminPolicy = pinpointProjectAdminPolicy
-    this.pinpointAddNewsletterSegmentPolicy = pinpointAddNewsletterSegmentPolicy
+    this.pinpointAddNewsletterSegmentPolicyStatement = pinpointAddNewsletterSegmentPolicyStatement
   }
 }

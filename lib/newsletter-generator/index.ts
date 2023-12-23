@@ -8,10 +8,12 @@ import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { CfnScheduleGroup } from 'aws-cdk-lib/aws-scheduler'
 import { type Construct } from 'constructs'
 import { PinpointApp } from './pinpoint-app'
+import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
 
 interface NewsletterGeneratorProps extends StackProps {
   newsSubscriptionTable: Table
   newsSubscriptionTableLSI: string
+  cognitoUserPool: IUserPool
 }
 
 export class NewsletterGeneratorStack extends Stack {
@@ -63,7 +65,6 @@ export class NewsletterGeneratorStack extends Stack {
     newsletterTable.grantWriteData(emailGeneratorFunction)
     emailBucket.grantWrite(emailGeneratorFunction)
 
-    // TODO: Schedule Newsletters
     const newsletterScheduleGroup = new CfnScheduleGroup(this, 'NewsletterScheduleGroup', {
       name: this.newsletterScheduleGroupName
     })
@@ -104,7 +105,23 @@ export class NewsletterGeneratorStack extends Stack {
       ]
     }))
 
-    // TODO: Create Subscribe Function
+    const userSubscriberFunction = new NodejsFunction(this, 'user-subscriber', {
+      description: 'Function responsible for subscribing a user to the newsletter',
+      handler: 'handler',
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        PINPOINT_APP_ID: pinpointApp.pinpointAppId,
+        COGNITO_USER_POOL_ID: props.cognitoUserPool.userPoolId
+      }
+    })
+    props.cognitoUserPool.grant(userSubscriberFunction, 'cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser')
+    userSubscriberFunction.addToRolePolicy(pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement)
 
     this.newsletterTable = newsletterTable
     this.newsletterScheduleGroup = newsletterScheduleGroup

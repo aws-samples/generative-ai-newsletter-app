@@ -6,6 +6,7 @@ import { Stack } from 'aws-cdk-lib'
 export class PinpointApp extends Construct {
   public readonly pinpointAppId: string
   public readonly pinpointProjectAdminPolicy: Policy
+  public readonly pinpointSubscribeUserToNewsletterPolicyStatement: PolicyStatement
   public readonly pinpointAddNewsletterSegmentPolicyStatement: PolicyStatement
   constructor (scope: Construct, id: string) {
     super(scope, id)
@@ -60,7 +61,22 @@ export class PinpointApp extends Construct {
           ]
         })
 
+    const pinpointSubscribeUserToNewsletterPolicyStatement =
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            'mobiletargeting:UpdateEndpoint',
+            'mobiletargeting:GetEndpoint',
+            'mobiletargeting:GetUserEndpoints'
+          ],
+          resources: [
+            `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}`,
+            `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
+          ]
+        })
+
     this.pinpointProjectAdminPolicy = pinpointProjectAdminPolicy
     this.pinpointAddNewsletterSegmentPolicyStatement = pinpointAddNewsletterSegmentPolicyStatement
+    this.pinpointSubscribeUserToNewsletterPolicyStatement = pinpointSubscribeUserToNewsletterPolicyStatement
   }
 }

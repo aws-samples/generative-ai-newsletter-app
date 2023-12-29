@@ -67,7 +67,7 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptio
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'newsletter' }
+      compoundSortKey: { S: 'newsletter#' + newsletterId }
     }
   }
   const command = new GetItemCommand(input)
@@ -153,7 +153,7 @@ const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailCon
 const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<void> => {
   logger.debug('Storing email in S3 Email Bucket')
   const year = date.getUTCFullYear()
-  const month = date.getUTCMonth()
+  const month = date.getUTCMonth() + 1
   const day = date.getUTCDate()
 
   const emailKey = `NEWSLETTERS/${year}/${month}/${day}/${emailId}`
@@ -214,7 +214,7 @@ const recordEmailDetails = async (newsletterId: string, emailId: string, date: D
         S: 'email#' + emailId
       },
       createdAt: {
-        S: date.getUTCDate().toString()
+        S: `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
       }
     }
   }

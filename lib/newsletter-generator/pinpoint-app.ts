@@ -1,14 +1,25 @@
-import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam'
-import { CfnApp, CfnEmailChannel } from 'aws-cdk-lib/aws-pinpoint'
+import { Effect, Policy, PolicyStatement, PrincipalWithConditions, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
+import { CfnApp, CfnEmailChannel, CfnSegment } from 'aws-cdk-lib/aws-pinpoint'
 import { Construct } from 'constructs'
-import { Stack } from 'aws-cdk-lib'
+import { Duration, Stack } from 'aws-cdk-lib'
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { type Table } from 'aws-cdk-lib/aws-dynamodb'
+
+interface PinpointAppProps {
+  newsletterTable: Table
+  newsletterTableCampaignGSI: string
+}
 
 export class PinpointApp extends Construct {
   public readonly pinpointAppId: string
+  public readonly pinpointCampaignHookFunction: NodejsFunction
+  public readonly pinpointBaseSegmentId: string
   public readonly pinpointProjectAdminPolicy: Policy
   public readonly pinpointSubscribeUserToNewsletterPolicyStatement: PolicyStatement
-  public readonly pinpointAddNewsletterSegmentPolicyStatement: PolicyStatement
-  constructor (scope: Construct, id: string) {
+  public readonly pinpointAddNewsletterCampaignAndSegmentPolicyStatement: PolicyStatement
+  constructor (scope: Construct, id: string, props: PinpointAppProps) {
     super(scope, id)
 
     const pinpointIdentity = this.node.tryGetContext('pinpointIdentity')
@@ -26,6 +37,39 @@ export class PinpointApp extends Construct {
       identity: pinpointIdentity
 
     })
+
+    const baseSegment = new CfnSegment(this, 'BaseSegment', {
+      applicationId: this.pinpointAppId,
+      name: 'BaseSegment'
+    })
+
+    const baseSegmentId = baseSegment.getAtt('SegmentId').toString()
+
+    const pinpointCampaignHookFunction = new NodejsFunction(this, 'pinpoint-campaign-hook', {
+      description: 'Function responsible for filtering Pinpoint Endpoints for a Pinpoint Campaign to only subscribed users',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        NEWSLETTER_DATA_TABLE: props.newsletterTable.tableName,
+        NEWSLETTER_DATA_TABLE_CAMPAIGN_GSI: props.newsletterTableCampaignGSI,
+        PINPOINT_APP_ID: this.pinpointAppId,
+        PINPOINT_BASE_SEGMENT_ID: baseSegmentId
+      }
+    })
+    props.newsletterTable.grantReadData(pinpointCampaignHookFunction)
+    const pinpointPrincipal = new PrincipalWithConditions(new ServicePrincipal('pinpoint.amazonaws.com'), {
+      ArnLike: {
+        'aws:SourceArn': `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
+      }
+    })
+    pinpointCampaignHookFunction.grantInvoke(pinpointPrincipal)
 
     const pinpointProjectAdminPolicy = new Policy(this, 'PinpointProjectAdmin', {
       statements: [
@@ -48,16 +92,18 @@ export class PinpointApp extends Construct {
       ]
     })
 
-    const pinpointAddNewsletterSegmentPolicyStatement =
+    const pinpointAddNewsletterCampaignAndSegmentPolicyStatement =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
             'mobiletargeting:CreateSegment',
-            'mobiletargeting:GetSegment'
+            'mobiletargeting:GetSegment',
+            'mobiletargeting:CreateCampaign',
+            'mobiletargeting:GetCampaign'
           ],
           resources: [
                   `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}`,
-                  `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/segments/*`
+                  `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
           ]
         })
 
@@ -75,8 +121,10 @@ export class PinpointApp extends Construct {
           ]
         })
 
+    this.pinpointBaseSegmentId = baseSegmentId
+    this.pinpointCampaignHookFunction = pinpointCampaignHookFunction
     this.pinpointProjectAdminPolicy = pinpointProjectAdminPolicy
-    this.pinpointAddNewsletterSegmentPolicyStatement = pinpointAddNewsletterSegmentPolicyStatement
+    this.pinpointAddNewsletterCampaignAndSegmentPolicyStatement = pinpointAddNewsletterCampaignAndSegmentPolicyStatement
     this.pinpointSubscribeUserToNewsletterPolicyStatement = pinpointSubscribeUserToNewsletterPolicyStatement
   }
 }

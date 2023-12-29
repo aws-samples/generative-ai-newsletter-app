@@ -17,3 +17,7 @@ This document will be filled out more as the project evolves.
 
 ### Project Leads
 This project is currently lead by Addie Rudy ([awsrudy@](https://phonetool.amazon.com/users/awsrudy)) and Pete Conrad ([peteconr@](https://phonetool.amazon.com/users/peteconr))
+
+
+### Additional Documentation
+To find additional documentation, please visit the `documentation/` directory from the root of the repo. 

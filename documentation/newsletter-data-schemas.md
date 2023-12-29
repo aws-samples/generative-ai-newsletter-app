@@ -3,18 +3,24 @@
 ```json
 {
   "newsletterId": {
-    "S": "4b496f63-fa79-40e9-afcb-d9168de4c7ed"
+    "S": "5ee8ed47-50d9-4dd6-be24-15b184f4cc40"
   },
   "compoundSortKey": {
-    "S": "newsletter"
+    "S": "newsletter#5ee8ed47-50d9-4dd6-be24-15b184f4cc40"
+  },
+  "newsletterTitle": {
+    "S": "GenAI AWS Newsletter"
   },
   "numberOfDaysToInclude": {
     "N": "5"
   },
-  "subscriptions": {
+  "scheduleId": {
+    "S": "7657dbaa-7efd-4ff4-b726-fd73ed6058ff"
+  },
+  "subscriptionIds": {
     "L": [
       {
-        "S": "5b443dd8-084c-407b-8132-86855ad563cb"
+        "S": "d7cbcc1e-4890-4469-82ea-38ce933bf220"
       }
     ]
   }
@@ -28,10 +34,10 @@
 ```json
 {
   "newsletterId": {
-    "S": "4b496f63-fa79-40e9-afcb-d9168de4c7ed"
+    "S": "5ee8ed47-50d9-4dd6-be24-15b184f4cc40"
   },
   "compoundSortKey": {
-    "S": "subscriber#c65f1b0d-e91f-4403-a08c-300b6c7e5eb2"
+    "S": "subscriber#1f4746cf-cb27-41c3-ba0e-18028d7a5449"
   }
 }
 ```
@@ -41,14 +47,17 @@
 ```json
 {
   "newsletterId": {
-    "S": "4b496f63-fa79-40e9-afcb-d9168de4c7ed"
+    "S": "5ee8ed47-50d9-4dd6-be24-15b184f4cc40"
   },
   "compoundSortKey": {
-    "S": "email#b11a6fe8-84c6-46f8-842d-0812af22ea17"
+    "S": "email#c53bf253-10c1-469c-9027-ea1c501e21a7"
+  },
+  "campaignId": {
+    "S": "ebefe8731c754db29555a9588398c795"
   },
   "createdAt": {
-    "S": "2023-12-21 18:21:55 "
+    "S": "2023-12-28"
   }
 }
 ```
-*Data Note: Email content is in s3 with key derived from the `createdAt` date and the emails UUID. The S3 Path looks like `s3://[bucketname]/NEWSLETTER/2023/12/21/b11a6fe8-84c6-46f8-842d-0812af22ea17.{html|txt}`*
+*Data Note: Email content is in s3 with key derived from the `createdAt` date and the emails UUID. The S3 Path looks like `s3://[bucketname]/NEWSLETTERS/2023/12/21/b11a6fe8-84c6-46f8-842d-0812af22ea17.{html|txt}`*

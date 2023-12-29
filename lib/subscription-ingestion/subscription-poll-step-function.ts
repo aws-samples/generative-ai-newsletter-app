@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib'
 import { type StackProps } from 'aws-cdk-lib'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
-import { ApplicationLogLevel, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { StateMachine, IntegrationPattern, Map, DefinitionBody, JsonPath } from 'aws-cdk-lib/aws-stepfunctions'
@@ -24,6 +24,7 @@ export class SubscriptionPollStepFunction extends Construct {
     const getSubscriptionsFunction = new NodejsFunction(this, 'get-subscriptions', {
       description: 'Function responsible for getting all enabled subscriptions to poll',
       handler: 'handler',
+      architecture: Architecture.ARM_64,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,

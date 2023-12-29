@@ -2,9 +2,12 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
-import { type EndpointResponse, PinpointClient, GetUserEndpointsCommand, type GetUserEndpointsCommandInput, NotFoundException, type UpdateEndpointCommandInput, UpdateEndpointCommand } from '@aws-sdk/client-pinpoint'
-import { AdminGetUserCommand, CognitoIdentityProviderClient, type AdminGetUserCommandInput } from '@aws-sdk/client-cognito-identity-provider'
 import { v4 as uuidv4 } from 'uuid'
+import { DynamoDBClient, PutItemCommand, type PutItemCommandInput } from '@aws-sdk/client-dynamodb'
+import { marshall } from '@aws-sdk/util-dynamodb'
+import { PinpointClient, UpdateEndpointCommand, type UpdateEndpointCommandInput } from '@aws-sdk/client-pinpoint'
+import { AdminGetUserCommand, CognitoIdentityProviderClient, type AdminGetUserCommandInput } from '@aws-sdk/client-cognito-identity-provider'
+import { SubscriberType } from '../types/newsletter-generator'
 
 const SERVICE_NAME = 'user-subscriber'
 
@@ -12,11 +15,13 @@ const tracer = new Tracer({ serviceName: SERVICE_NAME })
 const logger = new Logger({ serviceName: SERVICE_NAME })
 const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
-const pinpoint = tracer.captureAWSv3Client(new PinpointClient())
-const cognitoIdp = tracer.captureAWSv3Client(new CognitoIdentityProviderClient())
-
+const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const PINPOINT_APP_ID = process.env.PINPOINT_APP_ID
 const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID
+
+const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
+const pinpoint = tracer.captureAWSv3Client(new PinpointClient())
+const cognitoIdp = tracer.captureAWSv3Client(new CognitoIdentityProviderClient())
 
 interface UserSubscriberInput {
   newsletterId: string
@@ -25,66 +30,80 @@ interface UserSubscriberInput {
 interface CognitoUserSubscriberInput extends UserSubscriberInput {
   cognitoUserId: string
   externalUserId: never
-  userEmail: string
+  userEmail: never
 }
 
 interface ExternalUserSubscriberInput extends UserSubscriberInput {
   cognitoUserId: never
-  externalUserId: string
   userEmail: string
+  externalUserId?: string
 }
+
+// TODO: Try/Catch with Rollback if failed to prevent bad data
 
 const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSubscriberInput): Promise<void> => {
   logger.debug('Starting User Subscriber', { event })
-  const { newsletterId, cognitoUserId, externalUserId } = event
-  let userEmail = event.userEmail
-  const pinpointEndpoint = await getPinpointEndpoint(cognitoUserId ?? externalUserId)
-  if (pinpointEndpoint === null) {
-    const emailResponse = await getCognitoUserEmail(cognitoUserId)
-    if (emailResponse !== null) {
-      userEmail = emailResponse
-    } else {
-      throw new Error('No email address found for user')
-    }
+  if (event.cognitoUserId !== undefined) {
+    const userEmail = await getCognitoUserEmail(event.cognitoUserId)
+    const subscriberType = SubscriberType.COGNITO_SUBSCRIBER
+    await subscribeCognitoUser(event.newsletterId, event.cognitoUserId)
+    await addPinpointEndpoint(event.cognitoUserId, userEmail, subscriberType)
+  } else if (event.userEmail !== undefined) {
+    const subscriberType = SubscriberType.EXTERNAL_SUBSCRIBER
+    const externalUserId = await subscribeExternalUser(event.newsletterId, event.userEmail, event.externalUserId)
+    await addPinpointEndpoint(externalUserId, event.userEmail, subscriberType)
   }
-  const existingNewsletterIds = pinpointEndpoint?.User?.UserAttributes?.newsletters ?? []
-  const pinpointEndpointId = pinpointEndpoint?.Id ?? uuidv4()
-  await updateEndpointNewsletters(pinpointEndpointId, newsletterId, existingNewsletterIds, userEmail)
 }
 
-const getPinpointEndpoint = async (userId: string): Promise<EndpointResponse | null> => {
-  logger.debug('Getting Pinpoint Endpoint', { userId, pinpointAppId: PINPOINT_APP_ID })
+const subscribeCognitoUser = async (newsletterId: string, cognitoUserId: string): Promise<void> => {
+  logger.debug('Subscribing Cognito User', { newsletterId, cognitoUserId })
   try {
-    const input: GetUserEndpointsCommandInput = {
-      ApplicationId: PINPOINT_APP_ID,
-      UserId: userId
+    const input: PutItemCommandInput = {
+      TableName: NEWSLETTER_TABLE,
+      Item: marshall({
+        newsletterId,
+        compoundSortKey: 'subscriber#' + cognitoUserId
+      })
     }
-    const command = new GetUserEndpointsCommand(input)
-    const response = await pinpoint.send(command)
-    if (response.EndpointsResponse?.Item !== undefined && response.EndpointsResponse.Item.length > 0) {
-      for (const endpoint of response.EndpointsResponse.Item) {
-        logger.debug('Pinpoint Endpoint found', { userId, pinpointAppId: PINPOINT_APP_ID, endpoint })
-        if (endpoint.ChannelType === 'EMAIL') {
-          return endpoint
-        }
-      }
-      logger.debug('Pinpoint endpoints exist, but no EMAIL endpoint found')
-      return null
-    } else {
-      logger.debug('No Pinpoint Endpoint found', { userId, pinpointAppId: PINPOINT_APP_ID })
-      return null
-    }
+    const command = new PutItemCommand(input)
+    await dynamodb.send(command)
+    metrics.addMetric('UserSubscribed', MetricUnits.Count, 1)
+    metrics.addMetric('CognitoUserSubscribed', MetricUnits.Count, 1)
   } catch (error) {
-    if (error instanceof NotFoundException) {
-      logger.debug('No Pinpoint Endpoint found', { userId, pinpointAppId: PINPOINT_APP_ID })
-      return null
-    } else {
-      throw error
-    }
+    logger.error('Error subscribing Cognito User', { error })
+    tracer.addErrorAsMetadata(error as Error)
+    throw new Error('Error subscribing Cognito User')
   }
 }
 
-const getCognitoUserEmail = async (cognitoUserId: string): Promise<string | null> => {
+const subscribeExternalUser = async (newsletterId: string, userEmail: string, externalUserId: string | undefined): Promise<string> => {
+  logger.debug('Subscribing external user to newsletter', { newsletterId, externalUserId })
+  if (externalUserId === undefined) {
+    externalUserId = uuidv4()
+    logger.debug('Generated external user id', { externalUserId })
+  }
+  try {
+    const input: PutItemCommandInput = {
+      TableName: NEWSLETTER_TABLE,
+      Item: marshall({
+        newsletterId,
+        compoundSortKey: 'subscriber-external#' + externalUserId,
+        userEmail
+      })
+    }
+    const command = new PutItemCommand(input)
+    await dynamodb.send(command)
+    metrics.addMetric('UserSubscribed', MetricUnits.Count, 1)
+    metrics.addMetric('ExternalUserSubscribed', MetricUnits.Count, 1)
+  } catch (error) {
+    logger.error('Error subscribing external user to newsletter', { error })
+    tracer.addErrorAsMetadata(error as Error)
+    throw new Error('Error subscribing external user to newsletter')
+  }
+  return externalUserId
+}
+
+const getCognitoUserEmail = async (cognitoUserId: string): Promise<string> => {
   logger.debug('Getting Cognito User Email', { cognitoUserId })
   const input: AdminGetUserCommandInput = {
     UserPoolId: COGNITO_USER_POOL_ID,
@@ -93,46 +112,31 @@ const getCognitoUserEmail = async (cognitoUserId: string): Promise<string | null
   const command = new AdminGetUserCommand(input)
   const response = await cognitoIdp.send(command)
   if (response.UserAttributes !== undefined) {
-    for (const attribute of response.UserAttributes) {
-      if (attribute.Name === 'email' && attribute.Value !== undefined) {
-        return attribute.Value
-      }
+    const userEmail = response.UserAttributes.find(attribute => attribute.Name === 'email')
+    if (userEmail?.Value !== undefined) {
+      return userEmail.Value
     }
-  } else {
-    throw new Error('No user attributes found')
   }
-  return null
+  logger.error('Error getting Cognito User Email', { response })
+  tracer.addErrorAsMetadata(new Error('Error getting Cognito User Email'))
+  throw new Error('Error getting Cognito User Email')
 }
 
-const updateEndpointNewsletters = async (endpointId: string, newsletterId: string, existingNewsletterIds: string[], userEmail: string): Promise<void> => {
-  logger.debug('Subscribing User to Newsletter!', { endpointId, newsletterId })
-  metrics.addMetric('NewsletterSubscriptions', MetricUnits.Count, 1)
-  const subscribedNewsletters: string[] = []
-  if (existingNewsletterIds.includes(newsletterId)) {
-    subscribedNewsletters.push(...existingNewsletterIds)
-  } else {
-    subscribedNewsletters.push(...existingNewsletterIds, newsletterId)
-  }
+const addPinpointEndpoint = async (userId: string, userEmail: string, subscriberType: SubscriberType): Promise<void> => {
+  console.debug('Adding Pinpoint Endpoint', { userId, userEmail })
   const input: UpdateEndpointCommandInput = {
     ApplicationId: PINPOINT_APP_ID,
-    EndpointId: endpointId,
+    EndpointId: userId,
     EndpointRequest: {
-      ChannelType: 'EMAIL',
       Address: userEmail,
-      User: {
-        UserAttributes: {
-          newsletters: subscribedNewsletters
-        }
+      ChannelType: 'EMAIL',
+      Attributes: {
+        SubscriberType: [subscriberType]
       }
     }
   }
   const command = new UpdateEndpointCommand(input)
-  const response = await pinpoint.send(command)
-  logger.debug('Endpoint updated', { endpointId, pinpointAppId: PINPOINT_APP_ID, response })
-  if (response.$metadata.httpStatusCode === undefined || ![200, 202].includes(response.$metadata.httpStatusCode)) {
-    metrics.addMetric('NewsletterSubscriptionsFailed', MetricUnits.Count, 1)
-    throw new Error('Error subscribing user to newsletter')
-  }
+  await pinpoint.send(command)
 }
 
 export const handler = middy()

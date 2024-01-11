@@ -1,5 +1,5 @@
 import { Button, FormField, Header, SpaceBetween, Toggle } from "@cloudscape-design/components";
-import { NewsFeedSubscription } from "../../../API";
+import { DataFeedSubscription } from "../../../API";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface NewsletterReviewForm {
@@ -7,7 +7,7 @@ interface NewsletterReviewForm {
     discoverable: boolean
     shared: boolean
     numberOfDaysToInclude: number
-    selectedSubscriptions: NewsFeedSubscription[]
+    selectedSubscriptions: DataFeedSubscription[]
     formTitle: string
     formDescription?: string
     formMode?: 'wizard' | 'detail'

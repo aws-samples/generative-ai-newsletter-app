@@ -1,10 +1,12 @@
-import { BreadcrumbGroup, Container, ContentLayout, Header } from "@cloudscape-design/components";
+import { BreadcrumbGroup, ContentLayout, Header } from "@cloudscape-design/components";
 import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
-import NewslettersTable from "../../components/newsletters/newsletters-table";
+import DataFeedsTable from "../../components/data-feeds/data-feeds-table";
 
-export default function NewslettersDashboard() {
-    const onFollow = useOnFollow()
+
+export default function DataFeedsDashboard() {
+    const onFollow = useOnFollow();
+
     return (
         <BaseAppLayout
             breadcrumbs={
@@ -16,8 +18,8 @@ export default function NewslettersDashboard() {
                             href: "/"
                         },
                         {
-                            "text": "Newsletters Dashboard",
-                            "href": "/newsletters"
+                            "text": "Data Feeds",
+                            "href": "/feeds"
                         }
                     ]}
                 />
@@ -26,13 +28,14 @@ export default function NewslettersDashboard() {
                 <ContentLayout
                     header={
                         <Header
-                            description="Create Newsletters or find an existing newsletter to subscribe to or update."
-                        ><h1>GenAI Powered Newsletters</h1></Header>
+                            description="Create new data feeds for Newsletters or browse/update existing feeds.">
+                                <h1>Data Feeds</h1>
+                                <h3>Automated Information Ingestion, Enhanced by Generative AI</h3>
+                            </Header>
                     }>
-                    <Container>
-                        <NewslettersTable />
-                    </Container>
+                        <DataFeedsTable />
                 </ContentLayout>
-            } />
+            }
+        />
     )
 }

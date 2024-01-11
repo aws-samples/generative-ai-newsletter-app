@@ -5,6 +5,8 @@ node_modules
 *.js
 !lib/api/resolverFunctions/*.js
 
+*.tsbuildinfo
+
 # tsc out
 dist/
 dist-ui/

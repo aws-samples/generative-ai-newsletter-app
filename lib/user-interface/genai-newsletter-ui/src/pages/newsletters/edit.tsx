@@ -8,11 +8,12 @@ import { useParams } from "react-router-dom";
 
 export default function EditNewsletter() {
     const { newsletterId } = useParams();
+    const onFollow = useOnFollow()
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",

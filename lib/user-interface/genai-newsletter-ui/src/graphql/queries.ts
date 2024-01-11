@@ -54,8 +54,8 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
   APITypes.GetNewsletterQueryVariables,
   APITypes.GetNewsletterQuery
 >;
-export const getNewsFeedSubscriptions = /* GraphQL */ `query GetNewsFeedSubscriptions($nextToken: String, $limit: Int) {
-  getNewsFeedSubscriptions(nextToken: $nextToken, limit: $limit) {
+export const getDataFeedSubscriptions = /* GraphQL */ `query GetDataFeedSubscriptions($nextToken: String, $limit: Int) {
+  getDataFeedSubscriptions(nextToken: $nextToken, limit: $limit) {
     subscriptions {
       subscriptionId
       url
@@ -70,11 +70,11 @@ export const getNewsFeedSubscriptions = /* GraphQL */ `query GetNewsFeedSubscrip
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewsFeedSubscriptionsQueryVariables,
-  APITypes.GetNewsFeedSubscriptionsQuery
+  APITypes.GetDataFeedSubscriptionsQueryVariables,
+  APITypes.GetDataFeedSubscriptionsQuery
 >;
-export const getNewsFeedSubscription = /* GraphQL */ `query GetNewsFeedSubscription($input: GetNewsFeedSubscriptionInput) {
-  getNewsFeedSubscription(input: $input) {
+export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscription($input: GetDataFeedSubscriptionInput) {
+  getDataFeedSubscription(input: $input) {
     subscriptionId
     url
     feedType
@@ -93,12 +93,16 @@ export const getNewsFeedSubscription = /* GraphQL */ `query GetNewsFeedSubscript
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewsFeedSubscriptionQueryVariables,
-  APITypes.GetNewsFeedSubscriptionQuery
+  APITypes.GetDataFeedSubscriptionQueryVariables,
+  APITypes.GetDataFeedSubscriptionQuery
 >;
-export const getNewsFeedArticles = /* GraphQL */ `query GetNewsFeedArticles($input: NewsFeedArticlesInput) {
-  getNewsFeedArticles(input: $input) {
-    newsFeedArticles {
+export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
+  $input: DataFeedArticlesInput
+  $nextToken: String
+  $limit: Int
+) {
+  getDataFeedArticles(input: $input, nextToken: $nextToken, limit: $limit) {
+    dataFeedArticles {
       subscriptionId
       articleId
       url
@@ -112,8 +116,8 @@ export const getNewsFeedArticles = /* GraphQL */ `query GetNewsFeedArticles($inp
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewsFeedArticlesQueryVariables,
-  APITypes.GetNewsFeedArticlesQuery
+  APITypes.GetDataFeedArticlesQueryVariables,
+  APITypes.GetDataFeedArticlesQuery
 >;
 export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input: NewsletterEmailInput) {
   getNewsletterEmail(input: $input) {

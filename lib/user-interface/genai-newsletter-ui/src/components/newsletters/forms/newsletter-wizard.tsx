@@ -1,10 +1,10 @@
 import { Wizard, Container, StatusIndicator, Alert, AlertProps } from "@cloudscape-design/components"
 import { useContext, useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { NewsFeedSubscription } from "../../../API"
+import { DataFeedSubscription } from "../../../API"
 import { ApiClient } from "../../../common/api"
 import { AppContext } from "../../../common/app-context"
-import NewsletterNewsFeedForm from "./news-feeds-table"
+import NewsletterDataFeedsSelectionForm from "./data-feeds-selection-table"
 import NewsletterDetailsForm from "./newsletter-details"
 import NewsletterReviewForm from "./newsletter-review"
 
@@ -20,7 +20,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
     const [discoverable, setDiscoverable] = useState<boolean>(false)
     const [shared, setShared] = useState<boolean>(false)
     const [numberOfDaysToInclude, setNumberOfDaysToInclude] = useState<number>(7)
-    const [selectedSubscriptions, setSelectedSubscriptions] = useState<NewsFeedSubscription[]>([])
+    const [selectedSubscriptions, setSelectedSubscriptions] = useState<DataFeedSubscription[]>([])
     const [activeWizardStep, setActiveWizardStep] = useState<number>(0)
     const [titleError, setTitleError] = useState<string>('')
     const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] = useState<string>('')
@@ -75,7 +75,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                 setDiscoverable(result.data.getNewsletter?.discoverable ?? false)
                 setShared(result.data.getNewsletter?.shared ?? false)
                 setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
-                setSelectedSubscriptions(result.data.getNewsletter?.subscriptions as NewsFeedSubscription[] ?? [])
+                setSelectedSubscriptions(result.data.getNewsletter?.subscriptions as DataFeedSubscription[] ?? [])
                 setLoading(false)
             }
 
@@ -210,7 +210,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                                     >
                                         {wizardAlertMessage}
                                     </Alert> : <></>}
-                                <NewsletterNewsFeedForm selectedSubscriptions={selectedSubscriptions} setSelectedSubscriptions={setSelectedSubscriptions} />
+                                <NewsletterDataFeedsSelectionForm selectedSubscriptions={selectedSubscriptions} setSelectedSubscriptions={setSelectedSubscriptions} />
                             </Container>
                         ),
                         isOptional: newsletterId !== undefined && selectedSubscriptions.length > 0

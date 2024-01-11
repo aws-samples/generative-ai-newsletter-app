@@ -8,8 +8,8 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createNewsFeedSubscription = /* GraphQL */ `mutation CreateNewsFeedSubscription($input: CreateNewsFeedSubscription) {
-  createNewsFeedSubscription(input: $input) {
+export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeedSubscription($input: CreateDataFeedSubscriptionInput!) {
+  createDataFeedSubscription(input: $input) {
     subscriptionId
     url
     feedType
@@ -28,10 +28,10 @@ export const createNewsFeedSubscription = /* GraphQL */ `mutation CreateNewsFeed
   }
 }
 ` as GeneratedMutation<
-  APITypes.CreateNewsFeedSubscriptionMutationVariables,
-  APITypes.CreateNewsFeedSubscriptionMutation
+  APITypes.CreateDataFeedSubscriptionMutationVariables,
+  APITypes.CreateDataFeedSubscriptionMutation
 >;
-export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input: CreateNewsletter) {
+export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input: CreateNewsletter!) {
   createNewsletter(input: $input) {
     newsletterId
     title
@@ -56,7 +56,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
   APITypes.CreateNewsletterMutationVariables,
   APITypes.CreateNewsletterMutation
 >;
-export const subscribeToNewsletter = /* GraphQL */ `mutation SubscribeToNewsletter($input: SubscribeToNewsletterInput) {
+export const subscribeToNewsletter = /* GraphQL */ `mutation SubscribeToNewsletter($input: SubscribeToNewsletterInput!) {
   subscribeToNewsletter(input: $input)
 }
 ` as GeneratedMutation<
@@ -72,4 +72,14 @@ export const updateNewsletter = /* GraphQL */ `mutation UpdateNewsletter(
 ` as GeneratedMutation<
   APITypes.UpdateNewsletterMutationVariables,
   APITypes.UpdateNewsletterMutation
+>;
+export const updateDataFeed = /* GraphQL */ `mutation UpdateDataFeed(
+  $input: UpdateDataFeedSubscriptionInput!
+  $subscriptionId: String!
+) {
+  updateDataFeed(input: $input, subscriptionId: $subscriptionId)
+}
+` as GeneratedMutation<
+  APITypes.UpdateDataFeedMutationVariables,
+  APITypes.UpdateDataFeedMutation
 >;

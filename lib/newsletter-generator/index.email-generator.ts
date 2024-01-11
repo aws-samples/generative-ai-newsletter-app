@@ -213,6 +213,9 @@ const recordEmailDetails = async (newsletterId: string, emailId: string, date: D
       compoundSortKey: {
         S: 'email#' + emailId
       },
+      type: {
+        S: 'email'
+      },
       createdAt: {
         S: `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
       }

@@ -1,4 +1,4 @@
-import { Stack, type StackProps, RemovalPolicy, Duration } from 'aws-cdk-lib'
+import { RemovalPolicy, Duration, Aws } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
@@ -6,24 +6,28 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { CfnScheduleGroup } from 'aws-cdk-lib/aws-scheduler'
-import { type Construct } from 'constructs'
+import { Construct } from 'constructs'
 import { PinpointApp } from './pinpoint-app'
-import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
+import { UserPool } from 'aws-cdk-lib/aws-cognito'
 
-interface NewsletterGeneratorProps extends StackProps {
+interface NewsletterGeneratorProps {
   newsSubscriptionTable: Table
   newsSubscriptionTableLSI: string
-  cognitoUserPool: IUserPool
+  userPoolId: string
 }
+export const newsletterTableCampaignGSI: string = 'newsletter-campaign-index'
+export const newsletterTableItemTypeGSI: string = 'newsletter-item-type-index'
 
-export class NewsletterGeneratorStack extends Stack {
+export class NewsletterGenerator extends Construct {
   public readonly newsletterTable: Table
-  public readonly newsletterTableCampaignGSI: string = 'newsletter-campaign-index'
+  public readonly createNewsletterFunction: NodejsFunction
+  public readonly userSubscriberFunction: NodejsFunction
   public readonly newsletterScheduleGroup: CfnScheduleGroup
+  public readonly getNewsletterFunction: NodejsFunction
   private readonly newsletterScheduleGroupName: string = 'NewsletterSubscriptions'
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
-
+    const { newsSubscriptionTable } = props
     const newsletterTable = new Table(this, 'NewsletterTable', {
       tableName: 'NewsletterData',
       removalPolicy: RemovalPolicy.DESTROY,
@@ -39,7 +43,7 @@ export class NewsletterGeneratorStack extends Stack {
     })
 
     newsletterTable.addGlobalSecondaryIndex({
-      indexName: this.newsletterTableCampaignGSI,
+      indexName: newsletterTableCampaignGSI,
       partitionKey: {
         name: 'campaignId',
         type: AttributeType.STRING
@@ -50,12 +54,19 @@ export class NewsletterGeneratorStack extends Stack {
       }
     })
 
+    newsletterTable.addGlobalSecondaryIndex({
+      indexName: newsletterTableItemTypeGSI,
+      partitionKey: {
+        name: 'compoundSortKey',
+        type: AttributeType.STRING
+      }
+    })
     const emailBucket = new Bucket(this, 'EmailBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true
     })
 
-    const pinpointApp = new PinpointApp(this, 'NewsletterPinpoint', { newsletterTable, newsletterTableCampaignGSI: this.newsletterTableCampaignGSI })
+    const pinpointApp = new PinpointApp(this, 'NewsletterPinpoint', { newsletterTable, newsletterTableCampaignGSI })
 
     const emailGeneratorFunction = new NodejsFunction(this, 'email-generator', {
       description: 'Function responsible for generating the newsletter HTML & Plain Text emails',
@@ -117,9 +128,29 @@ export class NewsletterGeneratorStack extends Stack {
       ],
       resources: [
         emailGeneratorSchedulerInvokeRole.roleArn,
-        `arn:aws:scheduler:${this.region}:${this.account}:schedule/${this.newsletterScheduleGroupName}/*`
+        `arn:aws:scheduler:${Aws.REGION}:${Aws.ACCOUNT_ID}:schedule/${this.newsletterScheduleGroupName}/*`
       ]
     }))
+
+    const getNewsletterFunction = new NodejsFunction(this, 'get-newsletter', {
+      description: 'Function responsible for getting looking up a Newsletter and its associated details',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        NEWSLETTER_DATA_TABLE: newsletterTable.tableName,
+        NEWS_SUBSCRIPTION_TABLE: newsSubscriptionTable.tableName
+      }
+    })
+
+    newsletterTable.grantReadData(getNewsletterFunction)
+    newsSubscriptionTable.grantReadData(getNewsletterFunction)
 
     const userSubscriberFunction = new NodejsFunction(this, 'user-subscriber', {
       description: 'Function responsible for subscribing a user to the newsletter',
@@ -134,12 +165,12 @@ export class NewsletterGeneratorStack extends Stack {
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         PINPOINT_APP_ID: pinpointApp.pinpointAppId,
-        COGNITO_USER_POOL_ID: props.cognitoUserPool.userPoolId,
+        COGNITO_USER_POOL_ID: props.userPoolId,
         NEWSLETTER_TABLE: newsletterTable.tableName
       }
     })
     newsletterTable.grantReadWriteData(userSubscriberFunction)
-    props.cognitoUserPool.grant(userSubscriberFunction, 'cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser')
+    UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(userSubscriberFunction, 'cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser')
     userSubscriberFunction.addToRolePolicy(pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement)
 
     const newsletterCampaignCreatorFunction = new NodejsFunction(this, 'newsletter-campaign-creator', {
@@ -167,5 +198,8 @@ export class NewsletterGeneratorStack extends Stack {
 
     this.newsletterTable = newsletterTable
     this.newsletterScheduleGroup = newsletterScheduleGroup
+    this.createNewsletterFunction = newsletterCreatorFunction
+    this.userSubscriberFunction = userSubscriberFunction
+    this.getNewsletterFunction = getNewsletterFunction
   }
 }

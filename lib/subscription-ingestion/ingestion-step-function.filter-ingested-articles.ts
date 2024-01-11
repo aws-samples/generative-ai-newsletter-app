@@ -32,15 +32,14 @@ const getExistingArticles = async (subscriptionId: string): Promise<string[]> =>
   logger.debug('Getting existing articles for subscription ' + subscriptionId)
   const input: QueryCommandInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
-    KeyConditionExpression: '#subscriptionId = :subscriptionId',
-    FilterExpression: '#type = :type',
+    KeyConditionExpression: '#subscriptionId = :subscriptionId and begins_with(#type,:type)',
     ExpressionAttributeValues: {
       ':subscriptionId': { S: subscriptionId },
       ':type': { S: 'article' }
     },
     ExpressionAttributeNames: {
       '#subscriptionId': 'subscriptionId',
-      '#type': 'type'
+      '#type': 'compoundSortKey'
     }
   }
   const command = new QueryCommand(input)

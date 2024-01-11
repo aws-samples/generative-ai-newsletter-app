@@ -22,23 +22,25 @@ const INGESTION_STEP_FUNCTION = process.env.INGESTION_STEP_FUNCTION
 
 interface FeedSubscriberInput {
   url: string
+  discoverable: boolean
 }
 
 interface SubscriptionData {
   url: string
-  id: string
+  subscriptionId: string
   feedType: 'RSS' | 'ATOM'
+  discoverable: boolean
 }
 
-const lambdaHander = async (event: FeedSubscriberInput): Promise<void> => {
+const lambdaHander = async (event: FeedSubscriberInput): Promise<SubscriptionData> => {
   logger.debug('Starting Feed Subscriber, input: ' + JSON.stringify(event))
   metrics.addMetric('SubscriberInvocations', MetricUnits.Count, 1)
-  const { url } = event
+  const { url, discoverable = false } = event
   try {
     const response = await axios.get(url)
     const $ = cheerio.load(response.data as string, { xmlMode: true })
 
-    const id = uuidv4()
+    const subscriptionId = uuidv4()
     let feedType: 'RSS' | 'ATOM'
     if ($('rss').length > 0 && $('rss').attr('version') === '2.0') {
       metrics.addMetric('RSSFeeds', MetricUnits.Count, 1)
@@ -52,11 +54,14 @@ const lambdaHander = async (event: FeedSubscriberInput): Promise<void> => {
       metrics.addMetric('InvalidFeedFormat', MetricUnits.Count, 1)
       throw Error('Unknown feed format. The URL provided must be a URL to a RSS feed or ATOM feed.')
     }
-    const subscriptionData: SubscriptionData = { url, id, feedType }
+    const subscriptionData: SubscriptionData = { url, subscriptionId, feedType, discoverable }
     await storeSubscriptionData(subscriptionData)
-    await startIngestionStepFunction(id)
+    await startIngestionStepFunction(subscriptionId)
+    return subscriptionData
   } catch (error) {
     logger.error('There was an error subscribing to the provided URL', { data: error })
+    tracer.addErrorAsMetadata(error as Error)
+    throw error
   }
 }
 
@@ -65,12 +70,11 @@ const storeSubscriptionData = async (subscriptionData: SubscriptionData): Promis
   const input: PutItemInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
     Item: marshall({
-      subscriptionId: subscriptionData.id,
+      subscriptionId: subscriptionData.subscriptionId,
       url: subscriptionData.url,
       feedType: subscriptionData.feedType,
       createdAt: new Date().toISOString(),
-      compoundSortKey: subscriptionData.id,
-      type: 'subscription',
+      compoundSortKey: 'subscription',
       enabled: true
     })
   }

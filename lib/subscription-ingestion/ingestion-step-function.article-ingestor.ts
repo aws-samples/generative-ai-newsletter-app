@@ -45,7 +45,7 @@ const ingestArticle = async (input: ArticleIngestorInput): Promise<void> => {
     if (input.link === undefined) {
       throw new Error('No url to crawl')
     }
-    const articleId = input.guid ?? uuidv4()
+    const articleId = input.guid?.trim() ?? uuidv4()
     const $ = await getSiteContent(input.link)
     let articleText: string = ''
     if ($('article').length > 0) {
@@ -168,11 +168,10 @@ const saveArticleData = async (articleSummary: string, subscriptionId: string, a
     Item: marshall({
       subscriptionId,
       articleId,
-      compoundSortKey: `${subscriptionId}#${articleId}`,
+      compoundSortKey: `article#${articleId}`,
       articleSummary,
       createdAt: new Date().toISOString(),
       url,
-      type: 'article',
       title
     })
   }

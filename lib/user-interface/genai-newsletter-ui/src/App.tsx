@@ -1,0 +1,32 @@
+// import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import '@aws-amplify/ui-react/styles.css';
+import "@cloudscape-design/global-styles/index.css"
+import './App.css'
+import GlobalHeader from './components/global-header';
+import Welcome from './pages/welcome';
+import NewslettersDashboard from "./pages/newsletters/dashboard";
+import CreateNewsletter from "./pages/newsletters/create";
+import EditNewsletter from "./pages/newsletters/edit";
+import NewsletterDetail from "./pages/newsletters/detail";
+function App() {
+  return (
+    <div style={{ height: "100%" }}>
+      <BrowserRouter>
+        <GlobalHeader />
+        <div style={{ height: "56px", backgroundColor: "#000716" }}>&nbsp;</div>
+        <div>
+          <Routes>
+            <Route index path="/" element={<Welcome />} />
+            <Route path="/newsletters" element={<NewslettersDashboard />}/>
+            <Route path="/newsletters/create" element={<CreateNewsletter />} />
+            <Route path="/newsletters/:newsletterId" element={<NewsletterDetail />} />
+            <Route path="/newsletters/:newsletterId/edit" element={<EditNewsletter />} />"
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </div>
+  )
+}
+
+export default App

@@ -58,7 +58,7 @@ export class SubscriptionPollStepFunction extends Construct {
       }
     })
 
-    mapSubscriptions.iterator(startIngestionStepFunctionJob)
+    mapSubscriptions.itemProcessor(startIngestionStepFunctionJob)
 
     const definition = getSubscriptionsJob.next(mapSubscriptions)
 

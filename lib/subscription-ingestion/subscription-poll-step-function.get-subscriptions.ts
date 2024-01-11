@@ -29,7 +29,7 @@ const lambdaHandler = async (): Promise<SubscriptionsData> => {
       KeyConditionExpression: '#type = :type',
       FilterExpression: '#enabled = :enabled',
       ExpressionAttributeNames: {
-        '#type': 'type',
+        '#type': 'compoundSortKey',
         '#enabled': 'enabled'
       },
       ExpressionAttributeValues: {

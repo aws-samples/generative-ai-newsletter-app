@@ -41,7 +41,7 @@ interface ExternalUserSubscriberInput extends UserSubscriberInput {
 
 // TODO: Try/Catch with Rollback if failed to prevent bad data
 
-const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSubscriberInput): Promise<void> => {
+const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSubscriberInput): Promise<boolean> => {
   logger.debug('Starting User Subscriber', { event })
   if (event.cognitoUserId !== undefined) {
     const userEmail = await getCognitoUserEmail(event.cognitoUserId)
@@ -53,6 +53,7 @@ const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSub
     const externalUserId = await subscribeExternalUser(event.newsletterId, event.userEmail, event.externalUserId)
     await addPinpointEndpoint(externalUserId, event.userEmail, subscriberType)
   }
+  return true
 }
 
 const subscribeCognitoUser = async (newsletterId: string, cognitoUserId: string): Promise<void> => {

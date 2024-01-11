@@ -4,21 +4,23 @@ import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tr
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
-import type { Construct } from 'constructs'
+import { Construct } from 'constructs'
 import { IngestionStepFunction as NewsIngestionStepFunction } from './ingestion-step-function'
 import { SubscriptionPollStepFunction } from './subscription-poll-step-function'
 import { type StateMachine } from 'aws-cdk-lib/aws-stepfunctions'
 
-export class NewsSubscriptionIngestionStack extends cdk.Stack {
+export const newsSubscriptionTableTypeIndex = 'type-index'
+export const newsSubscriptionTableLSI = 'lsi-date-index'
+
+export class NewsSubscriptionIngestion extends Construct {
   public readonly newsSubscriptionTable: Table
   public readonly dataIngestBucket: Bucket
   public readonly ingestionStepFunctionStateMachine: StateMachine
   public readonly subscriptionPollStepFunctionStateMachine: StateMachine
   public readonly feedSubscriberFunction: NodejsFunction
-  public readonly newsSubscriptionTableTypeIndex = 'type-index'
-  public readonly newsSubscriptionTableLSI = 'lsi-date-index'
-  constructor (scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props)
+
+  constructor (scope: Construct, id: string) {
+    super(scope, id)
     const newsSubscriptionTable = new Table(this, 'NewsSubscriptionTable', {
       tableName: 'NewsSubscriptionData',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -34,7 +36,7 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
     })
 
     newsSubscriptionTable.addLocalSecondaryIndex({
-      indexName: this.newsSubscriptionTableLSI,
+      indexName: newsSubscriptionTableLSI,
       sortKey: {
         name: 'createdAt',
         type: AttributeType.STRING
@@ -42,9 +44,9 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
     })
 
     newsSubscriptionTable.addGlobalSecondaryIndex({
-      indexName: this.newsSubscriptionTableTypeIndex,
+      indexName: newsSubscriptionTableTypeIndex,
       partitionKey: {
-        name: 'type',
+        name: 'compoundSortKey',
         type: AttributeType.STRING
       }
     })
@@ -64,7 +66,7 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
       description: 'Step Function Responsible for getting enabled subscriptions and starting ingestion for each one.',
       newsIngestionStateMachine: ingestionStepFunction.stateMachine,
       newsSubscriptionTable,
-      newsSubscriptionTableTypeIndex: this.newsSubscriptionTableTypeIndex
+      newsSubscriptionTableTypeIndex
     })
 
     const feedSubscriberFunction = new NodejsFunction(this, 'feed-subscriber', {
@@ -90,6 +92,7 @@ export class NewsSubscriptionIngestionStack extends cdk.Stack {
 
     this.newsSubscriptionTable = newsSubscriptionTable
     this.dataIngestBucket = newsDataIngestBucket
+    this.feedSubscriberFunction = feedSubscriberFunction
     this.ingestionStepFunctionStateMachine = ingestionStepFunction.stateMachine
     this.subscriptionPollStepFunctionStateMachine = subscriptionPollStepFunction.stateMachine
   }

@@ -1,15 +1,17 @@
-import { Button, ButtonDropdown, ButtonDropdownProps, Header, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
+import { Badge, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { AppContext } from "../../common/app-context";
 import { DataFeedSubscription } from "../../API";
 import { ApiClient } from "../../common/api";
-import { DataFeedsTableColumnDefinition, DataFeedsTableColumnDisplay } from "../newsletters/definitions";
+import { DataFeedsTableColumnDisplay } from "../newsletters/definitions";
 import { useNavigate } from "react-router-dom";
+import useOnFollow from "../../common/hooks/use-on-follow";
 
 
 export default function DataFeedsTable() {
     const appContext = useContext(AppContext)
     const navigate = useNavigate()
+    const onFollow = useOnFollow()
     const [dataFeeds, setDataFeeds] = useState<DataFeedSubscription[]>([])
     const [selectedDataFeed, setSelectedDataFeed] = useState<DataFeedSubscription>()
     const [loadingDataFeeds, setLoadingDataFeeds] = useState<boolean>(true)
@@ -43,6 +45,45 @@ export default function DataFeedsTable() {
         }
     }
 
+    const dataFeedsTableColumnDefiniton = [
+        {
+            id: 'subscriptionId',
+            cell: (item: DataFeedSubscription) => item.subscriptionId,
+            header: 'Subscription ID',
+            isHeaderRow: false
+        },
+        {
+            id: 'url',
+            cell: (item: DataFeedSubscription) => (
+                <Link 
+                onFollow={onFollow}
+                href={`/feeds/${item.subscriptionId}`}>{item.url}</Link>
+            ),
+            header: 'Feed URL',
+            isHeaderRow: true
+        },
+        {
+            id: 'feedType',
+            cell: (item: DataFeedSubscription) => item.feedType,
+            header: 'Feed Type',
+            isHeaderRow: true
+        },
+        {
+            id: 'enabled',
+            cell: (item: DataFeedSubscription) => (
+                <Badge color={item.enabled ? "green" : "grey"}>{item.enabled ? "ENABLED" : "DISABLED"}</Badge>
+            ),
+            header: 'Enabled',
+            isHeaderRow: true,
+        },
+        {
+            id: 'createdAt',
+            cell: (item: DataFeedSubscription) => item.createdAt ? new Date(item.createdAt).toUTCString() : '',
+            header: 'Created At',
+            isHeaderRow: true,
+        }
+    ]
+
     useEffect(() => {
         getDataFeeds()
         setLoadingDataFeeds(false)
@@ -50,7 +91,7 @@ export default function DataFeedsTable() {
 
     return (
         <Table
-            columnDefinitions={DataFeedsTableColumnDefinition}
+            columnDefinitions={dataFeedsTableColumnDefiniton}
             columnDisplay={DataFeedsTableColumnDisplay}
             items={dataFeeds}
             loading={loadingDataFeeds}

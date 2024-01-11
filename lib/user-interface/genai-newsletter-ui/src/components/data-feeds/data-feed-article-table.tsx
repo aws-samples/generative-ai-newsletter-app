@@ -1,4 +1,4 @@
-import { Container, Header, Table } from "@cloudscape-design/components";
+import { Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
@@ -22,7 +22,10 @@ export default function DataFeedArticleTable() {
                 console.log(result.errors)
                 return
             }
-            setFeedArticles(result.data.getDataFeedArticles?.dataFeedArticles as DataFeedArticle[])
+            if (result.data.getDataFeedArticles?.dataFeedArticles !== null) {
+                setFeedArticles(result.data.getDataFeedArticles?.dataFeedArticles as DataFeedArticle[])
+            }
+
             setLoading(false)
         }, [appContext, subscriptionId])
 
@@ -41,6 +44,9 @@ export default function DataFeedArticleTable() {
                 items={feedArticles}
                 loading={loading}
                 loadingText="Loading data feed articles"
+                empty={<SpaceBetween direction="vertical" size="s">
+                    <p>No data feed articles found</p>
+                </SpaceBetween>}
                 header={
                     <Header
                         variant="awsui-h1-sticky"

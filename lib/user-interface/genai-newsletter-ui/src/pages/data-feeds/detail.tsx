@@ -8,13 +8,14 @@ import DataFeedArticleTable from "../../components/data-feeds/data-feed-article-
 export default function DataFeedDetails() {
     const navigate = useNavigate()
     const { subscriptionId } = useParams()
+    const onFollow = useOnFollow()
 
 
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",
@@ -26,7 +27,7 @@ export default function DataFeedDetails() {
                         },
                         {
                             "text": "Data Feed Details",
-                            "href": "#"
+                            "href": `/feeds/${subscriptionId}`
                         }
                     ]}
                 />

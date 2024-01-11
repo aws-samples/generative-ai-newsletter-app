@@ -11,6 +11,7 @@ import NewsletterReviewForm from "../../components/newsletters/forms/newsletter-
 
 export default function NewsletterDetail() {
     const { newsletterId } = useParams();
+    const onFollow = useOnFollow()
     const appContext = useContext(AppContext)
     const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
 
@@ -36,15 +37,19 @@ export default function NewsletterDetail() {
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",
                             href: "/"
                         },
                         {
-                            "text": "Newsletters Dashboard",
+                            "text": "Newsletters",
                             "href": "/newsletters"
+                        },
+                        {
+                            text: "Newsletter Details",
+                            href: `/newsletters/${newsletterId}`
                         }
                     ]}
                 />

@@ -5,19 +5,20 @@ import DataFeedsTable from "../../components/data-feeds/data-feeds-table";
 
 
 export default function DataFeedsDashboard() {
+    const onFollow = useOnFollow();
 
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",
                             href: "/"
                         },
                         {
-                            "text": "Data Feeds Dashboard",
+                            "text": "Data Feeds",
                             "href": "/feeds"
                         }
                     ]}

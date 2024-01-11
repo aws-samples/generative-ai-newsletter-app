@@ -2,9 +2,9 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { Newsletter, Newsletters } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
-import { Button, ButtonDropdown, ButtonDropdownProps, Header, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
-import { NewslettersTableColumnDefinition } from "./definitions";
+import { Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useNavigate } from "react-router-dom";
+import useOnFollow from "../../common/hooks/use-on-follow";
 
 export interface NewsFeedTableProps {
 
@@ -13,6 +13,7 @@ export interface NewsFeedTableProps {
 export default function NewslettersTable() {
     const appContext = useContext(AppContext)
     const navigate = useNavigate()
+    const onFollow = useOnFollow()
     const [newsFeeds, setNewsFeeds] = useState<Newsletters>({ newsletters: [], nextToken: null, __typename: "Newsletters" } as Newsletters)
     const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter>()
     const [loadingNewsletters, setLoadingNewsletters] = useState<boolean>(true)
@@ -46,13 +47,49 @@ export default function NewslettersTable() {
         }
     }
 
+    const newslettersTableColumnDefinitons = [
+        {
+            id: 'name',
+            header: 'Newsletter Name',
+            cell: (item: Newsletter) => (
+                <Link
+                    onFollow={onFollow}
+                    href={`/newsletters/${item.newsletterId}`}>{item.title}</Link>
+            ),
+            isHeaderRow: true
+        },
+        {
+            id: 'numberOfDays',
+            header: 'Number of Days between Newsletters',
+            cell: (item: Newsletter) => item.numberOfDaysToInclude,
+            isHeaderRow: true
+        },
+        {
+            id: 'discoverable',
+            header: 'Discoverable',
+            cell: (item: Newsletter) => item.discoverable !== undefined ? (item.discoverable ? "YES" : "NO") : "NO",
+            isHeaderRow: true
+        },
+        {
+            id: 'shared',
+            header: 'Shared',
+            cell: (item: Newsletter) => item.shared !== undefined ? (item.shared ? "YES" : "NO") : "NO",
+            isHeaderRow: true
+        },
+        {
+            id: 'Newsletter Created',
+            header: 'Newsletter Created',
+            cell: (item: Newsletter) => new Date(item.createdAt).toUTCString(),
+        }
+    ]
+
     useEffect(() => {
         getNewsletters()
     }, [getNewsletters])
 
     return (<>
         <Table
-            columnDefinitions={NewslettersTableColumnDefinition}
+            columnDefinitions={newslettersTableColumnDefinitons}
             items={newsFeeds?.newsletters}
             loadingText="Loading"
             loading={loadingNewsletters}

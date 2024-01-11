@@ -4,11 +4,12 @@ import BaseAppLayout from "../../components/base-app-layout";
 import DataFeedDetailsForm from "../../components/data-feeds/forms/data-feed-details-form";
 
 export default function CreateDataFeed() {
+    const onFollow = useOnFollow()
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",

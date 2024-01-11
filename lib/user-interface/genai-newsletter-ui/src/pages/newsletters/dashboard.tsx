@@ -4,11 +4,12 @@ import useOnFollow from "../../common/hooks/use-on-follow";
 import NewslettersTable from "../../components/newsletters/newsletters-table";
 
 export default function NewslettersDashboard() {
+    const onFollow = useOnFollow()
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",

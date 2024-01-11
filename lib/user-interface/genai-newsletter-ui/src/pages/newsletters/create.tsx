@@ -6,11 +6,12 @@ import NewsletterWizard from "../../components/newsletters/forms/newsletter-wiza
 
 
 export default function CreateNewsletter() {
+    const onFollow = useOnFollow()
     return (
         <BaseAppLayout
             breadcrumbs={
                 <BreadcrumbGroup
-                    onFollow={useOnFollow}
+                    onFollow={onFollow}
                     items={[
                         {
                             text: "GenAI Newsletter",

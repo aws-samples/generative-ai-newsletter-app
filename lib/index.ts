@@ -1,23 +1,43 @@
-import { type App } from 'aws-cdk-lib'
-import { NewsSubscriptionIngestionStack } from './subscription-ingestion'
-import { NewsletterGeneratorStack } from './newsletter-generator'
-import { Construct } from 'constructs'
-import { AuthenticationStack } from './authentication'
+import { Stack } from 'aws-cdk-lib'
+import { NewsSubscriptionIngestion, newsSubscriptionTableLSI } from './subscription-ingestion'
+import { NewsletterGenerator } from './newsletter-generator'
+import { Authentication } from './authentication'
+import { API } from './api'
+import { UserInterface } from './user-interface'
+import { type Construct } from 'constructs'
 
-export class GenAINewsletter extends Construct {
-  constructor (app: App, id: string) {
-    super(app, id)
-    const authenticationStack = new AuthenticationStack(app, 'AuthenticationStack', { description: 'User Authentication for GenAI Newsletter App' })
+export class GenAINewsletter extends Stack {
+  constructor (scope: Construct, id: string) {
+    super(scope, id)
+    const authentication = new Authentication(this, 'AuthenticationStack')
 
-    const newsSubscriptionIngestionStack = new NewsSubscriptionIngestionStack(app, 'NewsletterIngestionStack', {
-      description: 'Ingestion of News Subscriptions for GenAI Newsletter App'
+    const newsSubscriptionIngestion = new NewsSubscriptionIngestion(this, 'NewsletterIngestionStack')
+
+    const newsletterGenerator = new NewsletterGenerator(this, 'NewsletterGenerator', {
+      newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
+      newsSubscriptionTableLSI,
+      userPoolId: authentication.userPoolId
     })
 
-    new NewsletterGeneratorStack(app, 'NewsletterGeneratorStack', {
-      newsSubscriptionTable: newsSubscriptionIngestionStack.newsSubscriptionTable,
-      newsSubscriptionTableLSI: newsSubscriptionIngestionStack.newsSubscriptionTableLSI,
-      cognitoUserPool: authenticationStack.userPool,
-      description: 'Newsletter Generation for GenAI Newsletter App'
+    const api = new API(this, 'API', {
+      userPoolId: authentication.userPoolId,
+      newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
+      newsletterTable: newsletterGenerator.newsletterTable,
+      functions: {
+        createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
+        userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
+        feedSubscriberFunction: newsSubscriptionIngestion.feedSubscriberFunction,
+        getNewsletterFunction: newsletterGenerator.getNewsletterFunction
+      }
+    })
+
+    new UserInterface(this, 'UserInterface', {
+      userPoolId: authentication.userPoolId,
+      userPoolClientId: authentication.userPoolClientId,
+      identityPoolId: authentication.identityPoolId,
+      // graphqlApi: apiStack.graphqlApi,
+      graphqlApiUrl: api.graphqlApiUrl,
+      graphqlApiKey: api.graphqlApiKey
     })
   }
 }

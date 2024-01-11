@@ -78,7 +78,7 @@ export class IngestionStepFunction extends Construct {
     const getSubscriptionDetailsJob = new DynamoGetItem(this, 'GetSubscriptionDetails', {
       key: {
         subscriptionId: DynamoAttributeValue.fromString(JsonPath.stringAt('$.subscriptionId')),
-        compoundSortKey: DynamoAttributeValue.fromString(JsonPath.stringAt('$.subscriptionId'))
+        compoundSortKey: DynamoAttributeValue.fromString('subscription')
       },
       table: props.newsSubscriptionTable,
       resultSelector: {
@@ -122,7 +122,7 @@ export class IngestionStepFunction extends Construct {
       itemsPath: '$.articlesData.articles'
     })
 
-    mapArticles.iterator(ingestArticleJob)
+    mapArticles.itemProcessor(ingestArticleJob)
 
     const definition = getSubscriptionDetailsJob
       .next(readFeedJob)

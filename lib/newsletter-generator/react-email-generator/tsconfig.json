@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES2020",
+        "module": "NodeNext",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "skipLibCheck": true,
+        "checkJs": false,
+        "isolatedModules": true,
+        "declaration": true,
+
+        // // /* Bundler mode */
+        // // "moduleResolution": "bundler",
+        // "noEmit": false,
+        // "declaration": true,
+        // "allowImportingTsExtensions": false,
+        // "resolveJsonModule": true,
+        // "isolatedModules": true,
+        "jsx": "react-jsx",
+        // "outDir": "dist"
+    },
+    // "extends":["../../../tsconfig.json"],
+    "include": ["emails/*.**"],
+    "exclude": ["dist/*"]
+}

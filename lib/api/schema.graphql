@@ -1,0 +1,149 @@
+enum NewsFeedType {
+    RSS
+    ATOM
+}
+
+input CreateNewsFeedSubscription {
+    url: String!
+    discoverable: Boolean!
+}
+
+input CreateNewsletter {
+    title: String!
+    numberOfDaysToInclude: Int!
+    subscriptionIds: [String!]!
+    discoverable: Boolean
+    shared: Boolean
+}
+
+input UpdateNewsletterInput {
+    title: String
+    numberOfDaysToInclude: Int
+    subscriptionIds: [String]
+    discoverable: Boolean
+    shared: Boolean
+}
+
+input SubscribeToNewsletterInput {
+    newsletterId: String!
+}
+
+
+type Newsletter @aws_cognito_user_pools {
+    newsletterId: String!
+    title: String!
+    numberOfDaysToInclude: Int!
+    subscriptionIds: [String!]
+    subscriptions:[NewsFeedSubscription]
+    discoverable: Boolean
+    shared: Boolean
+    scheduleId: String!
+    createdAt: AWSDateTime!
+}
+
+type Newsletters @aws_cognito_user_pools {
+    newsletters: [Newsletter!]!
+    nextToken: String
+}
+
+input GetNewsletterInput {
+    newsletterId: String!
+}
+
+input GetNewslettersInput {
+    nextToken: String
+}
+
+type NewsFeedSubscription @aws_cognito_user_pools {
+    subscriptionId: String!
+    url: String!
+    feedType: NewsFeedType!
+    createdAt: AWSDateTime
+    enabled: Boolean
+    articles: [NewsFeedArticle]
+}
+
+type NewsFeedSubscriptions @aws_cognito_user_pools {
+    subscriptions: [NewsFeedSubscription]
+    nextToken: String
+    limit: Int
+}
+
+
+
+input GetNewsFeedSubscriptionInput {
+    subscriptionId: String!
+}
+
+
+type NewsletterEmail @aws_cognito_user_pools {
+    newsletterId: String!
+    emailId: String!
+    campaignId: String!
+    createdAt: AWSDateTime!
+}
+
+type NewsletterEmails @aws_cognito_user_pools {
+    newsletterEmails: [NewsletterEmail]
+    nextToken: String
+}
+
+input GetNewsletterEmailsInput {
+    newsletterId: String!
+    nextToken: String
+}
+
+input NewsletterEmailInput {
+    newsletterId: String!
+    emailId: String!
+}
+
+input LookupByNewsletterId {
+    newsletterId: String!
+}
+
+type NewsFeedArticle @aws_cognito_user_pools {
+    subscriptionId: String!
+    articleId: String!
+    url: String!
+    articleSummary: String!
+    createdAt: AWSDateTime!
+    title: String!
+}
+
+type NewsFeedArticles @aws_cognito_user_pools {
+    newsFeedArticles: [NewsFeedArticle]
+    nextToken: String
+}
+
+input NewsFeedArticlesInput {
+    subscriptionId: String,
+    nextToken: String
+}
+
+type Subscriber @aws_cognito_user_pools {
+    newsletterId: String!
+}
+
+type Mutation {
+    createNewsFeedSubscription(input: CreateNewsFeedSubscription): NewsFeedSubscription @aws_cognito_user_pools
+    createNewsletter(input: CreateNewsletter): Newsletter @aws_cognito_user_pools
+    subscribeToNewsletter(input: SubscribeToNewsletterInput): Boolean @aws_cognito_user_pools
+    updateNewsletter(input: UpdateNewsletterInput!, newsletterId: String!): Boolean @aws_cognito_user_pools
+}
+
+type Query {
+    getNewsletters(input: GetNewslettersInput): Newsletters! @aws_cognito_user_pools
+    getNewsletter(input: GetNewsletterInput): Newsletter! @aws_cognito_user_pools
+    getNewsFeedSubscriptions(nextToken: String, limit: Int): NewsFeedSubscriptions! @aws_cognito_user_pools
+    getNewsFeedSubscription(input: GetNewsFeedSubscriptionInput): NewsFeedSubscription @aws_cognito_user_pools
+    getNewsFeedArticles(input: NewsFeedArticlesInput): NewsFeedArticles! @aws_cognito_user_pools
+    getNewsletterEmail(input: NewsletterEmailInput): NewsletterEmail! @aws_cognito_user_pools
+    getNewsletterEmails(input: GetNewsletterEmailsInput): NewsletterEmails @aws_cognito_user_pools
+}
+
+
+schema {
+    query: Query
+    mutation: Mutation
+}

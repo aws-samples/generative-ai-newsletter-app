@@ -6,6 +6,7 @@ import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { type CreateScheduleCommandInput, SchedulerClient, CreateScheduleCommand } from '@aws-sdk/client-scheduler'
+import { type CreateNewsletter, type Newsletter } from '../api/API'
 
 const SERVICE_NAME = 'newsletter-creator'
 
@@ -21,18 +22,17 @@ const NEWSLETTER_SCHEDULE_GROUP_NAME = process.env.NEWSLETTER_SCHEDULE_GROUP_NAM
 const EMAIL_GENERATOR_FUNCTION_ARN = process.env.EMAIL_GENERATOR_FUNCTION_ARN
 const EMAIL_GENERATOR_SCHEDULER_ROLE_ARN = process.env.EMAIL_GENERATOR_SCHEDULER_ROLE_ARN
 
-interface NewsletterCreatorInput {
-  newsletterTitle: string
-  subscriptionIds: string[]
-  numberOfDaysToInclude: number
-  scheduleCronExpression: string
-}
-
-const lambdaHandler = async (event: NewsletterCreatorInput): Promise<void> => {
+const lambdaHandler = async (event: CreateNewsletter): Promise<Newsletter> => {
   logger.debug('Starting newsletter creator', { event })
+  const { title, numberOfDaysToInclude, subscriptionIds } = event
+  const shared: boolean = event.shared ?? false
+  const discoverable: boolean = event.discoverable ?? false
   const newsletterId = uuidv4()
-  const scheduleId = await createNewsletterSchedule(newsletterId, event.scheduleCronExpression)
-  await storeNewsletterData(newsletterId, event.newsletterTitle, event.subscriptionIds, event.numberOfDaysToInclude, scheduleId)
+  const scheduleExpression = `rate(${numberOfDaysToInclude} ${numberOfDaysToInclude === 1 ? 'day' : 'days'})`
+  const scheduleId = await createNewsletterSchedule(newsletterId, scheduleExpression)
+  const newsletter = await storeNewsletterData(newsletterId, title, subscriptionIds, numberOfDaysToInclude, scheduleId, shared, discoverable)
+  logger.debug('Newsletter created', { newsletterId })
+  return newsletter
 }
 
 const createNewsletterSchedule = async (newsletterId: string, scheduleExpression: string): Promise<string> => {
@@ -59,24 +59,28 @@ const createNewsletterSchedule = async (newsletterId: string, scheduleExpression
   }
 }
 
-const storeNewsletterData = async (newsletterId: string, newsletterTitle: string, subscriptionIds: string[], numberOfDaysToInclude: number, scheduleId: string): Promise<void> => {
+const storeNewsletterData = async (newsletterId: string, title: string, subscriptionIds: string[], numberOfDaysToInclude: number, scheduleId: string, shared: boolean, discoverable: boolean): Promise<Newsletter> => {
   logger.debug('Storing newsletter data', {
     newsletterId,
     compoundSortKey: 'newsletter#' + newsletterId,
-    newsletterTitle,
+    title,
     subscriptionIds,
     numberOfDaysToInclude,
-    scheduleId
+    scheduleId,
+    shared
   })
+  const createdAt = new Date().toISOString()
   const input: PutItemCommandInput = {
     TableName: NEWSLETTER_DATA_TABLE,
     Item: marshall({
       newsletterId,
-      compoundSortKey: 'newsletter#' + newsletterId,
-      newsletterTitle,
+      compoundSortKey: 'newsletter',
+      title,
       subscriptionIds,
       numberOfDaysToInclude,
-      scheduleId
+      scheduleId,
+      shared,
+      createdAt
     })
   }
   const command = new PutItemCommand(input)
@@ -87,6 +91,17 @@ const storeNewsletterData = async (newsletterId: string, newsletterTitle: string
     metrics.addMetric('NewsletterCreationFailed', MetricUnits.Count, 1)
     logger.error('Error storing newsletter data', { response })
     throw new Error('Error storing newsletter data')
+  }
+  return {
+    newsletterId,
+    title,
+    subscriptionIds,
+    numberOfDaysToInclude,
+    scheduleId,
+    shared,
+    discoverable,
+    createdAt,
+    __typename: 'Newsletter'
   }
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/semi */
 module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],

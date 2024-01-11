@@ -2,25 +2,34 @@
   "name": "genai-newsletter",
   "version": "0.1.0",
   "bin": {
-    "temp": "bin/genai-newsletter-app.js"
+    "genai-newsletter-app": "bin/genai-newsletter-app.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run codegen && tsc",
+    "codegen:prepare": "rm -f lib/api/API.ts && rm -f lib/user-interface/genai-newsletter-ui/src/graphql/*",
+    "codegen": "npm run codegen:prepare && cd lib/api && amplify codegen && cp ../user-interface/genai-newsletter-ui/src/API.ts ./API.ts",
     "watch": "tsc -w",
     "lint": "eslint . --fix --ext .ts,.tsx --report-unused-disable-directives",
     "test": "jest",
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@aws-appsync/utils": "^1.6.0",
     "@aws-sdk/client-s3": "^3.472.0",
+    "@middy/core": "^5.2.1",
+    "@react-email/components": "0.0.12",
     "@react-email/render": "^0.0.10",
     "@types/aws-lambda": "^8.10.130",
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^29.5.8",
     "@types/node": "20.9.0",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "aws-amplify": "^6.0.9",
     "aws-cdk": "2.110.1",
     "eslint": "^8.56.0",
     "eslint-config-standard-with-typescript": "^43.0.0",
@@ -29,11 +38,14 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.33.2",
     "jest": "^29.7.0",
+    "react-email": "^1.10.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "~5.2.2"
+    "typescript": "~5.2.2",
+    "vite": "^5.0.10"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^6.0.7",
     "@aws-lambda-powertools/batch": "^1.17.0",
     "@aws-lambda-powertools/logger": "^1.17.0",
     "@aws-lambda-powertools/metrics": "^1.17.0",
@@ -47,15 +59,16 @@
     "@aws-sdk/client-sqs": "^3.473.0",
     "@aws-sdk/lib-storage": "^3.472.0",
     "@aws-sdk/util-dynamodb": "^3.473.0",
-    "@middy/core": "^5.1.0",
     "@types/cheerio": "^0.22.35",
     "aws-cdk-lib": "^2.116.0",
+    "@aws-cdk/aws-cognito-identitypool-alpha": "^2.116.0-alpha.0",
     "aws-lambda": "^1.0.7",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "constructs": "^10.0.0",
     "html-to-text": "^9.0.5",
     "puppeteer": "^21.6.0",
+    "react-dom": "^18.2.0",
     "source-map-support": "^0.5.21"
   }
 }

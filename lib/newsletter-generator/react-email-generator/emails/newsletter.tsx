@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
     Body,
     Container,
@@ -10,7 +9,6 @@ import {
     Text,
     Link
 } from '@react-email/components'
-
 interface NewsArticle {
     title: string
     content: string
@@ -22,33 +20,62 @@ interface NewsletterEmailProps {
     articles: NewsArticle[];
 }
 
-export const NewsletterEmail = (props: NewsletterEmailProps) => (
-    <Html>
-        <Head />
-        <Preview>Your latest news update!</Preview>
-        <Body style={main}>
-            <Container style={container}>
-                <h1>{props.title ?? "Your GenAI Created Newsletter"}</h1>
-                <Text style={text}>
-                    Your customized newsletter, bringing the news you want in a summarized view!
-                </Text>
-                <Section style={articlesSection}>
-                    {props.articles.map((article) => {
-                        return (
-                            <Row style={articleRow}>
-                                <h2>{article.title}</h2>
-                                <p>{article.content}</p>
-                                <Link href={article.url}>Read the article</Link>
-                            </Row>
-                        )
-                    })
-                    }
-                </Section>
-            </Container>
-        </Body>
-    </Html>
+export const NewsletterEmail = (props: NewsletterEmailProps) => {
+    const detail: NewsletterEmailProps = {
+        articles: [],
+    }
+    if (props === undefined || props.articles === undefined || props.articles.length === 0 || props.title === undefined) {
+        detail.title = 'Sample Newsletter'
+        detail.articles = [
+            {
+                content: "Filler Content! Filler Content",
+                title: "Sample Article",
+                url: "#"
+            },
+            {
+                content: "Filler Content! Filler Content",
+                title: "Sample Article",
+                url: "#"
+            },
+            {
+                content: "Filler Content! Filler Content",
+                title: "Sample Article",
+                url: "#"
+            }
+        ]
+    } else {
+        detail.title = props.title
+        detail.articles = props.articles
 
-)
+    }
+    return (
+        <Html>
+            <Head />
+            <Preview>Your latest news update!</Preview>
+            <Body style={main}>
+                <Container style={container}>
+                    <h1>{props.title ?? "Your GenAI Created Newsletter"}</h1>
+                    <Text style={text}>
+                        Your customized newsletter, bringing the news you want in a summarized view!
+                    </Text>
+                    <Section style={articlesSection}>
+                        {detail.articles.map((article) => {
+                            return (
+                                <Row style={articleRow}>
+                                    <h2>{article.title}</h2>
+                                    <p>{article.content}</p>
+                                    <Link href={article.url}>Read the article</Link>
+                                </Row>
+                            )
+                        })
+                        }
+                    </Section>
+                </Container>
+            </Body>
+        </Html>
+
+    )
+}
 
 export default NewsletterEmail
 

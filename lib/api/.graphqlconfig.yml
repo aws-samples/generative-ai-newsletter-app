@@ -1,0 +1,18 @@
+projects:
+  Codegen Project:
+    schemaPath: schema.graphql
+    includes:
+      - ../user-interface/genai-newsletter-ui/src/graphql/**
+    extensions:
+      amplify:
+        codeGenTarget: typescript
+        generatedFileName: ../user-interface/genai-newsletter-ui/src/API.ts
+        docsFilePath: ../user-interface/genai-newsletter-ui/src/graphql
+        region: null
+        apiId: null
+        frontend: javascript
+        framework: react
+        maxDepth: 2
+extensions:
+  amplify:
+    version: 3

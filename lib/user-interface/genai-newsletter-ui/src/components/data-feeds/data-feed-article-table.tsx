@@ -41,6 +41,7 @@ export default function DataFeedArticleTable() {
             <Table
                 columnDefinitions={DataFeedArticlesTableColumnDefiniton}
                 columnDisplay={DataFeedArticlesTableColumnDisplay}
+                resizableColumns
                 items={feedArticles}
                 loading={loading}
                 loadingText="Loading data feed articles"

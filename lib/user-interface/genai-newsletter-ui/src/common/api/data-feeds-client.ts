@@ -63,7 +63,7 @@ export class DataFeedsClient {
     
     }
 
-    async getDataFeedArticles(subscriptionId: string, nextToken?: string, limit?: number): Promise<GraphQLResult<GetDataFeedArticlesQuery>> {
+    async getDataFeedArticles(subscriptionId: string, nextToken?: string, limit: number = 1000): Promise<GraphQLResult<GetDataFeedArticlesQuery>> {
         try {
             const result = await client.graphql({
                 query: getDataFeedArticles,

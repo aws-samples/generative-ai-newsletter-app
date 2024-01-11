@@ -1,10 +1,10 @@
 import { AppConfig } from '../types';
-import { NewsFeedsClient } from './news-feeds-client';
+import { DataFeedsClient } from './data-feeds-client';
 import { NewslettersClient } from './newsletters-client'
 
 export class ApiClient {
     private _newslettersClient: NewslettersClient | undefined;
-    private _newsFeedsClient: NewsFeedsClient | undefined;
+    private _dataFeedsClient: DataFeedsClient | undefined;
 
     public get newsletters() {
         if(!this._newslettersClient){
@@ -13,11 +13,11 @@ export class ApiClient {
         return this._newslettersClient
     }
 
-    public get newsFeeds() {
-        if(!this._newsFeedsClient){
-            this._newsFeedsClient = new NewsFeedsClient()
+    public get dataFeeds() {
+        if(!this._dataFeedsClient){
+            this._dataFeedsClient = new DataFeedsClient()
         }
-        return this._newsFeedsClient
+        return this._dataFeedsClient
 
     }
 

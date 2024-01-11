@@ -3,7 +3,7 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
 import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
-import { type Newsletter, type GetNewsletterInput, type NewsFeedSubscription } from '../api/API'
+import { type Newsletter, type GetNewsletterInput, type DataFeedSubscription } from '../api/API'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 const SERVICE_NAME = 'get-newsletter'
@@ -22,7 +22,7 @@ const lambdaHandler = async (event: GetNewsletterInput): Promise<Newsletter | nu
   const { newsletterId } = event
   if (newsletterId !== null && newsletterId.length > 0) {
     try {
-      const newsletter = await getNewsletterData(newsletterId as string)
+      const newsletter = await getNewsletterData(newsletterId)
       if (newsletter == null) {
         metrics.addMetric('NewsletterNotFound', MetricUnits.Count, 1)
         return null
@@ -51,18 +51,18 @@ const getNewsletterData = async (newsletterId: string): Promise<Newsletter | nul
   return (result.Item != null) ? unmarshall(result.Item) as Newsletter : null
 }
 
-const getNewsletterSubscriptionsData = async (subscriptionIds: string[]): Promise<NewsFeedSubscription[]> => {
+const getNewsletterSubscriptionsData = async (subscriptionIds: string[]): Promise<DataFeedSubscription[]> => {
   logger.debug('Getting newsletter subscriptions', { subscriptionIds })
   metrics.addMetric('SubscriptionsForNewsletterLookups', MetricUnits.Count, subscriptionIds.length)
   try {
-    const subscriptions: NewsFeedSubscription[] = []
+    const subscriptions: DataFeedSubscription[] = []
     for (const subscriptionId of subscriptionIds) {
       const result = await dynamodb.send(new GetItemCommand({
         TableName: NEWS_SUBSCRIPTION_TABLE,
         Key: marshall({ subscriptionId, compoundSortKey: 'subscription' })
       }))
       if (result.Item != null) {
-        subscriptions.push(unmarshall(result.Item) as NewsFeedSubscription)
+        subscriptions.push(unmarshall(result.Item) as DataFeedSubscription)
       }
     }
     return subscriptions

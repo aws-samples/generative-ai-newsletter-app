@@ -3,7 +3,7 @@ import { Newsletter, Newsletters } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
 import { Button, ButtonDropdown, ButtonDropdownProps, Header, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
-import { NewsFeedsTableColumnDefinition } from "./definitions";
+import { NewslettersTableColumnDefinition } from "./definitions";
 import { useNavigate } from "react-router-dom";
 
 export interface NewsFeedTableProps {
@@ -52,7 +52,7 @@ export default function NewslettersTable() {
 
     return (<>
         <Table
-            columnDefinitions={NewsFeedsTableColumnDefinition}
+            columnDefinitions={NewslettersTableColumnDefinition}
             items={newsFeeds?.newsletters}
             loadingText="Loading"
             loading={loadingNewsletters}

@@ -1,20 +1,20 @@
 import { Header, NonCancelableCustomEvent, Pagination, PaginationProps, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { NewsFeedSubscription } from "../../../API";
+import { DataFeedSubscription } from "../../../API";
 import { AppContext } from "../../../common/app-context";
 import { ApiClient } from "../../../common/api";
-import { NewsletterWizardNewsFeedsTableColumnDefinition, NewsletterWizardNewsFeedsTableColumnDisplay } from "../definitions";
+import { NewsletterWizardDataFeedsTableColumnDefinition, NewsletterWizardNewsFeedsTableColumnDisplay } from "../definitions";
 
 export interface NewsletterNewsFeedFormProps {
-    selectedSubscriptions: NewsFeedSubscription[]
-    setSelectedSubscriptions: (subscriptions: NewsFeedSubscription[]) => void
+    selectedSubscriptions: DataFeedSubscription[]
+    setSelectedSubscriptions: (subscriptions: DataFeedSubscription[]) => void
 }
 
-export default function NewsletterNewsFeedForm(props: NewsletterNewsFeedFormProps) {
+export default function NewsletterDataFeedsSelectionForm(props: NewsletterNewsFeedFormProps) {
     const { selectedSubscriptions, setSelectedSubscriptions } = props
     const appContext = useContext(AppContext)
-    const [feedSubscriptions, setFeedSubscriptions] = useState<NewsFeedSubscription[]>([])
-    const [allNewsFeedSubscriptionsLoaded, setAllNewsFeedSubscriptionsLoaded] = useState<NewsFeedSubscription[]>([])
+    const [feedSubscriptions, setFeedSubscriptions] = useState<DataFeedSubscription[]>([])
+    const [allNewsFeedSubscriptionsLoaded, setAllNewsFeedSubscriptionsLoaded] = useState<DataFeedSubscription[]>([])
     const [nextFeedToken, setNextFeedToken] = useState<string>()
     const [nextNextFeedToken, setNextNextFeedToken] = useState<string | null>()
     const [previousFeedTokens, setPreviousFeedTokens] = useState<string[]>([])
@@ -27,14 +27,14 @@ export default function NewsletterNewsFeedForm(props: NewsletterNewsFeedFormProp
         async () => {
             if (!appContext) { return }
             const apiClient = new ApiClient(appContext)
-            const results = await apiClient.newsFeeds.listNewsFeeds({
+            const results = await apiClient.dataFeeds.listDataFeeds({
                 nextToken: nextFeedToken,
                 limit: resultsLimit
             })
-            setNextNextFeedToken(results.data.getNewsFeedSubscriptions.nextToken)
-            if (results?.data?.getNewsFeedSubscriptions?.subscriptions !== null) {
-                setFeedSubscriptions([...results.data.getNewsFeedSubscriptions.subscriptions as NewsFeedSubscription[]])
-                setAllNewsFeedSubscriptionsLoaded([...allNewsFeedSubscriptionsLoaded, ...results.data.getNewsFeedSubscriptions.subscriptions as NewsFeedSubscription[]])
+            setNextNextFeedToken(results.data.getDataFeedSubscriptions.nextToken)
+            if (results?.data?.getDataFeedSubscriptions?.subscriptions !== null) {
+                setFeedSubscriptions([...results.data.getDataFeedSubscriptions.subscriptions as DataFeedSubscription[]])
+                setAllNewsFeedSubscriptionsLoaded([...allNewsFeedSubscriptionsLoaded, ...results.data.getDataFeedSubscriptions.subscriptions as DataFeedSubscription[]])
             }
             setLoading(false)
         }, [appContext, nextFeedToken, resultsLimit, allNewsFeedSubscriptionsLoaded, setAllNewsFeedSubscriptionsLoaded, setFeedSubscriptions, setNextNextFeedToken, setLoading])
@@ -101,7 +101,7 @@ export default function NewsletterNewsFeedForm(props: NewsletterNewsFeedFormProp
                     />}
                 ></Header>
             }
-            columnDefinitions={NewsletterWizardNewsFeedsTableColumnDefinition}
+            columnDefinitions={NewsletterWizardDataFeedsTableColumnDefinition}
             columnDisplay={NewsletterWizardNewsFeedsTableColumnDisplay}
         />
     )

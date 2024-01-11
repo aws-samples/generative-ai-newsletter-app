@@ -98,18 +98,18 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [updateNewsletterResolverFunction]
     })
 
-    const getNewsFeedSubscriptionsResolverFunction = new AppsyncFunction(this, 'GetNewsFeedSubscriptionsResolverFunction', {
-      name: 'getNewsFeedSubscriptions',
+    const getDataFeedSubscriptionsResolverFunction = new AppsyncFunction(this, 'GetDataFeedSubscriptionsResolverFunction', {
+      name: 'getDataFeedSubscriptions',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsFeedSubscriptions.js')),
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedSubscriptions.js')),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    new Resolver(this, 'GetNewsFeedSubscriptionsResolver', {
+    new Resolver(this, 'GetDataFeedSubscriptionsResolver', {
       api,
       typeName: 'Query',
-      fieldName: 'getNewsFeedSubscriptions',
+      fieldName: 'getDataFeedSubscriptions',
       code: Code.fromInline(`
         export function request(ctx) {
         return {};
@@ -120,21 +120,21 @@ export class ApiResolvers extends Construct {
         }
         `),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsFeedSubscriptionsResolverFunction]
+      pipelineConfig: [getDataFeedSubscriptionsResolverFunction]
     })
 
-    const getNewsFeedSubscriptionResolverFunction = new AppsyncFunction(this, 'GetNewsFeedSubscriptionResolverFunction', {
-      name: 'getNewsFeedSubscription',
+    const getDataFeedSubscriptionResolverFunction = new AppsyncFunction(this, 'GetDataFeedSubscriptionResolverFunction', {
+      name: 'getDataFeedSubscription',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsFeedSubscription.js')),
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedSubscription.js')),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    new Resolver(this, 'GetNewsFeedSubscriptionResolver', {
+    new Resolver(this, 'GetDataFeedSubscriptionResolver', {
       api,
       typeName: 'Query',
-      fieldName: 'getNewsFeedSubscription',
+      fieldName: 'getDataFeedSubscription',
       code: Code.fromInline(`
         export function request(ctx) {
         return {};
@@ -145,21 +145,48 @@ export class ApiResolvers extends Construct {
         }
         `),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsFeedSubscriptionResolverFunction]
+      pipelineConfig: [getDataFeedSubscriptionResolverFunction]
     })
 
-    const getNewsFeedArticlesResolverFunction = new AppsyncFunction(this, 'GetNewsFeedArticlesResolverFunction', {
-      name: 'getNewsFeedArticles',
+    const updateDataFeedResolverFunction = new AppsyncFunction(this, 'UpdateDataFeedResolverFunction', {
+      name: 'updateDataFeed',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsFeedArticles.js')),
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/updateDataFeed.js')),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    new Resolver(this, 'GetNewsFeedArticlesResolver', {
+    new Resolver(this, 'UpdatDataFeedResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'updateDataFeed',
+      code: Code.fromInline(`
+      export function request(ctx) {
+        return {
+            input: ctx.args.input,
+            subscriptionId: ctx.args.subscriptionId
+        }
+      }
+    
+      export function response(ctx) {
+        return true;
+      }`),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [updateDataFeedResolverFunction]
+    })
+
+    const getDataFeedArticlesResolverFunction = new AppsyncFunction(this, 'GetDataFeedArticlesResolverFunction', {
+      name: 'getDataFeedArticles',
+      api,
+      dataSource: newsSubscriptionTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedArticles.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'GetDataFeedArticlesResolver', {
       api,
       typeName: 'Query',
-      fieldName: 'getNewsFeedArticles',
+      fieldName: 'getDataFeedArticles',
       code: Code.fromInline(`
         export function request(ctx) {
         return {};
@@ -170,22 +197,22 @@ export class ApiResolvers extends Construct {
       }
       `),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsFeedArticlesResolverFunction]
+      pipelineConfig: [getDataFeedArticlesResolverFunction]
     })
 
-    const newsFeedSubscriberLambdaSource = new LambdaDataSource(this, 'NewsFeedSubscriberLambdaSource', {
+    const dataFeedSubscriberLambdaSource = new LambdaDataSource(this, 'DataFeedSubscriberLambdaSource', {
       api,
       lambdaFunction: props.functions.feedSubscriberFunction,
-      name: 'NewsFeedSubscriberLambdaSource'
+      name: 'DataFeedSubscriberLambdaSource'
     })
 
-    props.functions.feedSubscriberFunction.grantInvoke(newsFeedSubscriberLambdaSource)
+    props.functions.feedSubscriberFunction.grantInvoke(dataFeedSubscriberLambdaSource)
 
-    new Resolver(this, 'NewsFeedSubscriberResolver', {
+    new Resolver(this, 'DataFeedSubscriberResolver', {
       api,
-      dataSource: newsFeedSubscriberLambdaSource,
+      dataSource: dataFeedSubscriberLambdaSource,
       typeName: 'Mutation',
-      fieldName: 'createNewsFeedSubscription',
+      fieldName: 'createDataFeedSubscription',
       code: Code.fromInline(`
       export function request(ctx) {
         const { url, discoverable } = ctx.args.input

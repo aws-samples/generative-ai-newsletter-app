@@ -2,29 +2,29 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
-export type CreateNewsFeedSubscription = {
+export type CreateDataFeedSubscriptionInput = {
   url: string,
-  discoverable: boolean,
+  enabled: boolean,
 };
 
-export type NewsFeedSubscription = {
-  __typename: "NewsFeedSubscription",
+export type DataFeedSubscription = {
+  __typename: "DataFeedSubscription",
   subscriptionId: string,
   url: string,
-  feedType: NewsFeedType,
+  feedType: DataFeedType,
   createdAt?: string | null,
   enabled?: boolean | null,
-  articles?:  Array<NewsFeedArticle | null > | null,
+  articles?:  Array<DataFeedArticle | null > | null,
 };
 
-export enum NewsFeedType {
+export enum DataFeedType {
   RSS = "RSS",
   ATOM = "ATOM",
 }
 
 
-export type NewsFeedArticle = {
-  __typename: "NewsFeedArticle",
+export type DataFeedArticle = {
+  __typename: "DataFeedArticle",
   subscriptionId: string,
   articleId: string,
   url: string,
@@ -47,7 +47,7 @@ export type Newsletter = {
   title: string,
   numberOfDaysToInclude: number,
   subscriptionIds?: Array< string > | null,
-  subscriptions?:  Array<NewsFeedSubscription | null > | null,
+  subscriptions?:  Array<DataFeedSubscription | null > | null,
   discoverable?: boolean | null,
   shared?: boolean | null,
   scheduleId: string,
@@ -66,6 +66,11 @@ export type UpdateNewsletterInput = {
   shared?: boolean | null,
 };
 
+export type UpdateDataFeedSubscriptionInput = {
+  url?: string | null,
+  enabled?: boolean | null,
+};
+
 export type GetNewslettersInput = {
   nextToken?: string | null,
 };
@@ -80,25 +85,24 @@ export type GetNewsletterInput = {
   newsletterId: string,
 };
 
-export type NewsFeedSubscriptions = {
-  __typename: "NewsFeedSubscriptions",
-  subscriptions?:  Array<NewsFeedSubscription | null > | null,
+export type DataFeedSubscriptions = {
+  __typename: "DataFeedSubscriptions",
+  subscriptions?:  Array<DataFeedSubscription | null > | null,
   nextToken?: string | null,
   limit?: number | null,
 };
 
-export type GetNewsFeedSubscriptionInput = {
+export type GetDataFeedSubscriptionInput = {
   subscriptionId: string,
 };
 
-export type NewsFeedArticlesInput = {
+export type DataFeedArticlesInput = {
   subscriptionId?: string | null,
-  nextToken?: string | null,
 };
 
-export type NewsFeedArticles = {
-  __typename: "NewsFeedArticles",
-  newsFeedArticles?:  Array<NewsFeedArticle | null > | null,
+export type DataFeedArticles = {
+  __typename: "DataFeedArticles",
+  dataFeedArticles?:  Array<DataFeedArticle | null > | null,
   nextToken?: string | null,
 };
 
@@ -126,20 +130,20 @@ export type NewsletterEmails = {
   nextToken?: string | null,
 };
 
-export type CreateNewsFeedSubscriptionMutationVariables = {
-  input?: CreateNewsFeedSubscription | null,
+export type CreateDataFeedSubscriptionMutationVariables = {
+  input: CreateDataFeedSubscriptionInput,
 };
 
-export type CreateNewsFeedSubscriptionMutation = {
-  createNewsFeedSubscription?:  {
-    __typename: "NewsFeedSubscription",
+export type CreateDataFeedSubscriptionMutation = {
+  createDataFeedSubscription?:  {
+    __typename: "DataFeedSubscription",
     subscriptionId: string,
     url: string,
-    feedType: NewsFeedType,
+    feedType: DataFeedType,
     createdAt?: string | null,
     enabled?: boolean | null,
     articles?:  Array< {
-      __typename: "NewsFeedArticle",
+      __typename: "DataFeedArticle",
       subscriptionId: string,
       articleId: string,
       url: string,
@@ -151,7 +155,7 @@ export type CreateNewsFeedSubscriptionMutation = {
 };
 
 export type CreateNewsletterMutationVariables = {
-  input?: CreateNewsletter | null,
+  input: CreateNewsletter,
 };
 
 export type CreateNewsletterMutation = {
@@ -162,10 +166,10 @@ export type CreateNewsletterMutation = {
     numberOfDaysToInclude: number,
     subscriptionIds?: Array< string > | null,
     subscriptions?:  Array< {
-      __typename: "NewsFeedSubscription",
+      __typename: "DataFeedSubscription",
       subscriptionId: string,
       url: string,
-      feedType: NewsFeedType,
+      feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
     } | null > | null,
@@ -177,7 +181,7 @@ export type CreateNewsletterMutation = {
 };
 
 export type SubscribeToNewsletterMutationVariables = {
-  input?: SubscribeToNewsletterInput | null,
+  input: SubscribeToNewsletterInput,
 };
 
 export type SubscribeToNewsletterMutation = {
@@ -191,6 +195,15 @@ export type UpdateNewsletterMutationVariables = {
 
 export type UpdateNewsletterMutation = {
   updateNewsletter?: boolean | null,
+};
+
+export type UpdateDataFeedMutationVariables = {
+  input: UpdateDataFeedSubscriptionInput,
+  subscriptionId: string,
+};
+
+export type UpdateDataFeedMutation = {
+  updateDataFeed?: boolean | null,
 };
 
 export type GetNewslettersQueryVariables = {
@@ -227,10 +240,10 @@ export type GetNewsletterQuery = {
     numberOfDaysToInclude: number,
     subscriptionIds?: Array< string > | null,
     subscriptions?:  Array< {
-      __typename: "NewsFeedSubscription",
+      __typename: "DataFeedSubscription",
       subscriptionId: string,
       url: string,
-      feedType: NewsFeedType,
+      feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
     } | null > | null,
@@ -241,19 +254,19 @@ export type GetNewsletterQuery = {
   },
 };
 
-export type GetNewsFeedSubscriptionsQueryVariables = {
+export type GetDataFeedSubscriptionsQueryVariables = {
   nextToken?: string | null,
   limit?: number | null,
 };
 
-export type GetNewsFeedSubscriptionsQuery = {
-  getNewsFeedSubscriptions:  {
-    __typename: "NewsFeedSubscriptions",
+export type GetDataFeedSubscriptionsQuery = {
+  getDataFeedSubscriptions:  {
+    __typename: "DataFeedSubscriptions",
     subscriptions?:  Array< {
-      __typename: "NewsFeedSubscription",
+      __typename: "DataFeedSubscription",
       subscriptionId: string,
       url: string,
-      feedType: NewsFeedType,
+      feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
     } | null > | null,
@@ -262,20 +275,20 @@ export type GetNewsFeedSubscriptionsQuery = {
   },
 };
 
-export type GetNewsFeedSubscriptionQueryVariables = {
-  input?: GetNewsFeedSubscriptionInput | null,
+export type GetDataFeedSubscriptionQueryVariables = {
+  input?: GetDataFeedSubscriptionInput | null,
 };
 
-export type GetNewsFeedSubscriptionQuery = {
-  getNewsFeedSubscription?:  {
-    __typename: "NewsFeedSubscription",
+export type GetDataFeedSubscriptionQuery = {
+  getDataFeedSubscription?:  {
+    __typename: "DataFeedSubscription",
     subscriptionId: string,
     url: string,
-    feedType: NewsFeedType,
+    feedType: DataFeedType,
     createdAt?: string | null,
     enabled?: boolean | null,
     articles?:  Array< {
-      __typename: "NewsFeedArticle",
+      __typename: "DataFeedArticle",
       subscriptionId: string,
       articleId: string,
       url: string,
@@ -286,15 +299,17 @@ export type GetNewsFeedSubscriptionQuery = {
   } | null,
 };
 
-export type GetNewsFeedArticlesQueryVariables = {
-  input?: NewsFeedArticlesInput | null,
+export type GetDataFeedArticlesQueryVariables = {
+  input?: DataFeedArticlesInput | null,
+  nextToken?: string | null,
+  limit?: number | null,
 };
 
-export type GetNewsFeedArticlesQuery = {
-  getNewsFeedArticles:  {
-    __typename: "NewsFeedArticles",
-    newsFeedArticles?:  Array< {
-      __typename: "NewsFeedArticle",
+export type GetDataFeedArticlesQuery = {
+  getDataFeedArticles?:  {
+    __typename: "DataFeedArticles",
+    dataFeedArticles?:  Array< {
+      __typename: "DataFeedArticle",
       subscriptionId: string,
       articleId: string,
       url: string,
@@ -303,7 +318,7 @@ export type GetNewsFeedArticlesQuery = {
       title: string,
     } | null > | null,
     nextToken?: string | null,
-  },
+  } | null,
 };
 
 export type GetNewsletterEmailQueryVariables = {

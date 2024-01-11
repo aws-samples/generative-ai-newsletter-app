@@ -9,6 +9,9 @@ import NewslettersDashboard from "./pages/newsletters/dashboard";
 import CreateNewsletter from "./pages/newsletters/create";
 import EditNewsletter from "./pages/newsletters/edit";
 import NewsletterDetail from "./pages/newsletters/detail";
+import DataFeedsDashboard from "./pages/data-feeds/dashboard";
+import CreateDataFeed from "./pages/data-feeds/create";
+import DataFeedDetails from "./pages/data-feeds/detail";
 function App() {
   return (
     <div style={{ height: "100%" }}>
@@ -18,10 +21,15 @@ function App() {
         <div>
           <Routes>
             <Route index path="/" element={<Welcome />} />
-            <Route path="/newsletters" element={<NewslettersDashboard />}/>
+            <Route path="/newsletters" element={<NewslettersDashboard />} />
             <Route path="/newsletters/create" element={<CreateNewsletter />} />
             <Route path="/newsletters/:newsletterId" element={<NewsletterDetail />} />
-            <Route path="/newsletters/:newsletterId/edit" element={<EditNewsletter />} />"
+            <Route path="/newsletters/:newsletterId/edit" element={<EditNewsletter />} />
+            <Route path="/feeds" element={<DataFeedsDashboard />} />
+            <Route path="/feeds/create" element={<CreateDataFeed />} />
+            <Route path="/feeds/:subscriptionId" element={<DataFeedDetails />} />
+            <Route path="/feeds/:subscriptionId/edit" element={<CreateDataFeed />}/>
+
           </Routes>
         </div>
       </BrowserRouter>

@@ -15,18 +15,34 @@ export default function NavigationPanel() {
   const [items] = useState<SideNavigationProps.Item[]>(() => {
     return [
       {
-        "type": "section",
-        "text": "Newsletters",
-        "items": [
+        type: "section",
+        text: "Newsletters",
+        items: [
           {
-            "type": "link",
-            "text": "Newsletters Dashboard",
-            "href": "/newsletters"
+            type: "link",
+            text: "Newsletters Dashboard",
+            href: "/newsletters"
           },
           {
-            "type": "link",
-            "text": "Create Newsletter",
-            "href": "/newsletters/create"
+            type: "link",
+            text: "Create Newsletter",
+            href: "/newsletters/create"
+          }
+        ]
+      },
+      {
+        type: "section",
+        text: "Data Feeds",
+        items: [
+          {
+            type: 'link',
+            text: 'Data Feeds Dashboard',
+            href: '/feeds'
+          },
+          {
+            type: 'link',
+            text: 'Create Data Feed',
+            href: '/feeds/create'
           }
         ]
       }

@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
-import { NewsFeedSubscription, Newsletter } from "../../API";
+import { DataFeedSubscription, Newsletter } from "../../API";
 import BaseAppLayout from "../../components/base-app-layout";
 import { BreadcrumbGroup, Container, ContentLayout, StatusIndicator } from "@cloudscape-design/components";
 import useOnFollow from "../../common/hooks/use-on-follow";
@@ -56,7 +56,7 @@ export default function NewsletterDetail() {
                         <NewsletterReviewForm
                             discoverable={newsletter?.discoverable ?? false}
                             numberOfDaysToInclude={newsletter.numberOfDaysToInclude}
-                            selectedSubscriptions={newsletter.subscriptions as NewsFeedSubscription[]}
+                            selectedSubscriptions={newsletter.subscriptions as DataFeedSubscription[]}
                             shared={newsletter.shared ?? false}
                             title={newsletter.title}
                             formTitle="Newsletter Details"

@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import { type CDKConfig } from './types'
 import { bigHeader, formatText } from './consts'
 import prompt from 'prompt-sync'
+import { CONFIG_VERSION } from './config-version'
 const cdkContext = './cdk.context.json'
 
 const prompter = prompt({ sigint: true })
@@ -61,7 +62,8 @@ if (requirementsMet.toLowerCase() !== 'y') {
 if (['UPDATE', 'NEW'].includes(configStyle)) {
   if (configStyle === 'NEW') {
     config = {
-      pinpointIdentity: ''
+      pinpointIdentity: '',
+      configVersion: CONFIG_VERSION
     }
   }
   if (config !== null) {

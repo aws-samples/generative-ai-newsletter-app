@@ -16,6 +16,7 @@
         "react"
     ],
     "rules": {
-        "no-new": "off"
+        "no-new": "off",
+        "no-fallthrough": "off"
     }
 }

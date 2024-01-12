@@ -16,6 +16,7 @@ dist-ui/
 cdk.out
 .vscode/settings.json
 
+cdk.context.json
 
 misc/
 

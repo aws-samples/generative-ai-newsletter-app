@@ -27,7 +27,9 @@ export default function NewslettersDashboard() {
                     header={
                         <Header
                             description="Create Newsletters or find an existing newsletter to subscribe to or update."
-                        ><h1>GenAI Powered Newsletters</h1></Header>
+                        ><h1>GenAI Powered Newsletters</h1>
+                        
+                        </Header>
                     }>
                     <Container>
                         <NewslettersTable />

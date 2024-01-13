@@ -11,19 +11,19 @@ export default function AppConfigured() {
     const [config, setConfig] = useState<AppConfig | null>(null)
     const [error, setError] = useState<boolean | null>(null);
     useEffect(() => {
-            (async () => {
-                try {
-                    const result = await fetch('/aws-exports.json')
-                    const awsExports = await result.json() as AppConfig | null
-                    Amplify.configure({
-                        ...awsExports,
-                    })
-                    setConfig(awsExports)
-                } catch (e) {
-                    setError(true)
-                    console.error(e)
-                }
-            })()
+        (async () => {
+            try {
+                const result = await fetch('/aws-exports.json')
+                const awsExports = await result.json() as AppConfig | null
+                Amplify.configure({
+                    ...awsExports,
+                })
+                setConfig(awsExports)
+            } catch (e) {
+                setError(true)
+                console.error(e)
+            }
+        })()
     }, [])
 
     if (!config) {

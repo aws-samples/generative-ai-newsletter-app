@@ -67,7 +67,7 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptio
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'newsletter#' + newsletterId }
+      compoundSortKey: { S: 'newsletter' }
     }
   }
   const command = new GetItemCommand(input)
@@ -94,11 +94,11 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
       TableName: NEWS_SUBSCRIPTION_TABLE,
       IndexName: NEWS_SUBSCRIPTION_TABLE_LSI,
       KeyConditionExpression: '#subscriptionId = :subscriptionId and #createdAt > :startDate',
-      FilterExpression: '#type = :type',
+      FilterExpression: 'begins_with(#type,:type)',
       ExpressionAttributeNames: {
         '#subscriptionId': 'subscriptionId',
         '#createdAt': 'createdAt',
-        '#type': 'type'
+        '#type': 'compoundSortKey'
       },
       ExpressionAttributeValues: {
         ':subscriptionId': { S: subscriptionId },

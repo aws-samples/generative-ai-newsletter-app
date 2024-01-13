@@ -24,6 +24,7 @@ export class NewsletterGenerator extends Construct {
   public readonly userSubscriberFunction: NodejsFunction
   public readonly newsletterScheduleGroup: CfnScheduleGroup
   public readonly getNewsletterFunction: NodejsFunction
+  public readonly emailBucket: Bucket
   private readonly newsletterScheduleGroupName: string = 'NewsletterSubscriptions'
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
@@ -196,6 +197,7 @@ export class NewsletterGenerator extends Construct {
     emailBucket.grantRead(newsletterCampaignCreatorFunction)
     newsletterTable.grantReadWriteData(newsletterCampaignCreatorFunction)
 
+    this.emailBucket = emailBucket
     this.newsletterTable = newsletterTable
     this.newsletterScheduleGroup = newsletterScheduleGroup
     this.createNewsletterFunction = newsletterCreatorFunction

@@ -1,21 +1,28 @@
-import { Aws, DockerImage, RemovalPolicy } from 'aws-cdk-lib'
-import { CloudFrontWebDistribution, OriginAccessIdentity } from 'aws-cdk-lib/aws-cloudfront'
+import { Aws, DockerImage, Duration, RemovalPolicy } from 'aws-cdk-lib'
+import { CloudFrontAllowedMethods, CloudFrontWebDistribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
+import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
+import { type IdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 interface UserInterfaceProps {
   userPoolClientId: string
-  userPoolId: string
-  identityPoolId: string
+  userPool: IUserPool
+  identityPool: IdentityPool
   graphqlApiUrl: string
   graphqlApiKey: string | undefined
+  emailBucket: Bucket
 }
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
+    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl } = props
+    const { identityPoolId } = identityPool
+    const { userPoolId } = userPool
     super(scope, id)
 
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
@@ -40,6 +47,31 @@ export class UserInterface extends Construct {
             s3BucketSource: websiteBucket,
             originAccessIdentity
           }
+        },
+        {
+          behaviors: [{
+            pathPattern: '/newsletter-content/*',
+            allowedMethods: CloudFrontAllowedMethods.GET_HEAD,
+            viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            defaultTtl: Duration.seconds(0),
+            forwardedValues: {
+              queryString: true,
+              headers: [
+                'Referer',
+                'Origin',
+                'Authorization',
+                'Content-Type',
+                'x-forwarded-user',
+                'Access-Control-Request-Headers',
+                'Access-Control-Request-Method'
+              ]
+            }
+          }],
+          s3OriginSource: {
+            s3BucketSource: emailBucket,
+            originAccessIdentity,
+            originPath: '/NEWSLETTERS/'
+          }
         }
       ],
       errorConfigurations: [
@@ -52,29 +84,43 @@ export class UserInterface extends Construct {
       ]
     })
 
+    identityPool.authenticatedRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['s3:GetObject'],
+        resources: [`${emailBucket.bucketArn}/NEWSLETTERS/`]
+      })
+    )
+
     const awsExports = s3deploy.Source.jsonData('aws-exports.json', {
       aws_project_region: Aws.REGION,
       aws_cognito_region: Aws.REGION,
-      aws_user_pools_id: props.userPoolId,
-      aws_user_pools_web_client_id: props.userPoolClientId,
-      aws_cognito_identity_pool_id: props.identityPoolId,
+      aws_user_pools_id: userPool.userPoolId,
+      aws_user_pools_web_client_id: userPoolClientId,
+      aws_cognito_identity_pool_id: identityPoolId,
       Auth: {
         region: Aws.REGION,
-        userPoolId: props.userPoolId,
-        userPoolWebClientId: props.userPoolClientId,
-        IdentityPoolId: props.identityPoolId
+        userPoolId,
+        userPoolWebClientId: userPoolClientId,
+        identityPoolId
       },
       API: {
         GraphQL: {
-          endpoints: props.graphqlApiUrl,
+          endpoints: graphqlApiUrl,
           region: Aws.REGION,
           defaultAuthMode: 'userPool'
         }
       },
-      aws_appsync_graphqlEndpoint: props.graphqlApiUrl,
+      Storage: {
+        AWSS3: {
+          bucket: emailBucket.bucketName,
+          region: Aws.REGION
+        }
+      },
+      aws_appsync_graphqlEndpoint: graphqlApiUrl,
       aws_appsync_region: Aws.REGION,
       aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-      aws_appsync_apiKey: props.graphqlApiKey
+      aws_appsync_apiKey: graphqlApiKey
     })
 
     const frontEndAsset = s3deploy.Source.asset(appPath, {

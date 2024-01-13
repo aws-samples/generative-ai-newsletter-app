@@ -1,6 +1,6 @@
 import { RemovalPolicy } from 'aws-cdk-lib'
 import { IdentityPool, UserPoolAuthenticationProvider } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { UserPool } from 'aws-cdk-lib/aws-cognito'
+import { type IUserPool, UserPool } from 'aws-cdk-lib/aws-cognito'
 import { Construct } from 'constructs'
 
 interface AuthenticationProps {
@@ -11,8 +11,8 @@ interface AuthenticationProps {
 export class Authentication extends Construct {
   public readonly userPoolId: string
   public readonly userPoolClientId: string
-  public readonly identityPoolId: string
-  private readonly userPool: UserPool
+  public readonly userPool: IUserPool
+  public readonly identityPool: IdentityPool
   constructor (scope: Construct, id: string, props?: AuthenticationProps) {
     super(scope, id)
 
@@ -43,11 +43,13 @@ export class Authentication extends Construct {
           ]
         }
       })
+      this.userPool = userPool
       this.userPoolClientId = userPoolClient.userPoolClientId
-      this.identityPoolId = identityPool.identityPoolId
+      this.identityPool = identityPool
     } else {
       const userPool = UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId)
       this.userPoolId = userPool.userPoolId
+      this.userPool = userPool
     }
   }
 }

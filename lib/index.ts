@@ -23,6 +23,7 @@ export class GenAINewsletter extends Stack {
       userPoolId: authentication.userPoolId,
       newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
       newsletterTable: newsletterGenerator.newsletterTable,
+      emailBucket: newsletterGenerator.emailBucket,
       functions: {
         createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
@@ -32,9 +33,10 @@ export class GenAINewsletter extends Stack {
     })
 
     new UserInterface(this, 'UserInterface', {
-      userPoolId: authentication.userPoolId,
+      userPool: authentication.userPool,
       userPoolClientId: authentication.userPoolClientId,
-      identityPoolId: authentication.identityPoolId,
+      identityPool: authentication.identityPool,
+      emailBucket: newsletterGenerator.emailBucket,
       // graphqlApi: apiStack.graphqlApi,
       graphqlApiUrl: api.graphqlApiUrl,
       graphqlApiKey: api.graphqlApiKey

@@ -6,11 +6,13 @@ import { ApiResolvers } from './resolvers'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
 import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { type Bucket } from 'aws-cdk-lib/aws-s3'
 
 export interface ApiProps {
   userPoolId: string
   newsSubscriptionTable: Table
   newsletterTable: Table
+  emailBucket: Bucket
   functions: {
     createNewsletterFunction: NodejsFunction
     userSubscriberFunction: NodejsFunction

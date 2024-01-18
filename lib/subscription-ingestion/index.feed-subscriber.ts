@@ -23,6 +23,7 @@ const INGESTION_STEP_FUNCTION = process.env.INGESTION_STEP_FUNCTION
 interface FeedSubscriberInput {
   url: string
   discoverable: boolean
+  owner: string
 }
 
 interface SubscriptionData {
@@ -30,12 +31,13 @@ interface SubscriptionData {
   subscriptionId: string
   feedType: 'RSS' | 'ATOM'
   discoverable: boolean
+  owner: string
 }
 
 const lambdaHander = async (event: FeedSubscriberInput): Promise<SubscriptionData> => {
   logger.debug('Starting Feed Subscriber, input: ' + JSON.stringify(event))
   metrics.addMetric('SubscriberInvocations', MetricUnits.Count, 1)
-  const { url, discoverable = false } = event
+  const { url, discoverable = false, owner } = event
   try {
     const response = await axios.get(url)
     const $ = cheerio.load(response.data as string, { xmlMode: true })
@@ -54,7 +56,7 @@ const lambdaHander = async (event: FeedSubscriberInput): Promise<SubscriptionDat
       metrics.addMetric('InvalidFeedFormat', MetricUnits.Count, 1)
       throw Error('Unknown feed format. The URL provided must be a URL to a RSS feed or ATOM feed.')
     }
-    const subscriptionData: SubscriptionData = { url, subscriptionId, feedType, discoverable }
+    const subscriptionData: SubscriptionData = { url, subscriptionId, feedType, discoverable, owner }
     await storeSubscriptionData(subscriptionData)
     await startIngestionStepFunction(subscriptionId)
     return subscriptionData
@@ -75,7 +77,8 @@ const storeSubscriptionData = async (subscriptionData: SubscriptionData): Promis
       feedType: subscriptionData.feedType,
       createdAt: new Date().toISOString(),
       compoundSortKey: 'subscription',
-      enabled: true
+      enabled: true,
+      owner: subscriptionData.owner
     })
   }
   const command = new PutItemCommand(input)

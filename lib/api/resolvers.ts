@@ -265,11 +265,13 @@ export class ApiResolvers extends Construct {
       code: Code.fromInline(`
       export function request(ctx) {
         const { url, discoverable } = ctx.args.input
+        const { sub } = ctx.identity
         return {
           operation: 'Invoke',
           payload: {
             url: url,
-            discoverable: discoverable
+            discoverable: discoverable,
+            owner: sub
           }
         }
       }
@@ -297,14 +299,18 @@ export class ApiResolvers extends Construct {
       import { util } from '@aws-appsync/utils';
       export function request(ctx) {
         const { title, numberOfDaysToInclude, discoverable, subscriptionIds, shared } = ctx.args.input
+        const { sub } = ctx.identity
         return {
           operation: 'Invoke',
           payload: {
-            title:title, 
-            numberOfDaysToInclude:numberOfDaysToInclude, 
-            discoverable:discoverable, 
-            subscriptionIds:subscriptionIds, 
-            shared:shared
+            input: {
+              title:title, 
+              numberOfDaysToInclude:numberOfDaysToInclude, 
+              discoverable:discoverable, 
+              subscriptionIds:subscriptionIds, 
+              shared:shared
+            },
+            owner: sub            
           }
         }
       }

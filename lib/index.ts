@@ -1,4 +1,4 @@
-import { Stack } from 'aws-cdk-lib'
+import { Stack, type StackProps } from 'aws-cdk-lib'
 import { NewsSubscriptionIngestion, newsSubscriptionTableLSI } from './subscription-ingestion'
 import { NewsletterGenerator } from './newsletter-generator'
 import { Authentication } from './authentication'
@@ -7,8 +7,8 @@ import { UserInterface } from './user-interface'
 import { type Construct } from 'constructs'
 
 export class GenAINewsletter extends Stack {
-  constructor (scope: Construct, id: string) {
-    super(scope, id)
+  constructor (scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props)
     const authentication = new Authentication(this, 'AuthenticationStack')
 
     const newsSubscriptionIngestion = new NewsSubscriptionIngestion(this, 'NewsletterIngestionStack')

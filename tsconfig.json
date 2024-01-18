@@ -38,7 +38,8 @@
     "node_modules",
     "cdk.out",
     "lib/user-interface/genai-newsletter-ui", 
-    "lib/api/resolverFunctions/*.js"
+    "lib/api/resolverFunctions/*.js",
+    "lib/user-interface/newsletter-article-edge-router/*"
   ],
   "references": [
     {"path": "lib/newsletter-generator/react-email-generator"},

@@ -51,7 +51,7 @@ const getEmailContentsPath = async (newsletterId: string, emailId: string): Prom
   if (response.Item?.createdAt?.S !== undefined) {
     logger.debug('Email details found', { response })
     const date = new Date(response.Item.createdAt.S)
-    const prefix = `NEWSLETTERS/${date.getUTCFullYear()}/${date.getUTCMonth() + 1}/${date.getUTCDate()}`
+    const prefix = `newsletter-content/${date.getUTCFullYear()}/${date.getUTCMonth() + 1}/${date.getUTCDate()}`
     return prefix
   } else {
     logger.error('Email details not found', { response })

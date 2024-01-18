@@ -36,8 +36,11 @@ export class UserInterface extends Construct {
       websiteErrorDocument: 'index.html'
     })
 
-    const originAccessIdentity = new OriginAccessIdentity(this, 'S3Origin')
-    websiteBucket.grantRead(originAccessIdentity)
+    const websiteOAI = new OriginAccessIdentity(this, 'S3OriginWebsite')
+    websiteBucket.grantRead(websiteOAI)
+
+    const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
+    emailBucket.grantRead(newslettersOAI)
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(this, 'CloudFrontDistribution', {
       originConfigs: [
@@ -45,32 +48,20 @@ export class UserInterface extends Construct {
           behaviors: [{ isDefaultBehavior: true }],
           s3OriginSource: {
             s3BucketSource: websiteBucket,
-            originAccessIdentity
+            originAccessIdentity: websiteOAI
           }
         },
         {
           behaviors: [{
-            pathPattern: '/newsletter-content/*',
+
+            pathPattern: 'newsletter-content/*',
             allowedMethods: CloudFrontAllowedMethods.GET_HEAD,
             viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            defaultTtl: Duration.seconds(0),
-            forwardedValues: {
-              queryString: true,
-              headers: [
-                'Referer',
-                'Origin',
-                'Authorization',
-                'Content-Type',
-                'x-forwarded-user',
-                'Access-Control-Request-Headers',
-                'Access-Control-Request-Method'
-              ]
-            }
+            defaultTtl: Duration.seconds(0)
           }],
           s3OriginSource: {
             s3BucketSource: emailBucket,
-            originAccessIdentity,
-            originPath: '/NEWSLETTERS/'
+            originAccessIdentity: newslettersOAI
           }
         }
       ],
@@ -111,16 +102,13 @@ export class UserInterface extends Construct {
           defaultAuthMode: 'userPool'
         }
       },
-      Storage: {
-        AWSS3: {
-          bucket: emailBucket.bucketName,
-          region: Aws.REGION
-        }
-      },
       aws_appsync_graphqlEndpoint: graphqlApiUrl,
       aws_appsync_region: Aws.REGION,
       aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-      aws_appsync_apiKey: graphqlApiKey
+      aws_appsync_apiKey: graphqlApiKey,
+      appConfig: {
+        emailBucket: emailBucket.bucketName
+      }
     })
 
     const frontEndAsset = s3deploy.Source.asset(appPath, {

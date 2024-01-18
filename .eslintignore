@@ -1,5 +1,6 @@
 *.d.ts
 
 lib/api/resolverFunctions/*
+lib/user-interface/newsletter-article-edge-router/*
 
 lib/api/API.ts

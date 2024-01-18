@@ -4,6 +4,7 @@ node_modules
 *.d.ts
 *.js
 !lib/api/resolverFunctions/*.js
+!lib/user-interface/newsletter-article-edge-router/*
 
 *.tsbuildinfo
 
@@ -27,3 +28,6 @@ misc/
 lib/user-interface/genai-newsletter-ui/src/aws-exports.json
 lib/user-interface/genai-newsletter-ui/dist/
 lib/user-interface/genai-newsletter-ui/public/aws-exports.json
+
+
+lib/user-interface/genai-newsletter-ui/.env.local

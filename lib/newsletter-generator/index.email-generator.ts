@@ -156,13 +156,14 @@ const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId
   const month = date.getUTCMonth() + 1
   const day = date.getUTCDate()
 
-  const emailKey = `NEWSLETTERS/${year}/${month}/${day}/${emailId}`
+  const emailKey = `newsletter-content/${year}/${month}/${day}/${emailId}`
   const htmlUpload = new Upload({
     client: s3,
     params: {
       Bucket: EMAIL_BUCKET,
       Key: `${emailKey}.html`,
-      Body: Buffer.from(email.html)
+      Body: Buffer.from(email.html),
+      ContentType: 'text/html'
     }
   })
   const textUpload = new Upload({
@@ -170,7 +171,8 @@ const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId
     params: {
       Bucket: EMAIL_BUCKET,
       Key: `${emailKey}.txt`,
-      Body: Buffer.from(email.text)
+      Body: Buffer.from(email.text),
+      ContentType: 'text/plain'
     }
   })
   logger.debug('Starting HTML Upload')

@@ -106,22 +106,23 @@ export type DataFeedArticles = {
   nextToken?: string | null,
 };
 
-export type NewsletterEmailInput = {
+export type GetNewsletterEmailInput = {
   newsletterId: string,
   emailId: string,
 };
 
 export type NewsletterEmail = {
   __typename: "NewsletterEmail",
-  newsletterId: string,
+  newsletterId?: string | null,
   emailId: string,
-  campaignId: string,
+  campaignId?: string | null,
   createdAt: string,
+  htmlPath?: string | null,
+  textPath?: string | null,
 };
 
 export type GetNewsletterEmailsInput = {
   newsletterId: string,
-  nextToken?: string | null,
 };
 
 export type NewsletterEmails = {
@@ -322,21 +323,25 @@ export type GetDataFeedArticlesQuery = {
 };
 
 export type GetNewsletterEmailQueryVariables = {
-  input?: NewsletterEmailInput | null,
+  input?: GetNewsletterEmailInput | null,
 };
 
 export type GetNewsletterEmailQuery = {
   getNewsletterEmail:  {
     __typename: "NewsletterEmail",
-    newsletterId: string,
+    newsletterId?: string | null,
     emailId: string,
-    campaignId: string,
+    campaignId?: string | null,
     createdAt: string,
+    htmlPath?: string | null,
+    textPath?: string | null,
   },
 };
 
 export type GetNewsletterEmailsQueryVariables = {
   input?: GetNewsletterEmailsInput | null,
+  nextToken?: string | null,
+  limit?: number | null,
 };
 
 export type GetNewsletterEmailsQuery = {
@@ -344,10 +349,12 @@ export type GetNewsletterEmailsQuery = {
     __typename: "NewsletterEmails",
     newsletterEmails?:  Array< {
       __typename: "NewsletterEmail",
-      newsletterId: string,
+      newsletterId?: string | null,
       emailId: string,
-      campaignId: string,
+      campaignId?: string | null,
       createdAt: string,
+      htmlPath?: string | null,
+      textPath?: string | null,
     } | null > | null,
     nextToken?: string | null,
   } | null,

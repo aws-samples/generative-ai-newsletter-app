@@ -40,6 +40,55 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getNewslettersResolverFunction]
     })
 
+    const getNewsletterEmailsResolverFunction = new AppsyncFunction(this, 'GetNewsletterEmailsResolverFunction', {
+      name: 'getNewsletterEmails',
+      api,
+      dataSource: newsletterTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterEmails.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'GetNewsletterEmailsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getNewsletterEmails',
+      code: Code.fromInline(`
+          export function request(ctx) {
+            return {};
+            }
+    
+            export function response(ctx) {
+            return ctx.prev.result;
+            }
+            `),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getNewsletterEmailsResolverFunction]
+    })
+
+    const getNewsletterEmailResolverFunction = new AppsyncFunction(this, 'GetNewsletterEmailResolverFunction', {
+      name: 'getNewsletterEmail',
+      api,
+      dataSource: newsletterTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterEmail.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'GetNewsletterEmailResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getNewsletterEmail',
+      code: Code.fromInline(`
+      export function request(ctx) {
+        return {};
+      }
+
+      export function response(ctx) {
+          return ctx.prev.result;
+      }`),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getNewsletterEmailResolverFunction]
+    })
+
     const getNewsletterLambdaSource = new LambdaDataSource(this, 'GetNewsletterLambdaSource', {
       api,
       lambdaFunction: props.functions.getNewsletterFunction,

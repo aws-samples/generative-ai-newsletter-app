@@ -119,12 +119,14 @@ export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
   APITypes.GetDataFeedArticlesQueryVariables,
   APITypes.GetDataFeedArticlesQuery
 >;
-export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input: NewsletterEmailInput) {
+export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input: GetNewsletterEmailInput) {
   getNewsletterEmail(input: $input) {
     newsletterId
     emailId
     campaignId
     createdAt
+    htmlPath
+    textPath
     __typename
   }
 }
@@ -132,13 +134,19 @@ export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input
   APITypes.GetNewsletterEmailQueryVariables,
   APITypes.GetNewsletterEmailQuery
 >;
-export const getNewsletterEmails = /* GraphQL */ `query GetNewsletterEmails($input: GetNewsletterEmailsInput) {
-  getNewsletterEmails(input: $input) {
+export const getNewsletterEmails = /* GraphQL */ `query GetNewsletterEmails(
+  $input: GetNewsletterEmailsInput
+  $nextToken: String
+  $limit: Int
+) {
+  getNewsletterEmails(input: $input, nextToken: $nextToken, limit: $limit) {
     newsletterEmails {
       newsletterId
       emailId
       campaignId
       createdAt
+      htmlPath
+      textPath
       __typename
     }
     nextToken

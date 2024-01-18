@@ -82,10 +82,12 @@ input GetDataFeedSubscriptionInput {
 
 
 type NewsletterEmail @aws_cognito_user_pools {
-    newsletterId: String!
+    newsletterId: String
     emailId: String!
-    campaignId: String!
+    campaignId: String
     createdAt: AWSDateTime!
+    htmlPath: String
+    textPath: String
 }
 
 type NewsletterEmails @aws_cognito_user_pools {
@@ -95,10 +97,9 @@ type NewsletterEmails @aws_cognito_user_pools {
 
 input GetNewsletterEmailsInput {
     newsletterId: String!
-    nextToken: String
 }
 
-input NewsletterEmailInput {
+input GetNewsletterEmailInput {
     newsletterId: String!
     emailId: String!
 }
@@ -140,8 +141,8 @@ type Query {
     getDataFeedSubscriptions(nextToken: String, limit: Int): DataFeedSubscriptions! @aws_cognito_user_pools
     getDataFeedSubscription(input: GetDataFeedSubscriptionInput): DataFeedSubscription @aws_cognito_user_pools
     getDataFeedArticles(input: DataFeedArticlesInput, nextToken: String, limit: Int): DataFeedArticles @aws_cognito_user_pools
-    getNewsletterEmail(input: NewsletterEmailInput): NewsletterEmail! @aws_cognito_user_pools
-    getNewsletterEmails(input: GetNewsletterEmailsInput): NewsletterEmails @aws_cognito_user_pools
+    getNewsletterEmail(input: GetNewsletterEmailInput): NewsletterEmail! @aws_cognito_user_pools
+    getNewsletterEmails(input: GetNewsletterEmailsInput, nextToken: String, limit: Int): NewsletterEmails @aws_cognito_user_pools
 }
 
 

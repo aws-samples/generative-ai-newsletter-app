@@ -1,8 +1,8 @@
 import { GraphQLQuery, generateClient } from "aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api";
 
-import { getNewsletter, getNewsletters } from "../../graphql/queries";
-import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, UpdateNewsletterInput, UpdateNewsletterMutation } from "../../API";
+import { getNewsletter, getNewsletterEmails, getNewsletters } from "../../graphql/queries";
+import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterEmailsInput, GetNewsletterEmailsQuery, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, UpdateNewsletterInput, UpdateNewsletterMutation } from "../../API";
 import { createNewsletter, updateNewsletter } from "../../graphql/mutations";
 
 const client = generateClient({
@@ -62,5 +62,21 @@ export class NewslettersClient {
             console.error(e)
         }
         return {} as GraphQLResult<GraphQLQuery<UpdateNewsletterMutation>>
+    }
+
+    async getNewsletterEmails(input: GetNewsletterEmailsInput, nextToken?: string | undefined, limit?: number): Promise<GraphQLResult<GetNewsletterEmailsQuery>> {
+        try {
+            const result = await client.graphql({
+                query: getNewsletterEmails,
+                variables: { input, nextToken, limit },
+            })
+            if(result.errors){
+                throw result.errors
+            }
+            return result as GraphQLResult<GraphQLQuery<GetNewsletterEmailsQuery>>;
+        }catch(e){
+            console.error(e)
+        }
+        return {} as GraphQLResult<GraphQLQuery<GetNewsletterEmailsQuery>>;
     }
 }

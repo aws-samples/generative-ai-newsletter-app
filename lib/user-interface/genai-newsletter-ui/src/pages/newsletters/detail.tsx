@@ -4,9 +4,10 @@ import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
 import { DataFeedSubscription, Newsletter } from "../../API";
 import BaseAppLayout from "../../components/base-app-layout";
-import { BreadcrumbGroup, Container, ContentLayout, StatusIndicator } from "@cloudscape-design/components";
+import { BreadcrumbGroup, Container, ContentLayout, SpaceBetween, StatusIndicator } from "@cloudscape-design/components";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewsletterReviewForm from "../../components/newsletters/forms/newsletter-review";
+import NewsletterEmailsTable from "../../components/newsletters/newsletter-emails-table";
 
 
 export default function NewsletterDetail() {
@@ -56,6 +57,7 @@ export default function NewsletterDetail() {
             }
             content={
                 <ContentLayout>
+                    <SpaceBetween direction="vertical" size="m">
                     <Container>
                     {(newsletter != undefined && newsletter.subscriptions !== null) ?
                         <NewsletterReviewForm
@@ -74,6 +76,10 @@ export default function NewsletterDetail() {
                             </StatusIndicator>
                         </>}
                         </Container>
+                        <Container>
+                            <NewsletterEmailsTable />
+                        </Container>
+                        </SpaceBetween>
                 </ContentLayout>
             }
         />

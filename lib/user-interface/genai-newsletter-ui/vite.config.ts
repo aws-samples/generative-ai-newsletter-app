@@ -1,15 +1,14 @@
 import { defineConfig,loadEnv } from 'vite'
 import { splitVendorChunkPlugin } from 'vite'
+import checker from 'vite-plugin-checker'
 import fs from "fs"
 import react from '@vitejs/plugin-react'
 import path from 'path';
 
 const isDev = process.env.NODE_ENV === "development";
-console.log("isDev = " + isDev)
 // https://vitejs.dev/config/
 export default ({ mode }) => {
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
-  console.log(process.env.VITE_CLOUDFRONT_ENDPOINT)
   return defineConfig({
   server: {
     proxy: {
@@ -20,7 +19,11 @@ export default ({ mode }) => {
       }
     }
   },
-  plugins: [isDev && {
+  plugins: [
+    checker({
+      typescript: true,
+    }),
+    isDev && {
       name: 'aws-exports',
       writeBundle() {
         const outputPath = path.resolve('public/aws-exports.json')

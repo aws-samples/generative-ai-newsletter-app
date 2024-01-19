@@ -41,6 +41,8 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
       feedType
       createdAt
       enabled
+      title
+      description
       __typename
     }
     discoverable
@@ -62,6 +64,8 @@ export const getDataFeedSubscriptions = /* GraphQL */ `query GetDataFeedSubscrip
       feedType
       createdAt
       enabled
+      title
+      description
       __typename
     }
     nextToken
@@ -89,6 +93,8 @@ export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscript
       title
       __typename
     }
+    title
+    description
     __typename
   }
 }

@@ -24,6 +24,8 @@ export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeed
       title
       __typename
     }
+    title
+    description
     __typename
   }
 }
@@ -43,6 +45,8 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       feedType
       createdAt
       enabled
+      title
+      description
       __typename
     }
     discoverable

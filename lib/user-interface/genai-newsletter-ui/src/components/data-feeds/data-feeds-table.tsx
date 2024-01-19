@@ -53,12 +53,18 @@ export default function DataFeedsTable() {
             isHeaderRow: false
         },
         {
-            id: 'url',
+            id: 'title',
             cell: (item: DataFeedSubscription) => (
                 <Link 
                 onFollow={onFollow}
-                href={`/feeds/${item.subscriptionId}`}>{item.url}</Link>
+                href={`/feeds/${item.subscriptionId}`}>{item.title}</Link>
             ),
+            header: 'Title',
+            isHeaderRow: true,
+        },
+        {
+            id: 'url',
+            cell: (item: DataFeedSubscription) => item.url,
             header: 'Feed URL',
             isHeaderRow: true
         },
@@ -94,6 +100,7 @@ export default function DataFeedsTable() {
             columnDefinitions={dataFeedsTableColumnDefiniton}
             columnDisplay={DataFeedsTableColumnDisplay}
             items={dataFeeds}
+            resizableColumns
             loading={loadingDataFeeds}
             selectionType="single"
             trackBy="subscriptionId"

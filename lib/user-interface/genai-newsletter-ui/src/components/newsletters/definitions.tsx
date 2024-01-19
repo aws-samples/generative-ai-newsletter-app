@@ -37,6 +37,7 @@ export const NewsletterWizardNewsFeedsTableColumnDisplay = [
 
 export const DataFeedsTableColumnDisplay = [
     { id: 'subscriptionId', visible: false },
+    { id: 'title', visible: true },
     { id: 'url', visible: true },
     { id: 'feedType', visible: true },
     { id: 'enabled', visible: true },

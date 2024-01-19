@@ -4,6 +4,8 @@
 
 export type CreateDataFeedSubscriptionInput = {
   url: string,
+  title: string,
+  description?: string | null,
   enabled: boolean,
 };
 
@@ -15,6 +17,8 @@ export type DataFeedSubscription = {
   createdAt?: string | null,
   enabled?: boolean | null,
   articles?:  Array<DataFeedArticle | null > | null,
+  title: string,
+  description?: string | null,
 };
 
 export enum DataFeedType {
@@ -69,6 +73,8 @@ export type UpdateNewsletterInput = {
 export type UpdateDataFeedSubscriptionInput = {
   url?: string | null,
   enabled?: boolean | null,
+  title: string,
+  description?: string | null,
 };
 
 export type GetNewslettersInput = {
@@ -152,6 +158,8 @@ export type CreateDataFeedSubscriptionMutation = {
       createdAt: string,
       title: string,
     } | null > | null,
+    title: string,
+    description?: string | null,
   } | null,
 };
 
@@ -173,6 +181,8 @@ export type CreateNewsletterMutation = {
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
+      title: string,
+      description?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -247,6 +257,8 @@ export type GetNewsletterQuery = {
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
+      title: string,
+      description?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -270,6 +282,8 @@ export type GetDataFeedSubscriptionsQuery = {
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
+      title: string,
+      description?: string | null,
     } | null > | null,
     nextToken?: string | null,
     limit?: number | null,
@@ -297,6 +311,8 @@ export type GetDataFeedSubscriptionQuery = {
       createdAt: string,
       title: string,
     } | null > | null,
+    title: string,
+    description?: string | null,
   } | null,
 };
 

@@ -5,12 +5,16 @@ enum DataFeedType {
 
 input CreateDataFeedSubscriptionInput {
     url: String!
+    title: String!
+    description: String
     enabled: Boolean!
 }
 
 input UpdateDataFeedSubscriptionInput {
     url: String
     enabled: Boolean
+    title: String!
+    description: String
 }
 
 input CreateNewsletter {
@@ -66,6 +70,8 @@ type DataFeedSubscription @aws_cognito_user_pools {
     createdAt: AWSDateTime
     enabled: Boolean
     articles: [DataFeedArticle]
+    title: String!
+    description: String
 }
 
 type DataFeedSubscriptions @aws_cognito_user_pools {

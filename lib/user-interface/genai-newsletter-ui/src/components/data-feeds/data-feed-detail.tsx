@@ -39,6 +39,8 @@ export default function DataFeedDetail() {
                     <h4>Loading...</h4>
                 </SpaceBetween> :
                 <SpaceBetween direction="vertical" size="s">
+                    <h2>{feed?.title}</h2>
+                    <span><i>{feed?.description}</i></span>
                     <FormField label="Feed URL">
                         {feed?.url}
                     </FormField>

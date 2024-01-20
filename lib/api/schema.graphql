@@ -37,6 +37,10 @@ input SubscribeToNewsletterInput {
     newsletterId: String!
 }
 
+input UnsubscribeFromNewsletterInput {
+    newsletterId: String!
+}
+
 
 type Newsletter @aws_cognito_user_pools {
     newsletterId: String!
@@ -133,10 +137,24 @@ type Subscriber @aws_cognito_user_pools {
     newsletterId: String!
 }
 
+
+input UserNewsletterSubscriptionStatusInput {
+    newsletterId: String!
+}
+
+type NewsletterUserSubscriberStats @aws_cognito_user_pools {
+    subscriberCount: Int!
+}
+
+input GetNewsletterSubscriberStatsInput {
+    newsletterId: String!
+}
+
 type Mutation {
     createDataFeedSubscription(input: CreateDataFeedSubscriptionInput!): DataFeedSubscription @aws_cognito_user_pools
     createNewsletter(input: CreateNewsletter!): Newsletter @aws_cognito_user_pools
     subscribeToNewsletter(input: SubscribeToNewsletterInput!): Boolean @aws_cognito_user_pools
+    unsubscribeFromNewsletter(input: UnsubscribeFromNewsletterInput): Boolean @aws_cognito_user_pools
     updateNewsletter(input: UpdateNewsletterInput!, newsletterId: String!): Boolean @aws_cognito_user_pools
     updateDataFeed(input: UpdateDataFeedSubscriptionInput!, subscriptionId: String!): Boolean @aws_cognito_user_pools
 }
@@ -149,6 +167,8 @@ type Query {
     getDataFeedArticles(input: DataFeedArticlesInput, nextToken: String, limit: Int): DataFeedArticles @aws_cognito_user_pools
     getNewsletterEmail(input: GetNewsletterEmailInput): NewsletterEmail! @aws_cognito_user_pools
     getNewsletterEmails(input: GetNewsletterEmailsInput, nextToken: String, limit: Int): NewsletterEmails @aws_cognito_user_pools
+    getUserNewsletterSubscriptionStatus(input: UserNewsletterSubscriptionStatusInput): Boolean @aws_cognito_user_pools
+    getNewsletterSubscriberStats(input: GetNewsletterSubscriberStatsInput): NewsletterUserSubscriberStats @aws_cognito_user_pools
 }
 
 

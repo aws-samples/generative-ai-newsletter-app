@@ -27,6 +27,7 @@ export class GenAINewsletter extends Stack {
       functions: {
         createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
+        userUnsubscriberFunction: newsletterGenerator.userUnsubscriberFunction,
         feedSubscriberFunction: newsSubscriptionIngestion.feedSubscriberFunction,
         getNewsletterFunction: newsletterGenerator.getNewsletterFunction
       }

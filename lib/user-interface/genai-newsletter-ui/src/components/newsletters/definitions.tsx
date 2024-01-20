@@ -13,6 +13,12 @@ export const NewsletterWizardDataFeedsTableColumnDefinition = [
         isHeaderRow: false
     },
     {
+        id: 'title',
+        cell: (item: DataFeedSubscription) => item.title,
+        header: 'Title',
+        isHeaderRow: true,
+    },
+    {
         id: 'url',
         cell: (item: DataFeedSubscription) => item.url,
         header: 'Feed URL',
@@ -28,6 +34,7 @@ export const NewsletterWizardDataFeedsTableColumnDefinition = [
 
 export const NewsletterWizardNewsFeedsTableColumnDisplay = [
     { id: 'subscriptionId', visible: false },
+    { id: 'title', visible: true },
     { id: 'url', visible: true },
     { id: 'feedType', visible: true }
 ]

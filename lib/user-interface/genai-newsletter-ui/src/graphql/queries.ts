@@ -163,3 +163,22 @@ export const getNewsletterEmails = /* GraphQL */ `query GetNewsletterEmails(
   APITypes.GetNewsletterEmailsQueryVariables,
   APITypes.GetNewsletterEmailsQuery
 >;
+export const getUserNewsletterSubscriptionStatus = /* GraphQL */ `query GetUserNewsletterSubscriptionStatus(
+  $input: UserNewsletterSubscriptionStatusInput
+) {
+  getUserNewsletterSubscriptionStatus(input: $input)
+}
+` as GeneratedQuery<
+  APITypes.GetUserNewsletterSubscriptionStatusQueryVariables,
+  APITypes.GetUserNewsletterSubscriptionStatusQuery
+>;
+export const getNewsletterSubscriberStats = /* GraphQL */ `query GetNewsletterSubscriberStats($input: GetNewsletterSubscriberStatsInput) {
+  getNewsletterSubscriberStats(input: $input) {
+    subscriberCount
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetNewsletterSubscriberStatsQueryVariables,
+  APITypes.GetNewsletterSubscriberStatsQuery
+>;

@@ -62,6 +62,10 @@ export type SubscribeToNewsletterInput = {
   newsletterId: string,
 };
 
+export type UnsubscribeFromNewsletterInput = {
+  newsletterId: string,
+};
+
 export type UpdateNewsletterInput = {
   title?: string | null,
   numberOfDaysToInclude?: number | null,
@@ -137,6 +141,19 @@ export type NewsletterEmails = {
   nextToken?: string | null,
 };
 
+export type UserNewsletterSubscriptionStatusInput = {
+  newsletterId: string,
+};
+
+export type GetNewsletterSubscriberStatsInput = {
+  newsletterId: string,
+};
+
+export type NewsletterUserSubscriberStats = {
+  __typename: "NewsletterUserSubscriberStats",
+  subscriberCount: number,
+};
+
 export type CreateDataFeedSubscriptionMutationVariables = {
   input: CreateDataFeedSubscriptionInput,
 };
@@ -197,6 +214,14 @@ export type SubscribeToNewsletterMutationVariables = {
 
 export type SubscribeToNewsletterMutation = {
   subscribeToNewsletter?: boolean | null,
+};
+
+export type UnsubscribeFromNewsletterMutationVariables = {
+  input?: UnsubscribeFromNewsletterInput | null,
+};
+
+export type UnsubscribeFromNewsletterMutation = {
+  unsubscribeFromNewsletter?: boolean | null,
 };
 
 export type UpdateNewsletterMutationVariables = {
@@ -373,5 +398,24 @@ export type GetNewsletterEmailsQuery = {
       textPath?: string | null,
     } | null > | null,
     nextToken?: string | null,
+  } | null,
+};
+
+export type GetUserNewsletterSubscriptionStatusQueryVariables = {
+  input?: UserNewsletterSubscriptionStatusInput | null,
+};
+
+export type GetUserNewsletterSubscriptionStatusQuery = {
+  getUserNewsletterSubscriptionStatus?: boolean | null,
+};
+
+export type GetNewsletterSubscriberStatsQueryVariables = {
+  input?: GetNewsletterSubscriberStatsInput | null,
+};
+
+export type GetNewsletterSubscriberStatsQuery = {
+  getNewsletterSubscriberStats?:  {
+    __typename: "NewsletterUserSubscriberStats",
+    subscriberCount: number,
   } | null,
 };

@@ -8,6 +8,7 @@ import { BreadcrumbGroup, Container, ContentLayout, SpaceBetween, StatusIndicato
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewsletterReviewForm from "../../components/newsletters/forms/newsletter-review";
 import NewsletterEmailsTable from "../../components/newsletters/newsletter-emails-table";
+import UserSubscriberData from "../../components/newsletters/user-subscriber-data";
 
 
 export default function NewsletterDetail() {
@@ -75,6 +76,9 @@ export default function NewsletterDetail() {
                                 Loading...
                             </StatusIndicator>
                         </>}
+                        </Container>
+                        <Container> 
+                            <UserSubscriberData />
                         </Container>
                         <Container>
                             <NewsletterEmailsTable />

@@ -22,6 +22,7 @@ export class NewsletterGenerator extends Construct {
   public readonly newsletterTable: Table
   public readonly createNewsletterFunction: NodejsFunction
   public readonly userSubscriberFunction: NodejsFunction
+  public readonly userUnsubscriberFunction: NodejsFunction
   public readonly newsletterScheduleGroup: CfnScheduleGroup
   public readonly getNewsletterFunction: NodejsFunction
   public readonly emailBucket: Bucket
@@ -174,6 +175,23 @@ export class NewsletterGenerator extends Construct {
     UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(userSubscriberFunction, 'cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser')
     userSubscriberFunction.addToRolePolicy(pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement)
 
+    const userUnsubscriberFunction = new NodejsFunction(this, 'user-unsubscriber', {
+      description: 'Function responsible for unsubscribing a user from the newsletter',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        NEWSLETTER_TABLE: newsletterTable.tableName
+      }
+    })
+    newsletterTable.grantReadWriteData(userUnsubscriberFunction)
+
     const newsletterCampaignCreatorFunction = new NodejsFunction(this, 'newsletter-campaign-creator', {
       description: 'Function responsible for creating the newsletter campaigns for each unique email',
       handler: 'handler',
@@ -202,6 +220,7 @@ export class NewsletterGenerator extends Construct {
     this.newsletterScheduleGroup = newsletterScheduleGroup
     this.createNewsletterFunction = newsletterCreatorFunction
     this.userSubscriberFunction = userSubscriberFunction
+    this.userUnsubscriberFunction = userUnsubscriberFunction
     this.getNewsletterFunction = getNewsletterFunction
   }
 }

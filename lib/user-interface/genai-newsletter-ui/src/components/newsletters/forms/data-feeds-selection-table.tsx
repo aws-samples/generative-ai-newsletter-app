@@ -85,6 +85,7 @@ export default function NewsletterDataFeedsSelectionForm(props: NewsletterNewsFe
     return (
         <Table
             items={feedSubscriptions}
+            resizableColumns
             selectedItems={selectedSubscriptions}
             onSelectionChange={({ detail }) => setSelectedSubscriptions(detail.selectedItems)}
             trackBy="subscriptionId"

@@ -16,6 +16,7 @@ export interface ApiProps {
   functions: {
     createNewsletterFunction: NodejsFunction
     userSubscriberFunction: NodejsFunction
+    userUnsubscriberFunction: NodejsFunction
     feedSubscriberFunction: NodejsFunction
     getNewsletterFunction: NodejsFunction
   }

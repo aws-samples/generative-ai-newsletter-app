@@ -3,7 +3,7 @@ import { AppContext } from "../../common/app-context"
 import { useParams } from "react-router-dom"
 import { NewsletterEmail } from "../../API"
 import { ApiClient } from "../../common/api"
-import { Container, ExpandableSection, SpaceBetween, StatusIndicator } from "@cloudscape-design/components"
+import { Button, Container, ExpandableSection, SpaceBetween, StatusIndicator } from "@cloudscape-design/components"
 
 
 
@@ -53,7 +53,7 @@ export default function NewsletterEmailsTable() {
         const doc = parser.parseFromString(html, 'text/html');
         return { __html: doc.body.innerHTML }
     }
- 
+
     useEffect(() => {
         getNewsletterEmails()
     }, [getNewsletterEmails])
@@ -64,12 +64,19 @@ export default function NewsletterEmailsTable() {
                     return (<ExpandableSection
                         key={"newsletterEmailSection" + email.emailId}
                         headerText={email.createdAt}
+                        headerActions={
+                            (email.htmlPath !== null && email.htmlPath !== undefined && email.htmlPath.length > 0) ? (
+                            <SpaceBetween size="s" direction="horizontal">
+                                <Button onClick={()=>{window.open(email.htmlPath as string, '_blank')}}>Open in a New Window</Button>
+                            </SpaceBetween>
+                            ):<></>
+                        }
                         variant="stacked"
                     >
                         <Container>
                             {newsletterContent[email.emailId] ? (
                                 <>
-                                <div dangerouslySetInnerHTML={renderHtml(newsletterContent[email.emailId])} />
+                                    <div dangerouslySetInnerHTML={renderHtml(newsletterContent[email.emailId])} />
                                 </>
                             ) : (
                                 <StatusIndicator key={"status-email-" + email.emailId} type="loading">

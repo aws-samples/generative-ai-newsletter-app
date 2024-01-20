@@ -328,6 +328,8 @@ export class ApiResolvers extends Construct {
       name: 'UserSubscriberLambdaSource'
     })
 
+    props.functions.userSubscriberFunction.grantInvoke(userSubscriberLambdaSource.grantPrincipal)
+
     new Resolver(this, 'UserSubscriberResolver', {
       api,
       dataSource: userSubscriberLambdaSource,
@@ -354,6 +356,88 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    // TODO: Newsletter Subscriber Lookup Functionality
+    const userUnsubscriberLambdaSource = new LambdaDataSource(this, 'UserUnsubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.userUnsubscriberFunction,
+      name: 'UserUnsubscriberLambdaSource'
+    })
+
+    props.functions.userUnsubscriberFunction.grantInvoke(userUnsubscriberLambdaSource.grantPrincipal)
+
+    new Resolver(this, 'UserUnsubscriberResolver', {
+      api,
+      dataSource: userUnsubscriberLambdaSource,
+      typeName: 'Mutation',
+      fieldName: 'unsubscribeFromNewsletter',
+      code: Code.fromInline(`
+      import { util } from '@aws-appsync/utils';
+      export function request(ctx) {
+        const { sub } = ctx.identity
+        const { newsletterId } = ctx.args.input
+        return {
+          operation: 'Invoke',
+          payload: {
+            cognitoUserId: sub,
+            newsletterId: newsletterId
+          }
+        }
+      }
+
+      export function response(ctx) {
+        return ctx.result;
+      }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    const getUserNewsletterSubscriptionStatusFunction = new AppsyncFunction(this, 'GetUserNewsletterSubscriptionStatusFunction', {
+      name: 'getUserNewsletterSubscriptionStatus',
+      api,
+      dataSource: newsletterTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getUserNewsletterSubscriptionStatus.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'GetUserNewsletterSubscriptionStatusResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getUserNewsletterSubscriptionStatus',
+      code: Code.fromInline(`
+      export function request(ctx) {
+        return {};
+        }
+
+        export function response(ctx) {
+        return ctx.prev.result;
+        }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getUserNewsletterSubscriptionStatusFunction]
+    })
+
+    const getNewsletterSubscriberStatsFunction = new AppsyncFunction(this, 'getNewsletterSubscriberStatsFunction', {
+      name: 'getNewsletterSubscriberStats',
+      api,
+      dataSource: newsletterTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterSubscriberStats.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'getNewsletterSubscriberStatsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getNewsletterSubscriberStats',
+      code: Code.fromInline(`
+      export function request(ctx) {
+        return {};
+        }
+
+        export function response(ctx) {
+        return ctx.prev.result;
+        }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getNewsletterSubscriberStatsFunction]
+    })
   }
 }

@@ -16,6 +16,7 @@ export default function DataFeedDetailsForm() {
     const [title, setTitle] = useState<string>('')
     const [titleError] = useState<string>('')
     const [description, setDescription] = useState<string>('')
+    const [summarizationPrompt, setSummarizationPrompt] = useState<string>('')
 
     const getDataFeed = useCallback(
         async () => {
@@ -31,6 +32,7 @@ export default function DataFeedDetailsForm() {
             setEnabled(result.data.getDataFeedSubscription?.enabled ?? true)
             setTitle(result.data.getDataFeedSubscription?.title ?? '')
             setDescription(result.data.getDataFeedSubscription?.description ?? '')
+            setSummarizationPrompt(result.data.getDataFeedSubscription?.summarizationPrompt ?? '')
             setLoading(false)
         }, [appContext, subscriptionId]
     )
@@ -41,14 +43,14 @@ export default function DataFeedDetailsForm() {
             if (!appContext) { return }
             if (!subscriptionId) { return }
             const apiClient = new ApiClient(appContext)
-            const result = await apiClient.dataFeeds.updateDataFeed({ url, enabled, title, description }, subscriptionId)
+            const result = await apiClient.dataFeeds.updateDataFeed({ url, enabled, title, description, summarizationPrompt }, subscriptionId)
             if (result.errors) {
                 console.log(result.errors)
                 return
             }
             navigate(`/feeds/${subscriptionId}`)
 
-        }, [appContext, description, enabled, navigate, subscriptionId, title, url]
+        }, [appContext, description, enabled, navigate, subscriptionId, summarizationPrompt, title, url]
     )
 
     const createDataFeed = useCallback(
@@ -56,13 +58,13 @@ export default function DataFeedDetailsForm() {
             setLoading(true)
             if (!appContext) { return }
             const apiClient = new ApiClient(appContext)
-            const result = await apiClient.dataFeeds.createDataFeed({ url, enabled, title, description })
+            const result = await apiClient.dataFeeds.createDataFeed({ url, enabled, title, description, summarizationPrompt })
             if (result.errors) {
                 console.log(result.errors)
                 return
             }
             navigate(`/feeds/${result.data.createDataFeedSubscription?.subscriptionId}`)
-        }, [appContext, description, enabled, navigate, title, url]
+        }, [appContext, description, enabled, navigate, summarizationPrompt, title, url]
     )
 
 
@@ -105,6 +107,12 @@ export default function DataFeedDetailsForm() {
                         </FormField>
                         <FormField label="Enabled" description="Should the Data Feed be enabled to bring in new data?" >
                             <Toggle checked={enabled} onChange={e => setEnabled(e.detail.checked)}>Enabled</Toggle>
+                        </FormField>
+                        <FormField label="Summarization Prompt" description="A prompt to add guidance for how you'd like the summarization." >
+                            <Textarea placeholder="Example: The target auidence for reading the articles have little background knowledge on GenAI technology"
+                             value={summarizationPrompt} 
+                             onChange={e => setSummarizationPrompt(e.detail.value)}
+                             />
                         </FormField>
                     </SpaceBetween>
                 </Form>

@@ -1,5 +1,5 @@
 import { RemovalPolicy, Duration, Aws } from 'aws-cdk-lib'
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
+import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
@@ -17,6 +17,7 @@ interface NewsletterGeneratorProps {
 }
 export const newsletterTableCampaignGSI: string = 'newsletter-campaign-index'
 export const newsletterTableItemTypeGSI: string = 'newsletter-item-type-index'
+export const newsletterTableOwnerGSI: string = 'newsletter-owner-index'
 
 export class NewsletterGenerator extends Construct {
   public readonly newsletterTable: Table
@@ -53,7 +54,8 @@ export class NewsletterGenerator extends Construct {
       sortKey: {
         name: 'compoundSortKey',
         type: AttributeType.STRING
-      }
+      },
+      projectionType: ProjectionType.KEYS_ONLY
     })
 
     newsletterTable.addGlobalSecondaryIndex({
@@ -63,6 +65,7 @@ export class NewsletterGenerator extends Construct {
         type: AttributeType.STRING
       }
     })
+
     const emailBucket = new Bucket(this, 'EmailBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true

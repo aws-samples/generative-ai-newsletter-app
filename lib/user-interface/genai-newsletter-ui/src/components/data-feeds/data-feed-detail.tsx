@@ -56,6 +56,9 @@ export default function DataFeedDetail() {
                     <FormField label="Date Created">
                         {feed?.createdAt}
                     </FormField>
+                    <FormField label="Article Summarization Prompt">
+                        {feed?.summarizationPrompt}
+                    </FormField>
                 </SpaceBetween>
             }
         </Container>

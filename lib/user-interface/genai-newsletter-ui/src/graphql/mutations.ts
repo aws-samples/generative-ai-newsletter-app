@@ -22,10 +22,12 @@ export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeed
       articleSummary
       createdAt
       title
+      summarizationPrompt
       __typename
     }
     title
     description
+    summarizationPrompt
     __typename
   }
 }
@@ -47,6 +49,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       enabled
       title
       description
+      summarizationPrompt
       __typename
     }
     discoverable

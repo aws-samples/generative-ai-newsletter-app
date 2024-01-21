@@ -7,6 +7,7 @@ export type CreateDataFeedSubscriptionInput = {
   title: string,
   description?: string | null,
   enabled: boolean,
+  summarizationPrompt?: string | null,
 };
 
 export type DataFeedSubscription = {
@@ -19,6 +20,7 @@ export type DataFeedSubscription = {
   articles?:  Array<DataFeedArticle | null > | null,
   title: string,
   description?: string | null,
+  summarizationPrompt?: string | null,
 };
 
 export enum DataFeedType {
@@ -35,6 +37,7 @@ export type DataFeedArticle = {
   articleSummary: string,
   createdAt: string,
   title: string,
+  summarizationPrompt?: string | null,
 };
 
 export type CreateNewsletter = {
@@ -79,6 +82,7 @@ export type UpdateDataFeedSubscriptionInput = {
   enabled?: boolean | null,
   title: string,
   description?: string | null,
+  summarizationPrompt?: string | null,
 };
 
 export type GetNewslettersInput = {
@@ -174,9 +178,11 @@ export type CreateDataFeedSubscriptionMutation = {
       articleSummary: string,
       createdAt: string,
       title: string,
+      summarizationPrompt?: string | null,
     } | null > | null,
     title: string,
     description?: string | null,
+    summarizationPrompt?: string | null,
   } | null,
 };
 
@@ -200,6 +206,7 @@ export type CreateNewsletterMutation = {
       enabled?: boolean | null,
       title: string,
       description?: string | null,
+      summarizationPrompt?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -284,6 +291,7 @@ export type GetNewsletterQuery = {
       enabled?: boolean | null,
       title: string,
       description?: string | null,
+      summarizationPrompt?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -309,6 +317,7 @@ export type GetDataFeedSubscriptionsQuery = {
       enabled?: boolean | null,
       title: string,
       description?: string | null,
+      summarizationPrompt?: string | null,
     } | null > | null,
     nextToken?: string | null,
     limit?: number | null,
@@ -335,9 +344,11 @@ export type GetDataFeedSubscriptionQuery = {
       articleSummary: string,
       createdAt: string,
       title: string,
+      summarizationPrompt?: string | null,
     } | null > | null,
     title: string,
     description?: string | null,
+    summarizationPrompt?: string | null,
   } | null,
 };
 
@@ -358,6 +369,7 @@ export type GetDataFeedArticlesQuery = {
       articleSummary: string,
       createdAt: string,
       title: string,
+      summarizationPrompt?: string | null,
     } | null > | null,
     nextToken?: string | null,
   } | null,

@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { DynamoDBClient, PutItemCommand, type PutItemInput } from '@aws-sdk/client-dynamodb'
 import { SFNClient, StartExecutionCommand, type StartExecutionCommandInput } from '@aws-sdk/client-sfn'
 import { marshall } from '@aws-sdk/util-dynamodb'
+import { DataFeedType, type CreateDataFeedSubscriptionInput, type DataFeedSubscription } from '../api/API'
 
 const SERVICE_NAME = 'feed-subscriber'
 
@@ -20,44 +21,31 @@ const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const INGESTION_STEP_FUNCTION = process.env.INGESTION_STEP_FUNCTION
 
-interface FeedSubscriberInput {
-  url: string
-  discoverable: boolean
-  owner: string
-}
-
-interface SubscriptionData {
-  url: string
-  subscriptionId: string
-  feedType: 'RSS' | 'ATOM'
-  discoverable: boolean
-  owner: string
-}
-
-const lambdaHander = async (event: FeedSubscriberInput): Promise<SubscriptionData> => {
+const lambdaHander = async (event: { owner: string, input: CreateDataFeedSubscriptionInput }): Promise<DataFeedSubscription> => {
   logger.debug('Starting Feed Subscriber, input: ' + JSON.stringify(event))
   metrics.addMetric('SubscriberInvocations', MetricUnits.Count, 1)
-  const { url, discoverable = false, owner } = event
+  const { url, summarizationPrompt, title, description, enabled } = event.input
+  const owner = event.owner
   try {
     const response = await axios.get(url)
     const $ = cheerio.load(response.data as string, { xmlMode: true })
 
     const subscriptionId = uuidv4()
-    let feedType: 'RSS' | 'ATOM'
+    let feedType: DataFeedType
     if ($('rss').length > 0 && $('rss').attr('version') === '2.0') {
       metrics.addMetric('RSSFeeds', MetricUnits.Count, 1)
       logger.debug('Found RSS feed')
-      feedType = 'RSS'
+      feedType = DataFeedType.RSS
     } else if ($('feed').length > 0 && $('feed').attr('xmlns') === 'http://www.w3.org/2005/Atom') {
       metrics.addMetric('ATOMFeeds', MetricUnits.Count, 1)
       logger.debug('Found ATOM feed')
-      feedType = 'ATOM'
+      feedType = DataFeedType.ATOM
     } else {
       metrics.addMetric('InvalidFeedFormat', MetricUnits.Count, 1)
       throw Error('Unknown feed format. The URL provided must be a URL to a RSS feed or ATOM feed.')
     }
-    const subscriptionData: SubscriptionData = { url, subscriptionId, feedType, discoverable, owner }
-    await storeSubscriptionData(subscriptionData)
+    const subscriptionData: DataFeedSubscription = { feedType, title, url, enabled, description, summarizationPrompt, __typename: 'DataFeedSubscription', subscriptionId }
+    await storeSubscriptionData(subscriptionData, owner)
     await startIngestionStepFunction(subscriptionId)
     return subscriptionData
   } catch (error) {
@@ -67,19 +55,23 @@ const lambdaHander = async (event: FeedSubscriberInput): Promise<SubscriptionDat
   }
 }
 
-const storeSubscriptionData = async (subscriptionData: SubscriptionData): Promise<void> => {
+const storeSubscriptionData = async (subscriptionData: DataFeedSubscription, owner: string): Promise<void> => {
+  const { subscriptionId, url, feedType, summarizationPrompt, title, description } = subscriptionData
   logger.debug('Storing subscription data', { data: subscriptionData })
   const input: PutItemInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
     Item: marshall({
-      subscriptionId: subscriptionData.subscriptionId,
-      url: subscriptionData.url,
-      feedType: subscriptionData.feedType,
+      subscriptionId,
+      url,
+      feedType,
       createdAt: new Date().toISOString(),
       compoundSortKey: 'subscription',
       enabled: true,
-      owner: subscriptionData.owner
-    })
+      owner,
+      summarizationPrompt,
+      title,
+      description
+    }, { removeUndefinedValues: true })
   }
   const command = new PutItemCommand(input)
   const response = await dynamodb.send(command)

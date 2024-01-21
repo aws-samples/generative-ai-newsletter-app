@@ -8,6 +8,7 @@ input CreateDataFeedSubscriptionInput {
     title: String!
     description: String
     enabled: Boolean!
+    summarizationPrompt: String
 }
 
 input UpdateDataFeedSubscriptionInput {
@@ -15,6 +16,7 @@ input UpdateDataFeedSubscriptionInput {
     enabled: Boolean
     title: String!
     description: String
+    summarizationPrompt: String
 }
 
 input CreateNewsletter {
@@ -23,6 +25,7 @@ input CreateNewsletter {
     subscriptionIds: [String!]!
     discoverable: Boolean
     shared: Boolean
+    # newsletterIntroPrompt: String
 }
 
 input UpdateNewsletterInput {
@@ -31,6 +34,7 @@ input UpdateNewsletterInput {
     subscriptionIds: [String]
     discoverable: Boolean
     shared: Boolean
+    # newsletterIntroPrompt: String
 }
 
 input SubscribeToNewsletterInput {
@@ -52,6 +56,7 @@ type Newsletter @aws_cognito_user_pools {
     shared: Boolean
     scheduleId: String!
     createdAt: AWSDateTime!
+    # newsletterIntroPrompt: String
 }
 
 type Newsletters @aws_cognito_user_pools {
@@ -76,6 +81,7 @@ type DataFeedSubscription @aws_cognito_user_pools {
     articles: [DataFeedArticle]
     title: String!
     description: String
+    summarizationPrompt: String
 }
 
 type DataFeedSubscriptions @aws_cognito_user_pools {
@@ -122,6 +128,7 @@ type DataFeedArticle @aws_cognito_user_pools {
     articleSummary: String!
     createdAt: AWSDateTime!
     title: String!
+    summarizationPrompt: String
 }
 
 type DataFeedArticles @aws_cognito_user_pools {

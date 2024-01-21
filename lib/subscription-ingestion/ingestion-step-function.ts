@@ -84,7 +84,8 @@ export class IngestionStepFunction extends Construct {
       resultSelector: {
         url: JsonPath.stringAt('$.Item.url.S'),
         id: JsonPath.stringAt('$.Item.subscriptionId.S'),
-        feedType: JsonPath.stringAt('$.Item.feedType.S')
+        feedType: JsonPath.stringAt('$.Item.feedType.S'),
+        summarizationPrompt: JsonPath.stringAt('$.Item.summarizationPrompt.S')
       },
       resultPath: '$.subscription'
     })
@@ -118,8 +119,14 @@ export class IngestionStepFunction extends Construct {
       payload: TaskInput.fromJsonPathAt('$')
     })
 
+    // TODO: Replace Map.parameters with Map.ItemSelector; Pending https://github.com/aws/aws-cdk/issues/23265
+    // AWS Deprecated parameters, but CDK has not reflected this update yet
     const mapArticles = new Map(this, 'MapArticles', {
-      itemsPath: '$.articlesData.articles'
+      itemsPath: '$.articlesData.articles',
+      parameters: {
+        summarizationPrompt: JsonPath.stringAt('$.subscription.summarizationPrompt'),
+        input: JsonPath.stringAt('$$.Map.Item.Value')
+      }
     })
 
     mapArticles.itemProcessor(ingestArticleJob)

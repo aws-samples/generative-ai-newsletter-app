@@ -264,14 +264,12 @@ export class ApiResolvers extends Construct {
       fieldName: 'createDataFeedSubscription',
       code: Code.fromInline(`
       export function request(ctx) {
-        const { url, discoverable } = ctx.args.input
         const { sub } = ctx.identity
         return {
           operation: 'Invoke',
           payload: {
-            url: url,
-            discoverable: discoverable,
-            owner: sub
+            owner: sub,
+            input: ctx.args.input
           }
         }
       }

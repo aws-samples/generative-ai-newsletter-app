@@ -12,6 +12,7 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
+import { ArticleIngestorPromptConfiguration } from './prompts'
 
 const SERVICE_NAME = 'article-ingestor'
 
@@ -28,44 +29,58 @@ const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 
 interface ArticleIngestorInput {
-  link: string
-  subscriptionId: string
-  guid?: string
-  title: string
+  summarizationPrompt?: string
+  input: {
+    link: string
+    subscriptionId: string
+    guid?: string
+    title: string
+  }
+
 }
 
 const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
   await ingestArticle(event)
 }
 
-const ingestArticle = async (input: ArticleIngestorInput): Promise<void> => {
+const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
+  const { subscriptionId, guid, link, title } = event.input
+  const summarizationPrompt = event.summarizationPrompt
   const subsegment = tracer.getSegment()?.addNewSubsegment('### ingestArticle')
   if (subsegment !== undefined) { tracer.setSegment(subsegment) }
   try {
-    if (input.link === undefined) {
+    if (link === undefined) {
       throw new Error('No url to crawl')
     }
-    const articleId = input.guid?.trim() ?? uuidv4()
-    const $ = await getSiteContent(input.link)
+    const articleId = guid?.trim() ?? uuidv4()
+    const $ = await getSiteContent(link)
     let articleText: string = ''
     if ($('article').length > 0) {
       articleText = $('article').text()
     } else {
       articleText = $('body').text()
     }
-    try {
-      await storeSiteContent(articleText, input.subscriptionId, articleId)
-    } catch (error) {
-      logger.error('Failed to load site content for ', input.link)
-    }
-    try {
-      const summary = await generateArticleSummary(articleText)
-      if (summary !== undefined) {
-        await saveArticleData(summary, input.subscriptionId, articleId, input.link, input.title)
+    if (articleText !== undefined && articleText.length > 255) {
+      try {
+        await storeSiteContent(articleText, subscriptionId, articleId)
+      } catch (error) {
+        logger.error('Failed to load site content for ', link)
       }
-    } catch (error) {
-      logger.error('Failed to generate article summary for ' + input.link, { error })
-      tracer.addErrorAsMetadata(error as Error)
+      try {
+        const summary = await generateArticleSummary(articleText, summarizationPrompt)
+        if (summary !== undefined && summary !== null) {
+          await saveArticleData(summary, subscriptionId, articleId, link, title, summarizationPrompt)
+        } else {
+          throw new Error('Summary is undefined')
+        }
+      } catch (error) {
+        logger.error('Failed to generate article summary for ' + link, { error })
+        tracer.addErrorAsMetadata(error as Error)
+      }
+    } else {
+      logger.error('Failed to generate article summary for ' + link)
+      tracer.putAnnotation('summaryGenerated', false)
+      metrics.addMetric('EmptyAricleFound', MetricUnits.Count, 1)
     }
   } catch (error) {
     logger.error('Error in website crawler', { error })
@@ -124,16 +139,8 @@ const storeSiteContent = async (text: string, subscriptionId: string, articleId:
   }
 }
 
-const generateArticleSummary = async (articleBody: string): Promise<string> => {
-  const prompt = '\n\nHuman: ' +
-    'The following content is a news article. Generate a summary with a maximum of 5 sentences in length.\n' +
-    'Never include a preamble or any text prior to the summary. Only state the summary and nothing else.\n' +
-    'Output the summary inside of <summary></summary> tags\n' +
-    'If you do not know something, do not make it up.\n' +
-    '<BEGIN ARTICLE>\n' +
-    articleBody +
-    '<END ARTICLE>\n' +
-    '\n\nAssistant:'
+const generateArticleSummary = async (articleBody: string, summarizationPrompt?: string): Promise<string> => {
+  const prompt = ArticleIngestorPromptConfiguration.buildPrompt(articleBody, summarizationPrompt)
   console.debug(prompt)
   const bedrockInput: InvokeModelCommandInput = {
     body: JSON.stringify({
@@ -152,14 +159,15 @@ const generateArticleSummary = async (articleBody: string): Promise<string> => {
   let summary = responseData.replace(/\\n-/g, '')
   summary = summary.replace(/\\n/g, '')
   const matchedSummary = summary.match(/(?<=<summary>)(.*?)(?=<\/summary>)/g)
-  if (matchedSummary === null) {
-    throw new Error('No summary found')
+  const matchedError = summary.match(/(?<=<error>)(.*?)(?=<\/error>)/g)
+  if (matchedSummary === null || (matchedError !== null && matchedError.length > 0)) {
+    throw new Error(`No summary found - ${matchedError as string | null}`)
   } else {
     return matchedSummary[0]
   }
 }
 
-const saveArticleData = async (articleSummary: string, subscriptionId: string, articleId: string, url: string, title: string): Promise<void> => {
+const saveArticleData = async (articleSummary: string, subscriptionId: string, articleId: string, url: string, title: string, summarizationPrompt?: string): Promise<void> => {
   tracer.putMetadata('subscriptionId', subscriptionId, 'articleInfo')
   tracer.putMetadata('articleId', articleId, 'articleInfo')
   tracer.putMetadata('url', url, 'articleInfo')
@@ -172,7 +180,8 @@ const saveArticleData = async (articleSummary: string, subscriptionId: string, a
       articleSummary,
       createdAt: new Date().toISOString(),
       url,
-      title
+      title,
+      summarizationPrompt
     })
   }
   const command = new PutItemCommand(input)

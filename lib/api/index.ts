@@ -7,6 +7,7 @@ import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
 import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
+import { Stack } from 'aws-cdk-lib'
 
 export interface ApiProps {
   userPoolId: string
@@ -29,7 +30,7 @@ export class API extends Construct {
     super(scope, id)
 
     const graphqlApi = new GraphqlApi(this, 'API', {
-      name: 'GenAINewsletterAPI',
+      name: Stack.of(this).stackName + 'GraphQLAPI',
       definition: Definition.fromFile(path.join(__dirname, 'schema.graphql')),
       authorizationConfig: {
         additionalAuthorizationModes: [

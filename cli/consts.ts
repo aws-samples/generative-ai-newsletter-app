@@ -1,10 +1,12 @@
-const ESCAPE_SEQUENCE = '\x1b['
+import * as ansi from 'ansi-escape-sequences'
 
 interface FormattingOptions {
   bigHeader?: boolean
   bold?: boolean
-  textColor?: 'RED' | 'GREEN' | 'BLUE' | 'YELLOW' | 'WHITE' | 'BLACK'
-  backgroundColor?: 'RED' | 'GREEN' | 'BLUE' | 'YELLOW' | 'WHITE' | 'BLACK'
+  italic?: boolean
+  underline?: boolean
+  textColor?: ansi.Style
+  backgroundColor?: ansi.Style
 }
 
 export const bigHeader = (text: string): string => {
@@ -44,67 +46,24 @@ export const bigHeader = (text: string): string => {
  */
 export const formatText = (text: string, formatting: FormattingOptions): string => {
   let outputText = ''
-  if (formatting.bold === true || formatting.textColor !== undefined || formatting.backgroundColor !== undefined) {
-    outputText += ESCAPE_SEQUENCE
-    if (formatting.bold === true) {
-      outputText += '1'
-      if (formatting.textColor !== undefined || formatting.backgroundColor !== undefined) {
-        outputText += ';'
-      }
-    }
-    if (formatting.textColor !== undefined) {
-      switch (formatting.textColor) {
-        case 'RED':
-          outputText += '31'
-          break
-        case 'GREEN':
-          outputText += '32'
-          break
-        case 'BLUE':
-          outputText += '34'
-          break
-        case 'YELLOW':
-          outputText += '33'
-          break
-        case 'WHITE':
-          outputText += '37'
-          break
-        case 'BLACK':
-          outputText += '30'
-          break
-      }
-      if (formatting.backgroundColor !== undefined) {
-        outputText += ';'
-      }
-    }
-    if (formatting.backgroundColor !== undefined) {
-      switch (formatting.backgroundColor) {
-        case 'RED':
-          outputText += '41'
-          break
-        case 'GREEN':
-          outputText += '42'
-          break
-        case 'BLUE':
-          outputText += '44'
-          break
-        case 'YELLOW':
-          outputText += '43'
-          break
-        case 'WHITE':
-          outputText += '47'
-          break
-        case 'BLACK':
-          outputText += '40'
-          break
-      }
-    }
+  const styles: ansi.Style[] = []
+  if (formatting.bold === true) {
+    styles.push(ansi.style.bold as ansi.Style)
   }
-  outputText += 'm'
-  outputText += text
-
-  if (formatting.backgroundColor !== undefined || formatting.textColor !== undefined || formatting.bold === true) {
-    outputText += ESCAPE_SEQUENCE + '0m'
+  if (formatting.textColor !== undefined) {
+    styles.push(formatting.textColor)
+  }
+  if (formatting.backgroundColor !== undefined) {
+    styles.push(formatting.backgroundColor)
+  }
+  if (formatting.italic === true) {
+    styles.push(ansi.style.italic as ansi.Style)
+  }
+  if (formatting.underline === true) {
+    styles.push(ansi.style.underline as ansi.Style)
+  }
+  if (styles.length > 0) {
+    outputText = ansi.format(text, styles)
   }
   if (formatting.bigHeader === true) {
     outputText = '\n' + bigHeader(outputText) + '\n'

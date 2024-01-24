@@ -41,7 +41,10 @@
     "lib/api/resolverFunctions/*.js",
     "lib/user-interface/newsletter-article-edge-router/*"
   ],
-  "references": [
-    {"path": "lib/newsletter-generator/react-email-generator"},
+  "include": [
+    "bin/",
+    "lib/",
+    "cli/",
+    "lib/newsletter-generator/react-email-generator/tsconfig.json"
   ]
 } 

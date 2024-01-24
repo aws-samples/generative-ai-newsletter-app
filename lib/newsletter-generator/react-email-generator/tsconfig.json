@@ -19,7 +19,7 @@
         "jsx": "react-jsx",
         // "outDir": "dist"
     },
-    // "extends":["../../../tsconfig.json"],
+    "extends":["../../../tsconfig.json"],
     "include": ["emails/*.**"],
     "exclude": ["dist/*"]
 }

@@ -40,6 +40,7 @@ synthesize-stack:
   artifacts:
     paths:
       - ./cdk.out
+      - ./bin/config.json
   rules:
     - if: $DEPLOY_CONFIG
   dependencies:
@@ -64,13 +65,13 @@ ci-deploy-branch:
     - npm install -g aws-cdk@latest
   script:
    - echo $(npx cdk diff) > ./cdk-diff.txt
-   - cat ./cdk-deff.txt
+   - cat ./cdk-diff.txt
    - npx cdk --app ./cdk.out deploy --require-approval never
   artifacts:
     untracked: false
     when: on_success
     expire_in: 30 days
     paths:
-      - ./cdk-def.txt
+      - ./cdk-diff.txt
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_STABLE_ENV_BRANCH) && $DEPLOY_CONFIG

@@ -240,9 +240,9 @@ const sendNewsletter = async (newsletterId: string, emailId: string): Promise<vo
   })
   const { Payload, LogResult, FunctionError } = await lambda.send(command)
   if (FunctionError !== undefined) {
-    logger.error('Error creating email campaign', { FunctionError, LogResult })
+    logger.error('Error creating email campaign', { FunctionError, LogResult, Payload })
     metrics.addMetric('EmailCampaignCreationFailed', MetricUnits.Count, 1)
-    throw new Error(FunctionError as string)
+    throw new Error(FunctionError)
   } else {
     logger.debug('Email campaign created', { Payload })
     metrics.addMetric('EmailCampaignCreated', MetricUnits.Count, 1)

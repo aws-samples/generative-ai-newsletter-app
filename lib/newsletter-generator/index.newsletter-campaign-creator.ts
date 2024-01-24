@@ -65,7 +65,7 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ newsletterT
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'newsletter#' + newsletterId }
+      compoundSortKey: { S: 'newsletter' }
     }
   }
   const command = new GetItemCommand(input)

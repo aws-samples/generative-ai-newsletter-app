@@ -1,4 +1,4 @@
-import { RemovalPolicy, Duration, Aws } from 'aws-cdk-lib'
+import { RemovalPolicy, Duration, Aws, Stack } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
@@ -27,13 +27,14 @@ export class NewsletterGenerator extends Construct {
   public readonly newsletterScheduleGroup: CfnScheduleGroup
   public readonly getNewsletterFunction: NodejsFunction
   public readonly emailBucket: Bucket
-  private readonly newsletterScheduleGroupName: string = 'NewsletterSubscriptions'
+  private readonly newsletterScheduleGroupName: string
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
     const { newsSubscriptionTable } = props
+    this.newsletterScheduleGroupName = Stack.of(this).stackName + 'NewsletterSubscriptions'
     const newsletterTable = new Table(this, 'NewsletterTable', {
-      tableName: 'NewsletterData',
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
+      tableName: Stack.of(this).stackName + '-NewsletterTable',
       partitionKey: {
         name: 'newsletterId',
         type: AttributeType.STRING
@@ -73,6 +74,29 @@ export class NewsletterGenerator extends Construct {
 
     const pinpointApp = new PinpointApp(this, 'NewsletterPinpoint', { newsletterTable, newsletterTableCampaignGSI })
 
+    const newsletterCampaignCreatorFunction = new NodejsFunction(this, 'newsletter-campaign-creator', {
+      description: 'Function responsible for creating the newsletter campaigns for each unique email',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        NEWSLETTER_TABLE: newsletterTable.tableName,
+        PINPOINT_APP_ID: pinpointApp.pinpointAppId,
+        PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId,
+        PINPOINT_CAMPAIGN_HOOK_FUNCTION: pinpointApp.pinpointCampaignHookFunction.functionName,
+        EMAIL_BUCKET: emailBucket.bucketName
+      }
+    })
+    newsletterCampaignCreatorFunction.addToRolePolicy(pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement)
+    emailBucket.grantRead(newsletterCampaignCreatorFunction)
+    newsletterTable.grantReadWriteData(newsletterCampaignCreatorFunction)
+
     const emailGeneratorFunction = new NodejsFunction(this, 'email-generator', {
       description: 'Function responsible for generating the newsletter HTML & Plain Text emails',
       handler: 'handler',
@@ -88,12 +112,14 @@ export class NewsletterGenerator extends Construct {
         NEWS_SUBSCRIPTION_TABLE: props.newsSubscriptionTable.tableName,
         NEWS_SUBSCRIPTION_TABLE_LSI: props.newsSubscriptionTableLSI,
         NEWSLETTER_TABLE: newsletterTable.tableName,
-        EMAIL_BUCKET: emailBucket.bucketName
+        EMAIL_BUCKET: emailBucket.bucketName,
+        NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION: newsletterCampaignCreatorFunction.functionName
       }
     })
     props.newsSubscriptionTable.grantReadData(emailGeneratorFunction)
     newsletterTable.grantReadWriteData(emailGeneratorFunction)
     emailBucket.grantWrite(emailGeneratorFunction)
+    newsletterCampaignCreatorFunction.grantInvoke(emailGeneratorFunction)
 
     const newsletterScheduleGroup = new CfnScheduleGroup(this, 'NewsletterScheduleGroup', {
       name: this.newsletterScheduleGroupName
@@ -194,29 +220,6 @@ export class NewsletterGenerator extends Construct {
       }
     })
     newsletterTable.grantReadWriteData(userUnsubscriberFunction)
-
-    const newsletterCampaignCreatorFunction = new NodejsFunction(this, 'newsletter-campaign-creator', {
-      description: 'Function responsible for creating the newsletter campaigns for each unique email',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: newsletterTable.tableName,
-        PINPOINT_APP_ID: pinpointApp.pinpointAppId,
-        PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId,
-        PINPOINT_CAMPAIGN_HOOK_FUNCTION: pinpointApp.pinpointCampaignHookFunction.functionName,
-        EMAIL_BUCKET: emailBucket.bucketName
-      }
-    })
-    newsletterCampaignCreatorFunction.addToRolePolicy(pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement)
-    emailBucket.grantRead(newsletterCampaignCreatorFunction)
-    newsletterTable.grantReadWriteData(newsletterCampaignCreatorFunction)
 
     this.emailBucket = emailBucket
     this.newsletterTable = newsletterTable

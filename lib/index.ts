@@ -5,10 +5,20 @@ import { Authentication } from './authentication'
 import { API } from './api'
 import { UserInterface } from './user-interface'
 import { type Construct } from 'constructs'
+import { type DeployConfig } from '../cli/types'
+
+interface GenAINewsletterStackProps extends StackProps {
+  config: DeployConfig
+}
 
 export class GenAINewsletter extends Stack {
-  constructor (scope: Construct, id: string, props?: StackProps) {
+  constructor (scope: Construct, id: string, props: GenAINewsletterStackProps) {
     super(scope, id, props)
+
+    const { config } = props
+
+    this.node.setContext('pinpointIdentity', config.pinpointIdentity)
+
     const authentication = new Authentication(this, 'AuthenticationStack')
 
     const newsSubscriptionIngestion = new NewsSubscriptionIngestion(this, 'NewsletterIngestionStack')

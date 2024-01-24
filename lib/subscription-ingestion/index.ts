@@ -8,6 +8,7 @@ import { Construct } from 'constructs'
 import { IngestionStepFunction as NewsIngestionStepFunction } from './ingestion-step-function'
 import { SubscriptionPollStepFunction } from './subscription-poll-step-function'
 import { type StateMachine } from 'aws-cdk-lib/aws-stepfunctions'
+import { Stack } from 'aws-cdk-lib'
 
 export const newsSubscriptionTableTypeIndex = 'type-index'
 export const newsSubscriptionTableLSI = 'lsi-date-index'
@@ -22,8 +23,8 @@ export class NewsSubscriptionIngestion extends Construct {
   constructor (scope: Construct, id: string) {
     super(scope, id)
     const newsSubscriptionTable = new Table(this, 'NewsSubscriptionTable', {
-      tableName: 'NewsSubscriptionData',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      tableName: Stack.of(this).stackName + '-NewsSubscriptionTable',
+      removalPolicy: cdk.RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
       partitionKey: {
         name: 'subscriptionId',
         type: AttributeType.STRING

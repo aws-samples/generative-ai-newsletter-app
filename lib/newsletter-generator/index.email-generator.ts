@@ -1,6 +1,7 @@
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda'
 import { DynamoDBClient, QueryCommand, type QueryCommandInput, GetItemCommand, type GetItemCommandInput, PutItemCommand, type PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
@@ -18,11 +19,13 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const s3 = tracer.captureAWSv3Client(new S3Client())
+const lambda = tracer.captureAWSv3Client(new LambdaClient())
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const NEWS_SUBSCRIPTION_TABLE_LSI = process.env.NEWS_SUBSCRIPTION_TABLE_LSI
 const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
+const NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION = process.env.NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION
 
 interface EmailGeneratorInput {
   newsletterId: string
@@ -41,11 +44,12 @@ interface ArticleData {
 }
 
 const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
+  const { newsletterId } = event
   logger.debug('Starting email generator', {
-    newsletterId: event.newsletterId
+    newsletterId
   })
-  tracer.putMetadata('subscriptionIds', event.newsletterId)
-  const { subscriptionIds, numberOfDaysToInclude } = await getNewsletterDetails(event.newsletterId)
+  tracer.putMetadata('subscriptionIds', newsletterId)
+  const { subscriptionIds, numberOfDaysToInclude } = await getNewsletterDetails(newsletterId)
 
   tracer.putMetadata('numberOfDaysToInclude', numberOfDaysToInclude)
   const articles = await getArticlesForSubscriptions(subscriptionIds, numberOfDaysToInclude)
@@ -58,6 +62,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   const emailContents = await generateEmail(articles)
   await storeEmailInS3(emailContents, date, emailId)
   await recordEmailDetails(event.newsletterId, emailId, date)
+  await sendNewsletter(newsletterId, emailId)
   logger.debug('Email generator complete')
 }
 
@@ -222,6 +227,26 @@ const recordEmailDetails = async (newsletterId: string, emailId: string, date: D
   }
   const command = new PutItemCommand(input)
   await dynamodb.send(command)
+}
+
+const sendNewsletter = async (newsletterId: string, emailId: string): Promise<void> => {
+  console.debug('Sending Newsletter')
+  const command = new InvokeCommand({
+    FunctionName: NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION,
+    Payload: JSON.stringify({
+      newsletterId,
+      emailId
+    })
+  })
+  const { Payload, LogResult, FunctionError } = await lambda.send(command)
+  if (FunctionError !== undefined) {
+    logger.error('Error creating email campaign', { FunctionError, LogResult })
+    metrics.addMetric('EmailCampaignCreationFailed', MetricUnits.Count, 1)
+    throw new Error(FunctionError as string)
+  } else {
+    logger.debug('Email campaign created', { Payload })
+    metrics.addMetric('EmailCampaignCreated', MetricUnits.Count, 1)
+  }
 }
 
 export const handler = middy()

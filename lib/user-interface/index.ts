@@ -1,7 +1,7 @@
 import { Aws, DockerImage, Duration, RemovalPolicy } from 'aws-cdk-lib'
 import { CloudFrontAllowedMethods, CloudFrontWebDistribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
-import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3'
+import { BlockPublicAccess, Bucket, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
@@ -43,6 +43,9 @@ export class UserInterface extends Construct {
     emailBucket.grantRead(newslettersOAI)
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(this, 'CloudFrontDistribution', {
+      loggingConfig: {
+        bucket: new Bucket(this, 'CloudFrontLoggingBucket', { objectOwnership: ObjectOwnership.OBJECT_WRITER })
+      },
       originConfigs: [
         {
           behaviors: [{ isDefaultBehavior: true }],

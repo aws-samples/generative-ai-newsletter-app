@@ -22,16 +22,33 @@ build-branch:
   - arch:arm64
   - size:large
   before_script:
-    - echo $DEPLOY_CONFIG > ./bin/config.json
+    - npm ci
   script:
     - echo "Executing build..."
-    - npm ci
     - npm run build
     - npx cdk synth
   artifacts:
     paths:
       - ./bin/config.json
+
+synthesize-stack:
+  environment: $CI_COMMIT_BRANCH
+  image: node:20.11.0
+  stage: build
+  before_script:
+    - echo $DEPLOY_CONFIG > ./bin/config.json
+    - npm ci
+  script:
+    - echo "Synthesizing stack..."
+    - npx cdk synth
+  artifacts:
+    paths:
       - ./cdk.out
+  rules:
+    - if: $DEPLOY_CONFIG
+  dependencies:
+    - build-branch
+    
   
 ci-deploy-branch:
   environment: $CI_STABLE_ENV_BRANCH
@@ -45,10 +62,19 @@ ci-deploy-branch:
     AWS_DEFAULT_REGION: $AWS_DEPLOYMENT_REGION
   dependencies:
     - build-branch
+    - synthesize-stack
   before_script:
     - npm ci
     - npm install -g aws-cdk@latest
   script:
+   - echo $(npx cdk diff) > ./cdk-diff.txt
+   - cat ./cdk-deff.txt
    - npx cdk --app ./cdk.out deploy --require-approval never
+  artifacts:
+    untracked: false
+    when: on_success
+    expire_in: 30 days
+    paths:
+      - ./cdk-def.txt
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_STABLE_ENV_BRANCH
+    - if: ($CI_COMMIT_BRANCH == $CI_STABLE_ENV_BRANCH) && $DEPLOY_CONFIG

@@ -26,10 +26,6 @@ build-branch:
   script:
     - echo "Executing build..."
     - npm run build
-    - npx cdk synth
-  artifacts:
-    paths:
-      - ./bin/config.json
 
 synthesize-stack:
   environment: $CI_COMMIT_BRANCH

@@ -3,7 +3,8 @@ import { type DeployConfig } from './types'
 import { bigHeader, formatText } from './consts'
 import prompt from 'prompt-sync'
 import { CONFIG_VERSION } from './config-version'
-const deployConfig = './bin/config.json'
+import path from 'path'
+const deployConfig = path.join(__dirname, '../bin/config.json')
 
 const prompter = prompt({ sigint: true })
 

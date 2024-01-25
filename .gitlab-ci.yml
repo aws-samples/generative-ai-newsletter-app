@@ -47,6 +47,8 @@ synthesize-stack:
   stage: build
   before_script:
     - echo $DEPLOY_CONFIG > ./dist/bin/config.json
+  variables:
+    GIT_STRATEGY: none
   script:
     - echo "Synthesizing stack..."
     - npx cdk synth
@@ -75,6 +77,7 @@ ci-deploy-branch:
   variables:
     AWS_CREDS_TARGET_ROLE: $CI_AWS_CREDS_TARGET_ROLE
     AWS_DEFAULT_REGION: $AWS_DEPLOYMENT_REGION
+    GIT_STRATEGY: none
   needs:
     - synthesize-stack
   before_script:
@@ -92,3 +95,8 @@ ci-deploy-branch:
       - ./cdk-diff.txt
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_STABLE_ENV_BRANCH) && $DEPLOY_CONFIG
+  cache:
+    policy: pull
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/

@@ -1,7 +1,7 @@
 import { RemovalPolicy, Duration, Aws, Stack } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
@@ -78,6 +78,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for creating the newsletter campaigns for each unique email',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -101,6 +102,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for generating the newsletter HTML & Plain Text emails',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -134,6 +136,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for creating and scheduling the newsletter',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -167,6 +170,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for getting looking up a Newsletter and its associated details',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -187,6 +191,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for subscribing a user to the newsletter',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -208,6 +213,7 @@ export class NewsletterGenerator extends Construct {
       description: 'Function responsible for unsubscribing a user from the newsletter',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,

@@ -1,5 +1,5 @@
 {
-  "app": "npx node dist/bin/genai-newsletter-app.js",
+  "app": "npx ts-node --prefer-ts-exts bin/genai-newsletter-app.ts",
   "watch": {
     "include": [
       "**"

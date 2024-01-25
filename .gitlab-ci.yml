@@ -38,7 +38,7 @@ synthesize-stack:
   image: node:20.11.0
   stage: build
   before_script:
-    - echo $DEPLOY_CONFIG > ./bin/config.json
+    - echo $DEPLOY_CONFIG > ./dist/bin/config.json
     - npm ci
   script:
     - echo "Synthesizing stack..."
@@ -46,7 +46,7 @@ synthesize-stack:
   artifacts:
     paths:
       - ./cdk.out
-      - ./bin/config.json
+      - ./dist/bin/config.json
   rules:
     - if: $DEPLOY_CONFIG
   needs:

@@ -6,13 +6,14 @@ import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
-import { type IdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
+import { Effect, type IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 interface UserInterfaceProps {
   userPoolClientId: string
   userPool: IUserPool
-  identityPool: IdentityPool
+  identityPool: IIdentityPool
+  authenticatedUserRole: IRole
   graphqlApiUrl: string
   graphqlApiKey: string | undefined
   emailBucket: Bucket
@@ -20,7 +21,7 @@ interface UserInterfaceProps {
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
-    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl } = props
+    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl, authenticatedUserRole } = props
     const { identityPoolId } = identityPool
     const { userPoolId } = userPool
     super(scope, id)
@@ -81,8 +82,7 @@ export class UserInterface extends Construct {
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
     })
-
-    identityPool.authenticatedRole.addToPrincipalPolicy(
+    authenticatedUserRole.addToPrincipalPolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
         actions: ['s3:GetObject'],
@@ -90,12 +90,13 @@ export class UserInterface extends Construct {
       })
     )
 
-    const awsExports = s3deploy.Source.jsonData('aws-exports.json', {
+    const exports = {
       aws_project_region: Aws.REGION,
       aws_cognito_region: Aws.REGION,
       aws_user_pools_id: userPool.userPoolId,
       aws_user_pools_web_client_id: userPoolClientId,
       aws_cognito_identity_pool_id: identityPoolId,
+      oauth: {},
       Auth: {
         region: Aws.REGION,
         userPoolId,
@@ -116,7 +117,14 @@ export class UserInterface extends Construct {
       appConfig: {
         emailBucket: emailBucket.bucketName
       }
-    })
+    }
+    const auth = this.node.tryGetContext('auth')
+
+    if (auth !== undefined && auth.oauth !== undefined) {
+      exports.oauth = auth.oauth
+    }
+
+    const awsExports = s3deploy.Source.jsonData('aws-exports.json', exports)
 
     const frontEndAsset = s3deploy.Source.asset(appPath, {
       bundling: {

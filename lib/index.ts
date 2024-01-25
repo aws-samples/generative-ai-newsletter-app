@@ -18,6 +18,8 @@ export class GenAINewsletter extends Stack {
     const { config } = props
 
     this.node.setContext('pinpointIdentity', config.pinpointIdentity)
+    this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled)
+    this.node.setContext('authConfig', config.auth)
 
     const authentication = new Authentication(this, 'AuthenticationStack')
 
@@ -46,6 +48,7 @@ export class GenAINewsletter extends Stack {
     new UserInterface(this, 'UserInterface', {
       userPool: authentication.userPool,
       userPoolClientId: authentication.userPoolClientId,
+      authenticatedUserRole: authentication.authenticatedUserRole,
       identityPool: authentication.identityPool,
       emailBucket: newsletterGenerator.emailBucket,
       // graphqlApi: apiStack.graphqlApi,

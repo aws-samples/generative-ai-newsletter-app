@@ -22,7 +22,7 @@ build-branch:
   - arch:arm64
   - size:large
   before_script:
-    - npm ci
+    - npm ci --save-dev
   script:
     - echo "Executing build..."
     - npm run build
@@ -51,6 +51,7 @@ synthesize-stack:
   - size:large
   before_script:
     - echo $DEPLOY_CONFIG > ./dist/bin/config.json
+    - npm install --save-dev
   variables:
     GIT_STRATEGY: none
   script:

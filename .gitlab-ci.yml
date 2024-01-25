@@ -32,6 +32,14 @@ build-branch:
     expire_in: "30 days"
     paths:
       - ./dist
+  cache:
+    policy: push
+    unprotect: false
+    untracked: true
+    when: on_success
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
 
 synthesize-stack:
   environment: $CI_COMMIT_BRANCH
@@ -39,7 +47,6 @@ synthesize-stack:
   stage: build
   before_script:
     - echo $DEPLOY_CONFIG > ./dist/bin/config.json
-    - npm ci
   script:
     - echo "Synthesizing stack..."
     - npx cdk synth
@@ -51,6 +58,11 @@ synthesize-stack:
     - if: $DEPLOY_CONFIG
   needs:
     - build-branch
+  cache:
+    policy: pull
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
     
   
 ci-deploy-branch:

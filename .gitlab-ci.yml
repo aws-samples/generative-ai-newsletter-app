@@ -79,7 +79,6 @@ ci-deploy-branch:
   variables:
     AWS_CREDS_TARGET_ROLE: $CI_AWS_CREDS_TARGET_ROLE
     AWS_DEFAULT_REGION: $AWS_DEPLOYMENT_REGION
-    GIT_STRATEGY: none
   needs:
     - synthesize-stack
   before_script:

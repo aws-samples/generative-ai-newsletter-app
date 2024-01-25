@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
@@ -74,6 +74,7 @@ export class NewsSubscriptionIngestion extends Construct {
       description: 'Function responsible for subscribing to a specified RSS/ATOM feed',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,

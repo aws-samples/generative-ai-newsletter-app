@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib'
 import { type StackProps } from 'aws-cdk-lib'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
@@ -24,6 +24,7 @@ export class IngestionStepFunction extends Construct {
       description: 'Function responsible for reading feeds and return the articles for ingestion',
       handler: 'handler',
       architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
       logRetention: RetentionDays.ONE_WEEK,
@@ -38,6 +39,7 @@ export class IngestionStepFunction extends Construct {
     const filterIngestedArticlesFunction = new NodejsFunction(this, 'filter-ingested-articles', {
       description: 'Function responsible for filtering out already ingested articles',
       handler: 'handler',
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
@@ -54,6 +56,7 @@ export class IngestionStepFunction extends Construct {
     const articleIngestionFunction = new NodejsFunction(this, 'article-ingestor', {
       description: 'Function responsible for ingesting each article\'s content, summarizing it, and storing the data in DDB',
       handler: 'handler',
+      runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       architecture: Architecture.ARM_64,
       logFormat: LogFormat.JSON,

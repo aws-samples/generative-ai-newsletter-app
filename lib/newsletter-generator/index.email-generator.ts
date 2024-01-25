@@ -158,7 +158,7 @@ const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailCon
 const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<void> => {
   logger.debug('Storing email in S3 Email Bucket')
   const year = date.getUTCFullYear()
-  const month = date.getUTCMonth() + 1
+  const month: string = (date.getUTCMonth() + 1 < 10) ? (date.getUTCMonth() + 1).toString() : '0' + date.getUTCMonth() + 1
   const day = date.getUTCDate()
 
   const emailKey = `newsletter-content/${year}/${month}/${day}/${emailId}`

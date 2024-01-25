@@ -87,7 +87,6 @@ ci-deploy-branch:
   needs:
     - synthesize-stack
   before_script:
-    - npm ci
     - npm install -g aws-cdk@latest
   script:
    - echo $(npx cdk diff) > ./cdk-diff.txt

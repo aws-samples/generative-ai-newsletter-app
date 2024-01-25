@@ -34,8 +34,6 @@ build-branch:
       - ./dist
   cache:
     policy: push
-    unprotect: false
-    untracked: true
     when: on_success
     key: $CI_COMMIT_REF_SLUG
     paths:
@@ -48,6 +46,9 @@ synthesize-stack:
   environment: $CI_COMMIT_BRANCH
   image: node:20.11.0
   stage: build
+  tags:
+  - arch:arm64
+  - size:large
   before_script:
     - echo $DEPLOY_CONFIG > ./dist/bin/config.json
   variables:

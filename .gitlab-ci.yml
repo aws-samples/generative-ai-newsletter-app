@@ -48,7 +48,7 @@ synthesize-stack:
   - arch:arm64
   - size:large
   before_script:
-    - echo $DEPLOY_CONFIG > ./dist/bin/config.json
+    - echo $DEPLOY_CONFIG > ./bin/config.json
     - npm install --save-dev
   script:
     - echo "Synthesizing stack..."
@@ -56,7 +56,7 @@ synthesize-stack:
   artifacts:
     paths:
       - ./cdk.out
-      - ./dist/bin/config.json
+      - ./bin/config.json
   rules:
     - if: $DEPLOY_CONFIG
   needs:

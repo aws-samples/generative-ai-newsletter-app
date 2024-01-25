@@ -40,6 +40,9 @@ build-branch:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - node_modules/
+      - package.json
+      - package-lock.json
+      - cdk.json
 
 synthesize-stack:
   environment: $CI_COMMIT_BRANCH
@@ -65,6 +68,9 @@ synthesize-stack:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - node_modules/
+      - package.json
+      - package-lock.json
+      - cdk.json
     
   
 ci-deploy-branch:
@@ -100,3 +106,6 @@ ci-deploy-branch:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - node_modules/
+      - package.json
+      - package-lock.json
+      - cdk.json

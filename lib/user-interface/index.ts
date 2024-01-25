@@ -1,4 +1,4 @@
-import { Aws, DockerImage, Duration, RemovalPolicy } from 'aws-cdk-lib'
+import { Aws, CfnOutput, DockerImage, Duration, RemovalPolicy } from 'aws-cdk-lib'
 import { CloudFrontAllowedMethods, CloudFrontWebDistribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import { BlockPublicAccess, Bucket, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
@@ -76,6 +76,10 @@ export class UserInterface extends Construct {
           responsePagePath: '/index.html'
         }
       ]
+    })
+
+    new CfnOutput(this, 'CloudFrontDistributionDomainName', {
+      value: cloudfrontDistribution.distributionDomainName
     })
 
     identityPool.authenticatedRole.addToPrincipalPolicy(

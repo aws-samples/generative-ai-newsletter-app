@@ -147,17 +147,16 @@ export function CustomAuthenticator() {
         if (appContext.Auth.Cognito.loginWith?.oauth?.providers !== undefined) {
             console.log('providers present')
             for (const listedProvider of appContext.Auth.Cognito.loginWith.oauth.providers) {
-                if (listedProvider instanceof Object && listedProvider.custom !== undefined) {
-                    provider = listedProvider
-                }
+                provider = listedProvider.toString()
             }
-            console.log(provider)
+            if (provider) {
+                signInWithRedirect({
+                    provider: {
+                        custom: provider
+                    }
+                })
+            }
 
-            signInWithRedirect({
-                provider: {
-                    custom: 'AmazonFederate'
-                }
-            })
 
 
         }

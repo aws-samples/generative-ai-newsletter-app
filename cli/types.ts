@@ -20,7 +20,7 @@ export interface DeployConfig {
       oauth?: {
         customProvider?: string
         domain: string
-        scopes: string[]
+        scope: string[]
         redirectSignIn: string
         redirectSignOut: string
         responseType: string

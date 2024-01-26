@@ -106,7 +106,7 @@ export class UserInterface extends Construct {
     const auth = this.node.tryGetContext('authConfig')
 
     if (auth !== undefined && auth.cognito.oauth !== undefined) {
-      exports.Auth.Cognito.loginWith = { ...auth.cognito.oauth }
+      exports.Auth.Cognito.loginWith = { oauth: { ...auth.cognito.oauth } }
     }
 
     const awsExports = s3deploy.Source.jsonData('amplifyconfiguration.json', exports)

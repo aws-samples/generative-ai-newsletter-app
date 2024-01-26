@@ -139,20 +139,26 @@ export function CustomAuthenticator() {
     const appContext = useContext(AppContext)
 
     const handleFederateClick = () => {
+        console.log('handleFederateFlickStart')
         let provider = null
         if (!appContext) { return }
+        console.log(appContext)
         if (!appContext.Auth.Cognito.loginWith?.oauth) { return }
         if (appContext.Auth.Cognito.loginWith?.oauth?.providers !== undefined) {
+            console.log('providers present')
             for (const listedProvider of appContext.Auth.Cognito.loginWith.oauth.providers) {
                 if (listedProvider instanceof Object && listedProvider.custom !== undefined) {
                     provider = listedProvider
                 }
             }
-            if (provider !== null) {
-                signInWithRedirect({
-                    provider
-                })
-            }
+            console.log(provider)
+
+            signInWithRedirect({
+                provider: {
+                    custom: 'AmazonFederate'
+                }
+            })
+
 
         }
     }
@@ -160,17 +166,19 @@ export function CustomAuthenticator() {
 
 
     return (
-        <Container
-            header={
-                <Header
-                    description="Click to Federate">
-                    Sign In
-                </Header>
-            }
-        >
-            <Button variant='primary' onClick={handleFederateClick}>
-                Federate
-            </Button>
-        </Container>
+        <SpaceBetween direction='vertical' size='l' alignItems='center'>
+            <Container
+                header={
+                    <Header
+                        description="Click to Federate">
+                        Sign In
+                    </Header>
+                }
+            >
+                <Button variant='primary' onClick={handleFederateClick}>
+                    Federate
+                </Button>
+            </Container>
+        </SpaceBetween>
     )
 }

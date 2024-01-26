@@ -1,25 +1,12 @@
-import { useEffect, useState } from "react";
-import { getCurrentUser, signOut } from "@aws-amplify/auth";
+import { useContext, } from "react";
+import { signOut } from "@aws-amplify/auth";
 import {
   ButtonDropdownProps,
   TopNavigation,
 } from "@cloudscape-design/components";
+import { UserContext } from "../common/user-context";
 export default function GlobalHeader() {
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const result = await getCurrentUser()
-
-      if (!result || Object.keys(result).length === 0) {
-        signOut();
-        return;
-      }
-
-      const userName = result.userId
-      setUserName(userName);
-    })();
-  }, []);
+  const userContext = useContext(UserContext)
 
   const onUtilClick = ({
     detail,
@@ -46,8 +33,8 @@ export default function GlobalHeader() {
             onItemClick: onUtilClick,
             items: [
               {
-                id: "username",
-                text: userName ?? "User Not Found",
+                id: "name",
+                text: userContext?.userGivenName ?? "User Not Found",
               },
               {
                 id: "signout",

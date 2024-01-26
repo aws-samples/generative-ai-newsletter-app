@@ -17,7 +17,7 @@ export class Authentication extends Construct {
   public readonly authenticatedUserRole: IRole
   constructor (scope: Construct, id: string, props?: AuthenticationProps) {
     super(scope, id)
-    const auth = this.node.tryGetContext('auth')
+    const auth = this.node.tryGetContext('authConfig')
     if (props?.userPoolId === undefined || auth === undefined) {
       const selfSignUpEnabled = this.node.tryGetContext('selfSignUpEnabled') ?? false
       const userPool = new UserPool(this, 'UserPool', {

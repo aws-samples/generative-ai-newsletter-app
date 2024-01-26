@@ -19,7 +19,7 @@ export interface AppConfig {
         redirectSignIn: string,
         redirectSignOut: string,
         responseType: string,
-        
+        customProvider?: string,
       }
       aws_appsync_graphqlEndpoint: string,
       aws_appsync_region: string,
@@ -34,7 +34,7 @@ export interface UserData {
   userId: string,
   userGroups?: string[],
   setUserId: Dispatch<SetStateAction<string>>
-  setGroups: Dispatch<SetStateAction<string[]>>
+  setUserGroups: Dispatch<SetStateAction<string[]>>
 }
 
 export interface NavigationPanelState {

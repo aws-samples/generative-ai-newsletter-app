@@ -18,6 +18,7 @@ export interface DeployConfig {
       identityPoolId: string
       authenticatedUserArn: string
       oauth?: {
+        customProvider?: string
         domain: string
         scope: string[]
         redirectSignIn: string

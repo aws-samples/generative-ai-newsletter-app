@@ -7,7 +7,7 @@ import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
 import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { Effect, type IRole, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { type IRole } from 'aws-cdk-lib/aws-iam'
 
 interface UserInterfaceProps {
   userPoolClientId: string
@@ -21,7 +21,7 @@ interface UserInterfaceProps {
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
-    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl, authenticatedUserRole } = props
+    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl } = props
     const { identityPoolId } = identityPool
     const { userPoolId } = userPool
     super(scope, id)
@@ -82,13 +82,6 @@ export class UserInterface extends Construct {
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
     })
-    authenticatedUserRole.addToPrincipalPolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['s3:GetObject'],
-        resources: [`${emailBucket.bucketArn}/NEWSLETTERS/`]
-      })
-    )
 
     const exports = {
       aws_project_region: Aws.REGION,

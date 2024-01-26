@@ -12,6 +12,7 @@ import NewsletterDetail from "./pages/newsletters/detail";
 import DataFeedsDashboard from "./pages/data-feeds/dashboard";
 import CreateDataFeed from "./pages/data-feeds/create";
 import DataFeedDetails from "./pages/data-feeds/detail";
+import { Authenticator } from "@aws-amplify/ui-react";
 function App() {
   return (
     <div style={{ height: "100%" }}>
@@ -29,7 +30,7 @@ function App() {
             <Route path="/feeds/create" element={<CreateDataFeed />} />
             <Route path="/feeds/:subscriptionId" element={<DataFeedDetails />} />
             <Route path="/feeds/:subscriptionId/edit" element={<CreateDataFeed />}/>
-
+            <Route path="/login" element={<Authenticator />}/>
           </Routes>
         </div>
       </BrowserRouter>

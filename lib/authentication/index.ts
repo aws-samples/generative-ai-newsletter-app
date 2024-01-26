@@ -76,7 +76,9 @@ export class Authentication extends Construct {
         this.userPoolClientId = props.userPoolClientId ?? auth.cognito.userPoolClientId
         if (auth.cognito.identityPoolId !== undefined && auth.cognito.authenticatedUserArn !== undefined) {
           this.identityPool = IdentityPool.fromIdentityPoolId(this, 'IdentityPool', auth.cognito.identityPoolId as string)
-          this.authenticatedUserRole = Role.fromRoleArn(this, 'AuthenticatedUserRole', auth.cognito.authenticatedUserArn as string)
+          this.authenticatedUserRole = Role.fromRoleArn(this, 'AuthenticatedUserRole', auth.cognito.authenticatedUserArn as string, {
+            mutable: true
+          })
         } else {
           const identityPool = new IdentityPool(this, 'IdentityPool', {
             authenticationProviders: {
@@ -93,6 +95,9 @@ export class Authentication extends Construct {
       }
       this.userPoolId = userPool.userPoolId
       this.userPool = userPool
+      if (this.authenticatedUserRole === undefined) {
+        throw new Error('DAMN')
+      }
     }
   }
 }

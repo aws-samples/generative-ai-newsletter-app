@@ -21,7 +21,7 @@ interface UserInterfaceProps {
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
-    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiKey, graphqlApiUrl } = props
+    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiUrl } = props
     const { identityPoolId } = identityPool
     const { userPoolId } = userPool
     super(scope, id)
@@ -84,29 +84,21 @@ export class UserInterface extends Construct {
     })
 
     const exports = {
-      aws_project_region: Aws.REGION,
-      aws_cognito_region: Aws.REGION,
-      aws_user_pools_id: userPool.userPoolId,
-      aws_user_pools_web_client_id: userPoolClientId,
-      aws_cognito_identity_pool_id: identityPoolId,
-      oauth: {},
       Auth: {
-        region: Aws.REGION,
-        userPoolId,
-        userPoolWebClientId: userPoolClientId,
-        identityPoolId
+        Cognito: {
+          userPoolId,
+          userPoolClientId,
+          identityPoolId,
+          loginWith: {}
+        }
       },
       API: {
         GraphQL: {
-          endpoints: graphqlApiUrl,
+          endpoint: graphqlApiUrl,
           region: Aws.REGION,
           defaultAuthMode: 'userPool'
         }
       },
-      aws_appsync_graphqlEndpoint: graphqlApiUrl,
-      aws_appsync_region: Aws.REGION,
-      aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-      aws_appsync_apiKey: graphqlApiKey,
       appConfig: {
         emailBucket: emailBucket.bucketName
       }
@@ -114,10 +106,10 @@ export class UserInterface extends Construct {
     const auth = this.node.tryGetContext('authConfig')
 
     if (auth !== undefined && auth.cognito.oauth !== undefined) {
-      exports.oauth = auth.cognito.oauth
+      exports.Auth.Cognito.loginWith = { ...auth.cognito.oauth }
     }
 
-    const awsExports = s3deploy.Source.jsonData('aws-exports.json', exports)
+    const awsExports = s3deploy.Source.jsonData('amplifyconfiguration.json', exports)
 
     const frontEndAsset = s3deploy.Source.asset(appPath, {
       bundling: {

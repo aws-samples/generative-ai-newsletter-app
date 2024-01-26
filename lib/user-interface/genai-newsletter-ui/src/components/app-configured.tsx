@@ -3,21 +3,18 @@ import { AppConfig } from "../common/types";
 import { Amplify } from "aws-amplify";
 import { AppContext } from "../common/app-context";
 import App from "../app";
-import { Authenticator } from "@aws-amplify/ui-react";
 import { Alert } from "@cloudscape-design/components";
-import { getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
-import { UserContext, userContextDefault } from "../common/user-context";
+import Authenticator from "./auth/custom-authenticator";
+
 
 
 export default function AppConfigured() {
     const [config, setConfig] = useState<AppConfig | null>(null)
-    const [error, setError] = useState<boolean | null>(null);
-    const [userId, setUserId] = useState(userContextDefault.userId)
-    const [userGroups, setUserGroups] = useState(userContextDefault.userGroups ?? [])
+    const [error, setError] = useState<boolean | null>(null);    
     useEffect(() => {
         (async () => {
             try {
-                const result = await fetch('/aws-exports.json')
+                const result = await fetch('/amplifyconfiguration.json')
                 const awsExports = await result.json() as AppConfig | null
                 Amplify.configure({
                     ...awsExports,
@@ -30,26 +27,6 @@ export default function AppConfigured() {
         })()
     }, [])
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const user = await getCurrentUser()
-                setUserId(user.userId)
-            } catch (error) {
-                console.error(error)
-                if (!config) { return }
-                if (config.oauth?.customProvider !== undefined && config.oauth?.customProvider?.length > 0) {
-                    signInWithRedirect({
-                        provider: {
-                            custom: config.oauth.customProvider,
-                        }
-                    })
-                } else{
-                    window.location.href = '/login'
-                }
-            }
-        })
-    }, [config])
 
 
     if (!config) {
@@ -82,11 +59,9 @@ export default function AppConfigured() {
 
     return (
         <AppContext.Provider value={config}>
-            <UserContext.Provider value={{ setUserId, userId, setUserGroups, userGroups }}>
-                <Authenticator>
-                    <App />
-                </Authenticator>
-            </UserContext.Provider>
+            <Authenticator>
+                <App />
+            </Authenticator>
         </AppContext.Provider>
     )
 

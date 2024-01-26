@@ -16,7 +16,7 @@ export default function GlobalHeader() {
         return;
       }
 
-      const userName = result?.userId
+      const userName = result.userId
       setUserName(userName);
     })();
   }, []);

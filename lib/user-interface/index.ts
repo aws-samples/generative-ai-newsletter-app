@@ -113,8 +113,8 @@ export class UserInterface extends Construct {
     }
     const auth = this.node.tryGetContext('auth')
 
-    if (auth !== undefined && auth.oauth !== undefined) {
-      exports.oauth = auth.oauth
+    if (auth !== undefined && auth.cognito.oauth !== undefined) {
+      exports.oauth = auth.cognito.oauth
     }
 
     const awsExports = s3deploy.Source.jsonData('aws-exports.json', exports)

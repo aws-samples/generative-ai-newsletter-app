@@ -26,12 +26,6 @@ build-branch:
   script:
     - echo "Executing build..."
     - npm run build
-  artifacts:
-    untracked: false
-    when: on_success
-    expire_in: "30 days"
-    paths:
-      - ./dist
   cache:
     policy: push
     when: on_success

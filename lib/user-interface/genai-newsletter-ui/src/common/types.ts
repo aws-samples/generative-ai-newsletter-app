@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react"
 
 
 export interface AppConfig {
@@ -12,6 +13,14 @@ export interface AppConfig {
         userPoolWebClientId: string,
         IdentityPoolId: string
       },
+      oauth?: {
+        domain: string,
+        scope: string,
+        redirectSignIn: string,
+        redirectSignOut: string,
+        responseType: string,
+        customProvider?: string,
+      }
       aws_appsync_graphqlEndpoint: string,
       aws_appsync_region: string,
       aws_appsync_authenticationType: string
@@ -19,6 +28,13 @@ export interface AppConfig {
       appConfig : {
         emailBucket: string
       }
+}
+
+export interface UserData {
+  userId: string,
+  userGroups?: string[],
+  setUserId: Dispatch<SetStateAction<string>>
+  setUserGroups: Dispatch<SetStateAction<string[]>>
 }
 
 export interface NavigationPanelState {

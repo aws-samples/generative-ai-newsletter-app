@@ -65,7 +65,8 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
     config = {
       stackName: 'GenAINewsletter',
       pinpointIdentity: '',
-      configVersion: CONFIG_VERSION
+      configVersion: CONFIG_VERSION,
+      selfSignUpEnabled: false
     }
   }
   if (config !== null) {
@@ -116,6 +117,19 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
       console.log(formatText('Deployment AWS Region', { textColor: 'blue' }))
       const region = prompter(config?.env?.region !== undefined ? `(${config?.env?.region}):` : 'AWS Region:', config?.env?.region ?? '')
       config.env.region = region ?? ''
+    }
+    let selfSignUpResponseApproved = false
+    while (!selfSignUpResponseApproved) {
+      const response = prompter(formatText('Do you want to enable self sign up? (y/N):', { bold: true, textColor: 'blue' }), 'N')
+      if (response.toLowerCase() === 'y') {
+        config.selfSignUpEnabled = true
+        selfSignUpResponseApproved = true
+      } else if (response.toLowerCase() === 'n') {
+        selfSignUpResponseApproved = true
+        config.selfSignUpEnabled = false
+      } else {
+        console.log(formatText('Invalid Input!', { backgroundColor: 'bg-white', textColor: 'red', bold: true }))
+      }
     }
   }
   fs.writeFileSync(deployConfig, JSON.stringify(config, null, '\t'))

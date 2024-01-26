@@ -5,7 +5,7 @@
     "genai-newsletter-app": "bin/genai-newsletter-app.js"
   },
   "scripts": {
-    "config": "node ./dist/cli/config.js --",
+    "config": "node ./cli/config.js --",
     "build": "tsc",
     "codegen:prepare": "rm -f lib/api/API.ts && rm -f lib/user-interface/genai-newsletter-ui/src/graphql/*",
     "codegen": "npm run codegen:prepare && cd lib/api && amplify codegen && cp ../user-interface/genai-newsletter-ui/src/API.ts ./API.ts",

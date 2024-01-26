@@ -111,7 +111,7 @@ export class UserInterface extends Construct {
         emailBucket: emailBucket.bucketName
       }
     }
-    const auth = this.node.tryGetContext('auth')
+    const auth = this.node.tryGetContext('authConfig')
 
     if (auth !== undefined && auth.cognito.oauth !== undefined) {
       exports.oauth = auth.cognito.oauth

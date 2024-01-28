@@ -30,14 +30,13 @@ export default function Authenticator(props: PropsWithChildren) {
                         if (attributes.family_name) {
                             setUserFamilyName(attributes.family_name)
                         }
-                    }catch(error){
-                        console.log(error)
-                        
+                    } catch (error) { 
+                        //Error is okay
                     }
-                    
+
                 }
             } catch (error) {
-                console.debug(error)
+                //Error is okay
             }
 
 
@@ -56,7 +55,6 @@ export default function Authenticator(props: PropsWithChildren) {
                 }
             })
         } else {
-            console.log('DEFAULT HUB IS SET TO LISTEN')
             Hub.listen("auth", ({ payload }) => {
                 if (payload.event === "signedOut") {
                     setUserId('')

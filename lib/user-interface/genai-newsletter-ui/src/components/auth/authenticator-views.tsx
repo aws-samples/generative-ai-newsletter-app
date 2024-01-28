@@ -18,12 +18,9 @@ export function DefaultAuthenticator() {
             try {
                 await getCurrentUser()
                 await signOut()
-                console.log('triggered sign out')
             } catch (error) {
-                console.log('looks like no active user!')
-                console.log(error)
+                //Error is okay
             }
-            console.log('starting handleSignIn logic')
             try {
                 const signInResponse = await signIn({ username, password });
                 if (!signInResponse.isSignedIn && signInResponse.nextStep.signInStep == 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {

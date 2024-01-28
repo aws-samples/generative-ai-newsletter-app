@@ -13,6 +13,16 @@ export interface DeployConfig {
   appHostName?: {
     domainName: string
   }
+  ui?: {
+    sideNavigition?: Array<{
+      title: string
+      url: string
+    }>
+    headerLinks?: Array<{
+      title: string
+      url: string
+    }>
+  }
   auth?: {
     cognito: {
       userPoolId: string

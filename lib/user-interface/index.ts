@@ -92,6 +92,7 @@ export class UserInterface extends Construct {
           loginWith: {}
         }
       },
+      ui: this.node.tryGetContext('ui'),
       API: {
         GraphQL: {
           endpoint: graphqlApiUrl,

@@ -10,6 +10,16 @@ export interface AppConfig {
   appConfig : {
     emailBucket: string
   }
+  ui?: {
+    sideNavigition?: Array<{
+      title: string
+      url: string
+    }>
+    headerLinks?: Array<{
+      title: string
+      url: string
+    }>
+  }
 }
 
 export interface UserData {

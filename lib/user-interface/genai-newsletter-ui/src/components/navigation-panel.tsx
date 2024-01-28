@@ -2,18 +2,47 @@ import {
   SideNavigation,
   SideNavigationProps,
 } from "@cloudscape-design/components";
-import { useEffect, useState } from "react";
-// import { AppContext } from "../common/app-context";
+import { useContext, useEffect, useState } from "react";
+import { AppContext } from "../common/app-context";
 import { useNavigationPanelState } from "../common/hooks/use-navigation-panel-state";
 import { useLocation, useNavigate } from "react-router-dom";
 export default function NavigationPanel() {
   const navigate = useNavigate()
+  const appContext = useContext(AppContext)
   const location = useLocation()
   const [activeHref, setActiveHref] = useState<string>('')
   const [navigationPanelState, setNavigationPanelState] =
     useNavigationPanelState();
-  const [items] = useState<SideNavigationProps.Item[]>(() => {
-    return [
+
+
+
+  const [items, setItems] = useState<SideNavigationProps.Item[]>([])
+
+  const onChange = ({ detail }: { detail: SideNavigationProps.ChangeDetail; }) => {
+    const sectionIndex = items.indexOf(detail.item);
+    setNavigationPanelState({
+      collapsedSections: {
+        ...navigationPanelState.collapsedSections,
+        [sectionIndex]: !detail.expanded,
+      },
+    });
+  };
+
+  const onFollow = (event: CustomEvent<SideNavigationProps.FollowDetail>) => {
+    if (!event.detail.external && event.detail.type === 'link') {
+      event.preventDefault()
+      setActiveHref(event.detail.href)
+      navigate(event.detail.href)
+    }
+  }
+
+  useEffect(() => {
+    const { pathname } = location
+    setActiveHref(pathname)
+  }, [location])
+
+  useEffect(() => {
+    const sideNavigation: SideNavigationProps.Item[] = [
       {
         type: "section",
         text: "Newsletters",
@@ -48,34 +77,27 @@ export default function NavigationPanel() {
             type: 'link',
             text: 'Create Data Feed',
             href: '/feeds/create'
-          }
+          },
+
         ]
-      }
-    ]
-  })
-
-  const onChange = ({ detail }: { detail: SideNavigationProps.ChangeDetail; }) => {
-    const sectionIndex = items.indexOf(detail.item);
-    setNavigationPanelState({
-      collapsedSections: {
-        ...navigationPanelState.collapsedSections,
-        [sectionIndex]: !detail.expanded,
       },
-    });
-  };
-
-  const onFollow = (event: CustomEvent<SideNavigationProps.FollowDetail>) => {
-    if (!event.detail.external && event.detail.type === 'link') {
-      event.preventDefault()
-      setActiveHref(event.detail.href)
-      navigate(event.detail.href)
+    ]
+    if (appContext?.ui?.sideNavigition !== undefined && appContext?.ui?.sideNavigition.length > 0) {
+      sideNavigation.push({
+        type: "divider"
+      })
+      sideNavigation.push({
+        type: "section",
+        text: "External Links",
+        items: appContext.ui.sideNavigition.map(link => ({
+          type: "link",
+          text: link.title,
+          href: link.url
+        })),
+      })
     }
-  }
-
-  useEffect(() => {
-    const { pathname } = location
-    setActiveHref(pathname)
-  }, [location])
+    setItems(sideNavigation)
+  }, [appContext])
 
   return (
     <SideNavigation

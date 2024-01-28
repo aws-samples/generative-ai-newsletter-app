@@ -5,7 +5,9 @@ import {
   TopNavigation,
 } from "@cloudscape-design/components";
 import { UserContext } from "../common/user-context";
+import { AppContext } from "../common/app-context";
 export default function GlobalHeader() {
+  const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
 
   const onUtilClick = ({
@@ -15,6 +17,16 @@ export default function GlobalHeader() {
   }) => {
     if (detail.id === "signout") {
       signOut();
+    }
+  }
+  const addedLinks = []
+  if(appContext?.ui?.headerLinks){
+    for(const link of appContext.ui.headerLinks){
+      addedLinks.push({
+        id:"added-link-" + link.title.replace(' ',''),
+        text: link.title,
+        href: link.url,
+      })
     }
   }
 
@@ -39,10 +51,12 @@ export default function GlobalHeader() {
               {
                 id: "signout",
                 text: "Sign Out",
-              }
-            ]
+              },
+              ...addedLinks
+            ], 
           }
         ]}
+
       />
     </div>
   )

@@ -18,7 +18,7 @@ export class Authentication extends Construct {
   constructor (scope: Construct, id: string, props?: AuthenticationProps) {
     super(scope, id)
     const auth = this.node.tryGetContext('authConfig')
-    if (props?.userPoolId === undefined || auth === undefined) {
+    if (props?.userPoolId === undefined && auth === undefined) {
       const selfSignUpEnabled = this.node.tryGetContext('selfSignUpEnabled') ?? false
       const userPool = new UserPool(this, 'UserPool', {
         removalPolicy: RemovalPolicy.DESTROY,
@@ -50,8 +50,8 @@ export class Authentication extends Construct {
       this.userPoolClientId = userPoolClient.userPoolClientId
       this.identityPool = identityPool
     } else {
-      const userPool = UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId ?? auth.cognito.userPoolId)
-      if (props.userPoolClientId === undefined || auth.cognito.userPoolClientId === undefined) {
+      const userPool = UserPool.fromUserPoolId(this, 'UserPool', props?.userPoolId ?? auth.cognito.userPoolId as string)
+      if ((props?.userPoolClientId === undefined) && auth.cognito.userPoolClientId === undefined) {
         const userPoolClient = userPool.addClient('UserPoolClient', {
           generateSecret: false,
           authFlows: {
@@ -73,7 +73,7 @@ export class Authentication extends Construct {
         this.userPoolClientId = userPoolClient.userPoolClientId
         this.identityPool = identityPool
       } else {
-        this.userPoolClientId = props.userPoolClientId ?? auth.cognito.userPoolClientId
+        this.userPoolClientId = props?.userPoolClientId ?? auth.cognito.userPoolClientId
         if (auth.cognito.identityPoolId !== undefined && auth.cognito.authenticatedUserArn !== undefined) {
           this.identityPool = IdentityPool.fromIdentityPoolId(this, 'IdentityPool', auth.cognito.identityPoolId as string)
           this.authenticatedUserRole = Role.fromRoleArn(this, 'AuthenticatedUserRole', auth.cognito.authenticatedUserArn as string, {

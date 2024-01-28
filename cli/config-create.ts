@@ -64,7 +64,10 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
   if (configStyle === 'NEW') {
     config = {
       stackName: 'GenAINewsletter',
-      pinpointIdentity: '',
+      pinpointEmail: {
+        senderAddress: '',
+        verifiedIdentity: ''
+      },
       configVersion: CONFIG_VERSION,
       selfSignUpEnabled: false
     }
@@ -88,15 +91,27 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
     let pinpointIdentityApproved = false
     while (!pinpointIdentityApproved) {
       console.log(formatText('SES/Pinpoint Verified Identity ARN:', { textColor: 'blue' }))
-      const pinpointIdentity = prompter(`(${config?.pinpointIdentity}):`, config?.pinpointIdentity ?? '')
+      const pinpointIdentity = prompter(`(${config?.pinpointEmail.verifiedIdentity}):`, config?.pinpointEmail.verifiedIdentity ?? '')
       if (pinpointIdentity.length > 0) {
-        config.pinpointIdentity = pinpointIdentity
+        config.pinpointEmail.verifiedIdentity = pinpointIdentity
         pinpointIdentityApproved = true
-      } else if (config.pinpointIdentity.length < 1 && pinpointIdentity.length < 1) {
+      } else if (config.pinpointEmail.verifiedIdentity.length < 1 && pinpointIdentity.length < 1) {
         console.log(formatText('Invalid Input!', { backgroundColor: 'bg-white', textColor: 'red', bold: true }))
-      } else if (config.pinpointIdentity.length > 0) {
+      } else if (config.pinpointEmail.verifiedIdentity.length > 0) {
         pinpointIdentityApproved = true
       }
+    }
+    let pinpointSenderApproved = false
+    while (!pinpointSenderApproved) {
+      console.log(formatText('What is the email address used to send Newsletter emails?', { textColor: 'blue' }))
+      console.log(formatText('Note: this email should be part of the approved identity you provided', { italic: true }))
+      const pinpointSender = prompter(`(${config?.pinpointEmail.senderAddress}):`, config?.pinpointEmail.senderAddress ?? '')
+      if (pinpointSender.length > 0) {
+        config.pinpointEmail.senderAddress = pinpointSender
+        pinpointSenderApproved = true
+        break
+      }
+      console.log(formatText('Invalid Input!', { backgroundColor: 'bg-white', textColor: 'red', bold: true }))
     }
     let addEnvData = false
     if (config.env === undefined) {

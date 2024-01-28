@@ -22,7 +22,8 @@ export class PinpointApp extends Construct {
   constructor (scope: Construct, id: string, props: PinpointAppProps) {
     super(scope, id)
 
-    const pinpointIdentity = this.node.tryGetContext('pinpointIdentity')
+    const pinpointEmail = this.node.tryGetContext('pinpointEmail')
+    const { verifiedIdentity, senderAddress } = pinpointEmail
 
     const stackDetails = Stack.of(this)
     const pinpointApp = new CfnApp(this, 'PinpointApp', {
@@ -33,8 +34,8 @@ export class PinpointApp extends Construct {
     new CfnEmailChannel(this, 'PinpointEmailChannel', {
       applicationId: this.pinpointAppId,
       enabled: true,
-      fromAddress: 'awsrudy@amazon.com', // TODO Make this parameterized
-      identity: pinpointIdentity
+      fromAddress: senderAddress,
+      identity: verifiedIdentity
 
     })
 

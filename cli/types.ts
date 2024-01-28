@@ -6,7 +6,10 @@ export interface DeployConfig {
   }
   selfSignUpEnabled: boolean
   configVersion: string
-  pinpointIdentity: string
+  pinpointEmail: {
+    verifiedIdentity: string
+    senderAddress: string
+  }
   appHostName?: {
     domainName: string
   }

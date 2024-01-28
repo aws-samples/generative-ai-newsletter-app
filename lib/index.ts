@@ -17,7 +17,7 @@ export class GenAINewsletter extends Stack {
 
     const { config } = props
 
-    this.node.setContext('pinpointIdentity', config.pinpointIdentity)
+    this.node.setContext('pinpointEmail', config.pinpointEmail)
     this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled)
     this.node.setContext('authConfig', config.auth)
 

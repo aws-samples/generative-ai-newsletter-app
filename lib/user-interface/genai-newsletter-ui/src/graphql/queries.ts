@@ -8,8 +8,12 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getNewsletters = /* GraphQL */ `query GetNewsletters($input: GetNewslettersInput) {
-  getNewsletters(input: $input) {
+export const getNewsletters = /* GraphQL */ `query GetNewsletters(
+  $input: GetNewslettersInput
+  $nextToken: String
+  $limit: Int
+) {
+  getNewsletters(input: $input, nextToken: $nextToken, limit: $limit) {
     newsletters {
       newsletterId
       title
@@ -19,6 +23,7 @@ export const getNewsletters = /* GraphQL */ `query GetNewsletters($input: GetNew
       shared
       scheduleId
       createdAt
+      owner
       __typename
     }
     nextToken
@@ -50,6 +55,7 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
     shared
     scheduleId
     createdAt
+    owner
     __typename
   }
 }
@@ -176,6 +182,28 @@ export const getUserNewsletterSubscriptionStatus = /* GraphQL */ `query GetUserN
 ` as GeneratedQuery<
   APITypes.GetUserNewsletterSubscriptionStatusQueryVariables,
   APITypes.GetUserNewsletterSubscriptionStatusQuery
+>;
+export const getUserNewsletterSubscriptions = /* GraphQL */ `query GetUserNewsletterSubscriptions($nextToken: String, $limit: Int) {
+  getUserNewsletterSubscriptions(nextToken: $nextToken, limit: $limit) {
+    newsletters {
+      newsletterId
+      title
+      numberOfDaysToInclude
+      subscriptionIds
+      discoverable
+      shared
+      scheduleId
+      createdAt
+      owner
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetUserNewsletterSubscriptionsQueryVariables,
+  APITypes.GetUserNewsletterSubscriptionsQuery
 >;
 export const getNewsletterSubscriberStats = /* GraphQL */ `query GetNewsletterSubscriberStats($input: GetNewsletterSubscriberStatsInput) {
   getNewsletterSubscriberStats(input: $input) {

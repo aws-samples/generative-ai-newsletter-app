@@ -25,6 +25,19 @@ export class Authentication extends Construct {
         selfSignUpEnabled,
         signInAliases: {
           email: true
+        },
+        standardAttributes: {
+          email: {
+            required: true
+          },
+          givenName: {
+            required: true,
+            mutable: true
+          },
+          familyName: {
+            required: true,
+            mutable: true
+          }
         }
       })
       this.userPoolId = userPool.userPoolId

@@ -56,6 +56,7 @@ type Newsletter @aws_cognito_user_pools {
     shared: Boolean
     scheduleId: String!
     createdAt: AWSDateTime!
+    owner: String
     # newsletterIntroPrompt: String
 }
 
@@ -69,7 +70,8 @@ input GetNewsletterInput {
 }
 
 input GetNewslettersInput {
-    nextToken: String
+    getCurrentUser: Boolean
+    getDiscoverable: Boolean
 }
 
 type DataFeedSubscription @aws_cognito_user_pools {
@@ -167,7 +169,7 @@ type Mutation {
 }
 
 type Query {
-    getNewsletters(input: GetNewslettersInput): Newsletters! @aws_cognito_user_pools
+    getNewsletters(input: GetNewslettersInput, nextToken: String, limit: Int): Newsletters! @aws_cognito_user_pools
     getNewsletter(input: GetNewsletterInput): Newsletter! @aws_cognito_user_pools
     getDataFeedSubscriptions(nextToken: String, limit: Int): DataFeedSubscriptions! @aws_cognito_user_pools
     getDataFeedSubscription(input: GetDataFeedSubscriptionInput): DataFeedSubscription @aws_cognito_user_pools
@@ -175,6 +177,7 @@ type Query {
     getNewsletterEmail(input: GetNewsletterEmailInput): NewsletterEmail! @aws_cognito_user_pools
     getNewsletterEmails(input: GetNewsletterEmailsInput, nextToken: String, limit: Int): NewsletterEmails @aws_cognito_user_pools
     getUserNewsletterSubscriptionStatus(input: UserNewsletterSubscriptionStatusInput): Boolean @aws_cognito_user_pools
+    getUserNewsletterSubscriptions(nextToken: String, limit: Int): Newsletters @aws_cognito_user_pools
     getNewsletterSubscriberStats(input: GetNewsletterSubscriberStatsInput): NewsletterUserSubscriberStats @aws_cognito_user_pools
 }
 

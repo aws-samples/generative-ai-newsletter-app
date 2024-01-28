@@ -3,7 +3,7 @@ import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewslettersTable from "../../components/newsletters/newsletters-table";
 
-export default function NewslettersDashboard() {
+export default function MyNewsletters() {
     const onFollow = useOnFollow()
     return (
         <BaseAppLayout
@@ -17,11 +17,11 @@ export default function NewslettersDashboard() {
                         },
                         {
                             "text": "Newsletters",
-                            "href": "/newsletters/"
+                            "href": "/newsletters"
                         },
                         {
-                            "text": "Dashboard",
-                            "href": "#"
+                            "text": "My Newsletters",
+                            "href": "/newsletters/my-newsletters"
                         }
                     ]}
                 />
@@ -36,7 +36,7 @@ export default function NewslettersDashboard() {
                         </Header>
                     }>
                     <Container>
-                        <NewslettersTable />
+                        <NewslettersTable title="My Newsletters" getCurrentUser={true} getDiscoverable={false} />
                     </Container>
                 </ContentLayout>
             } />

@@ -30,9 +30,9 @@ interface NewsletterCampaignCreatorInput {
 const lambdaHandler = async (event: NewsletterCampaignCreatorInput): Promise<void> => {
   logger.debug('Starting newsletter campaign creator', { event })
   const s3Prefix = await getEmailContentsPath(event.newsletterId, event.emailId)
-  const { newsletterTitle } = await getNewsletterDetails(event.newsletterId)
+  const { title } = await getNewsletterDetails(event.newsletterId)
   const { html, text } = await getEmailBodiesFromS3(s3Prefix, event.emailId)
-  const campaignId = await createEmailCampaign(event.newsletterId, html, text, newsletterTitle)
+  const campaignId = await createEmailCampaign(event.newsletterId, html, text, title)
   await saveCampaignId(event.newsletterId, event.emailId, campaignId)
 }
 
@@ -59,7 +59,7 @@ const getEmailContentsPath = async (newsletterId: string, emailId: string): Prom
   }
 }
 
-const getNewsletterDetails = async (newsletterId: string): Promise<{ newsletterTitle: string }> => {
+const getNewsletterDetails = async (newsletterId: string): Promise<{ title: string }> => {
   logger.debug('Getting Newsletter Details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -70,9 +70,9 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ newsletterT
   }
   const command = new GetItemCommand(input)
   const response = await dynamodb.send(command)
-  if (response.Item?.newsletterTitle?.S !== undefined) {
+  if (response.Item?.title?.S !== undefined) {
     logger.debug('Newsletter details found', { response })
-    return { newsletterTitle: response.Item.newsletterTitle.S }
+    return { title: response.Item.title.S }
   } else {
     logger.error('Newsletter details not found', { response })
     throw new Error('Newsletter details not found')

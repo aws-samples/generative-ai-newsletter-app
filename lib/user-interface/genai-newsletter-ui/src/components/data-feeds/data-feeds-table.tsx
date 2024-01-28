@@ -113,7 +113,7 @@ export default function DataFeedsTable() {
             }
             header={<Header actions={
                 <SpaceBetween size="s" direction="horizontal">
-                    <Button variant="primary" onClick={() => { }} >Create New Data Feed</Button>
+                    <Button variant="primary" onClick={() => { navigate("/feeds/create") }} >Create New Data Feed</Button>
                     <ButtonDropdown items={[
                         { id: "edit", text: "Edit Data Feed" },
                     ]} onItemClick={handleUpdateDropdownClick}>Update Data Feed</ButtonDropdown>

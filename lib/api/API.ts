@@ -59,6 +59,7 @@ export type Newsletter = {
   shared?: boolean | null,
   scheduleId: string,
   createdAt: string,
+  owner?: string | null,
 };
 
 export type SubscribeToNewsletterInput = {
@@ -86,7 +87,8 @@ export type UpdateDataFeedSubscriptionInput = {
 };
 
 export type GetNewslettersInput = {
-  nextToken?: string | null,
+  getCurrentUser?: boolean | null,
+  getDiscoverable?: boolean | null,
 };
 
 export type Newsletters = {
@@ -212,6 +214,7 @@ export type CreateNewsletterMutation = {
     shared?: boolean | null,
     scheduleId: string,
     createdAt: string,
+    owner?: string | null,
   } | null,
 };
 
@@ -251,6 +254,8 @@ export type UpdateDataFeedMutation = {
 
 export type GetNewslettersQueryVariables = {
   input?: GetNewslettersInput | null,
+  nextToken?: string | null,
+  limit?: number | null,
 };
 
 export type GetNewslettersQuery = {
@@ -266,6 +271,7 @@ export type GetNewslettersQuery = {
       shared?: boolean | null,
       scheduleId: string,
       createdAt: string,
+      owner?: string | null,
     } >,
     nextToken?: string | null,
   },
@@ -297,6 +303,7 @@ export type GetNewsletterQuery = {
     shared?: boolean | null,
     scheduleId: string,
     createdAt: string,
+    owner?: string | null,
   },
 };
 
@@ -419,6 +426,30 @@ export type GetUserNewsletterSubscriptionStatusQueryVariables = {
 
 export type GetUserNewsletterSubscriptionStatusQuery = {
   getUserNewsletterSubscriptionStatus?: boolean | null,
+};
+
+export type GetUserNewsletterSubscriptionsQueryVariables = {
+  nextToken?: string | null,
+  limit?: number | null,
+};
+
+export type GetUserNewsletterSubscriptionsQuery = {
+  getUserNewsletterSubscriptions?:  {
+    __typename: "Newsletters",
+    newsletters:  Array< {
+      __typename: "Newsletter",
+      newsletterId: string,
+      title: string,
+      numberOfDaysToInclude: number,
+      subscriptionIds?: Array< string > | null,
+      discoverable?: boolean | null,
+      shared?: boolean | null,
+      scheduleId: string,
+      createdAt: string,
+      owner?: string | null,
+    } >,
+    nextToken?: string | null,
+  } | null,
 };
 
 export type GetNewsletterSubscriberStatsQueryVariables = {

@@ -1,8 +1,8 @@
 import { GraphQLQuery, generateClient } from "aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api";
 
-import { getNewsletter, getNewsletterEmails, getNewsletterSubscriberStats, getNewsletters, getUserNewsletterSubscriptionStatus } from "../../graphql/queries";
-import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterEmailsInput, GetNewsletterEmailsQuery, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, GetUserNewsletterSubscriptionStatusQuery, UpdateNewsletterInput, UpdateNewsletterMutation, UserNewsletterSubscriptionStatusInput, GetNewsletterSubscriberStatsInput, GetNewsletterSubscriberStatsQuery, SubscribeToNewsletterInput, SubscribeToNewsletterMutation, UnsubscribeFromNewsletterInput, UnsubscribeFromNewsletterMutation } from "../../API";
+import { getNewsletter, getNewsletterEmails, getNewsletterSubscriberStats, getNewsletters, getUserNewsletterSubscriptionStatus, getUserNewsletterSubscriptions } from "../../graphql/queries";
+import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterEmailsInput, GetNewsletterEmailsQuery, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, GetUserNewsletterSubscriptionStatusQuery, UpdateNewsletterInput, UpdateNewsletterMutation, UserNewsletterSubscriptionStatusInput, GetNewsletterSubscriberStatsInput, GetNewsletterSubscriberStatsQuery, SubscribeToNewsletterInput, SubscribeToNewsletterMutation, UnsubscribeFromNewsletterInput, UnsubscribeFromNewsletterMutation, GetUserNewsletterSubscriptionsQuery } from "../../API";
 import { createNewsletter, subscribeToNewsletter, unsubscribeFromNewsletter, updateNewsletter } from "../../graphql/mutations";
 
 const client = generateClient({
@@ -10,11 +10,11 @@ const client = generateClient({
 })
 
 export class NewslettersClient {
-    async listNewsletters(input?: GetNewslettersInput): Promise<GraphQLResult<GetNewslettersQuery>> {
+    async listNewsletters(input?: GetNewslettersInput, nextToken?: string, limit?: number): Promise<GraphQLResult<GetNewslettersQuery>> {
         try {
             const result = await client.graphql({
                 query: getNewsletters,
-                variables: { input },
+                variables: { input, nextToken, limit },
             })
             return result as GraphQLResult<GraphQLQuery<GetNewslettersQuery>>
         }catch(e){
@@ -143,5 +143,21 @@ export class NewslettersClient {
             console.error(e)
         }
         return {} as GraphQLResult<GraphQLQuery<UnsubscribeFromNewsletterMutation>>
+    }
+
+    async getUserNewsletterSubscriptions(nextToken?: string, limit?:number): Promise<GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>> {
+        try {
+            const result = await client.graphql({
+                query: getUserNewsletterSubscriptions,
+                variables: { nextToken, limit },
+            })
+            if(result.errors){
+                throw result.errors
+            }
+            return result as GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>
+        } catch (e) {
+            console.error(e)
+        }
+        return {} as GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>
     }
 }

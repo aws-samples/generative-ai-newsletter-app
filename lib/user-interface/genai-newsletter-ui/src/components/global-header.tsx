@@ -34,7 +34,7 @@ export default function GlobalHeader() {
             items: [
               {
                 id: "name",
-                text: userContext?.userGivenName ?? "User Not Found",
+                text: "Hi, " + userContext?.userGivenName ?? "Hi there!",
               },
               {
                 id: "signout",

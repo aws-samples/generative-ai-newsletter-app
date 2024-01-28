@@ -7,10 +7,14 @@ import { useNavigate } from "react-router-dom";
 import useOnFollow from "../../common/hooks/use-on-follow";
 
 export interface NewsFeedTableProps {
-
+    getDiscoverable?: boolean
+    getCurrentUser?: boolean
+    getSubscriptions?: boolean
+    title?: string
 }
 
-export default function NewslettersTable() {
+export default function NewslettersTable(props?: NewsFeedTableProps) {
+    const { getDiscoverable = true, getCurrentUser = false, getSubscriptions = false } = props ?? { getDiscoverable: false, getCurrentUser: false }
     const appContext = useContext(AppContext)
     const navigate = useNavigate()
     const onFollow = useOnFollow()
@@ -23,16 +27,26 @@ export default function NewslettersTable() {
             if (!appContext) { return }
             const apiClient = new ApiClient(appContext)
             try {
-                const result = await apiClient.newsletters.listNewsletters()
-                if (result.data !== undefined && result.errors === undefined) {
-                    setNewsFeeds(result.data.getNewsletters as Newsletters)
+                if (getDiscoverable || getCurrentUser) {
+                    const result = await apiClient.newsletters.listNewsletters({
+                        getCurrentUser, getDiscoverable
+                    })
+                    if (result.data !== undefined && result.errors === undefined) {
+                        setNewsFeeds(result.data.getNewsletters as Newsletters)
+                    }
+                } else if (getSubscriptions) {
+                    const result = await apiClient.newsletters.getUserNewsletterSubscriptions()
+                    if (result.data !== undefined && result.errors === undefined) {
+                        setNewsFeeds(result.data.getUserNewsletterSubscriptions as Newsletters)
+                    }
                 }
+
             } catch (e) {
                 console.error(e)
 
             }
             setLoadingNewsletters(false)
-        }, [appContext, setNewsFeeds, setLoadingNewsletters]
+        }, [appContext, getCurrentUser, getDiscoverable, getSubscriptions]
     )
 
     const handleUpdateDropdownItemClick = (event: CustomEvent<ButtonDropdownProps.ItemClickDetails>) => {
@@ -92,6 +106,7 @@ export default function NewslettersTable() {
             columnDefinitions={newslettersTableColumnDefinitons}
             items={newsFeeds?.newsletters}
             loadingText="Loading"
+            resizableColumns
             loading={loadingNewsletters}
             variant="embedded"
             selectionType="single"
@@ -108,7 +123,7 @@ export default function NewslettersTable() {
                     Update Newsletter
                 </ButtonDropdown>
             </SpaceBetween>}>
-
+                {props?.title ?? "Newsletters"}
             </Header>}
         />
     </>)

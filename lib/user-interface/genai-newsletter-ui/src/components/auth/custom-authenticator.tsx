@@ -30,7 +30,7 @@ export default function Authenticator(props: PropsWithChildren) {
                         if (attributes.family_name) {
                             setUserFamilyName(attributes.family_name)
                         }
-                    } catch (error) { 
+                    } catch (error) {
                         //Error is okay
                     }
 
@@ -71,9 +71,14 @@ export default function Authenticator(props: PropsWithChildren) {
                         console.log(error)
                     }
                 }
+
             })
         }
-
+        try {
+            setUser()
+        } catch (error) {
+            //ERROR IS OKAY
+        }
     }, [appContext])
 
     return (

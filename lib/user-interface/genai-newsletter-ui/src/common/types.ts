@@ -12,12 +12,12 @@ export interface AppConfig {
   }
   ui?: {
     sideNavigation?: Array<{
-      title: string
-      url: string
+      text: string
+      href: string
     }>
     headerLinks?: Array<{
-      title: string
-      url: string
+      text: string
+      href: string
     }>
   }
 }

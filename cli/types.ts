@@ -15,12 +15,12 @@ export interface DeployConfig {
   }
   ui?: {
     sideNavigition?: Array<{
-      title: string
-      url: string
+      text: string
+      href: string
     }>
     headerLinks?: Array<{
-      title: string
-      url: string
+      text: string
+      href: string
     }>
   }
   auth?: {

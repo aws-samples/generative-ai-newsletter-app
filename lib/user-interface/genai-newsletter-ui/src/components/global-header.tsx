@@ -23,9 +23,9 @@ export default function GlobalHeader() {
   if(appContext?.ui?.headerLinks){
     for(const link of appContext.ui.headerLinks){
       addedLinks.push({
-        id:"added-link-" + link.title.replace(' ',''),
-        text: link.title,
-        href: link.url,
+        id:"added-link-" + link.text.replace(' ',''),
+        text: link.text,
+        href: link.href,
       })
     }
   }

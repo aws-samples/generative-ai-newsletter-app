@@ -88,14 +88,16 @@ export default function NavigationPanel() {
       })
       sideNavigation.push({
         type: "section",
-        text: "External Links",
+        text: "Additional Links",
         items: appContext.ui.sideNavigation.map(link => ({
           type: "link",
-          text: link.title,
-          href: link.url
+          text: link.text,
+          href: link.href,
+          external: true
         })),
       })
     }
+    console.log(sideNavigation)
     setItems(sideNavigation)
   }, [appContext])
 

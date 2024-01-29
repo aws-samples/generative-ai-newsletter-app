@@ -1,9 +1,10 @@
-import { BreadcrumbGroup, Button, ContentLayout, Header, SpaceBetween } from "@cloudscape-design/components";
+import { BreadcrumbGroup, Button, Header, SpaceBetween } from "@cloudscape-design/components";
 import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import DataFeedDetail from "../../components/data-feeds/data-feed-detail";
 import { useNavigate, useParams } from "react-router-dom";
 import DataFeedArticleTable from "../../components/data-feeds/data-feed-article-table";
+import BaseContentLayout from "../../components/base-content-layout";
 
 export default function DataFeedDetails() {
     const navigate = useNavigate()
@@ -33,7 +34,7 @@ export default function DataFeedDetails() {
                 />
             }
             content={
-                <ContentLayout
+                <BaseContentLayout
                     header={
                         <Header
                             variant="awsui-h1-sticky"
@@ -53,7 +54,7 @@ export default function DataFeedDetails() {
                         <DataFeedArticleTable />
                     </SpaceBetween>
 
-                </ContentLayout>
+                </BaseContentLayout>
             }
         />
     )

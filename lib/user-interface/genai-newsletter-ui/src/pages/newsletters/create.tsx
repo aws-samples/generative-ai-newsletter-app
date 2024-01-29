@@ -2,6 +2,7 @@ import { BreadcrumbGroup } from "@cloudscape-design/components";
 import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewsletterWizard from "../../components/newsletters/forms/newsletter-wizard";
+import BaseContentLayout from "../../components/base-content-layout";
 
 
 
@@ -29,7 +30,9 @@ export default function CreateNewsletter() {
                 />
             }
             content={
-                <NewsletterWizard />
+                <BaseContentLayout>
+                    <NewsletterWizard />
+                </BaseContentLayout>
             }
         />
     )

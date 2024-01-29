@@ -19,6 +19,13 @@ export interface AppConfig {
       text: string
       href: string
     }>
+    persistentAlert?: {
+      type: 'error' | 'success' | 'info' | 'warning'
+      message: string
+      buttonText?: string
+      buttonHref?: string
+      dismissable: boolean
+    }
   }
 }
 

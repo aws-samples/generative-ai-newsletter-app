@@ -1,7 +1,8 @@
-import { BreadcrumbGroup, ContentLayout, Header } from "@cloudscape-design/components";
+import { BreadcrumbGroup, Header } from "@cloudscape-design/components";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import BaseAppLayout from "../../components/base-app-layout";
 import DataFeedDetailsForm from "../../components/data-feeds/forms/data-feed-details-form";
+import BaseContentLayout from "../../components/base-content-layout";
 
 export default function CreateDataFeed() {
     const onFollow = useOnFollow()
@@ -27,7 +28,7 @@ export default function CreateDataFeed() {
                 />
             }
             content={
-                <ContentLayout
+                <BaseContentLayout
                     header={
                         <Header
                             variant="awsui-h1-sticky"
@@ -39,7 +40,7 @@ export default function CreateDataFeed() {
                     }
                 >
                     <DataFeedDetailsForm />
-                </ContentLayout>
+                </BaseContentLayout>
 
             }
         />

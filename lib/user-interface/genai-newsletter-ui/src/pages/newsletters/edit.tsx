@@ -3,6 +3,7 @@ import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewsletterWizard from "../../components/newsletters/forms/newsletter-wizard";
 import { useParams } from "react-router-dom";
+import BaseContentLayout from "../../components/base-content-layout";
 
 
 
@@ -31,7 +32,9 @@ export default function EditNewsletter() {
                 />
             }
             content={
-                <NewsletterWizard newsletterId={newsletterId} />
+                <BaseContentLayout>
+                    <NewsletterWizard newsletterId={newsletterId} />
+                </BaseContentLayout>
             }
         />
     )

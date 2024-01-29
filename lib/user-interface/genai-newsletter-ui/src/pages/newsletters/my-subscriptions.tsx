@@ -1,7 +1,8 @@
-import { BreadcrumbGroup, Container, ContentLayout, Header } from "@cloudscape-design/components";
+import { BreadcrumbGroup, Container, Header } from "@cloudscape-design/components";
 import BaseAppLayout from "../../components/base-app-layout";
 import useOnFollow from "../../common/hooks/use-on-follow";
 import NewslettersTable from "../../components/newsletters/newsletters-table";
+import BaseContentLayout from "../../components/base-content-layout";
 
 export default function MyNewsletterSubscriptions() {
     const onFollow = useOnFollow()
@@ -27,7 +28,7 @@ export default function MyNewsletterSubscriptions() {
                 />
             }
             content={
-                <ContentLayout
+                <BaseContentLayout
                     header={
                         <Header
                             description="Create Newsletters or find an existing newsletter to subscribe to or update."
@@ -38,7 +39,7 @@ export default function MyNewsletterSubscriptions() {
                     <Container>
                         <NewslettersTable title="My Subscribed Newsletters" getCurrentUserOwned={false} getCurrentUserSubscribed={true} getDiscoverable={false} />
                     </Container>
-                </ContentLayout>
+                </BaseContentLayout>
             } />
     )
 }

@@ -205,6 +205,7 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
+    // TODO: Rename this.... spelling....
     new Resolver(this, 'UpdatDataFeedResolver', {
       api,
       typeName: 'Mutation',

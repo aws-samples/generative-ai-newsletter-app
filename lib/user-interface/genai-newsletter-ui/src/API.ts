@@ -87,7 +87,7 @@ export type UpdateDataFeedSubscriptionInput = {
 };
 
 export type GetNewslettersInput = {
-  getCurrentUser?: boolean | null,
+  getCurrentUserOwned?: boolean | null,
   getDiscoverable?: boolean | null,
 };
 

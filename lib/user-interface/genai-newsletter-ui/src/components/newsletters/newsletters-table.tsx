@@ -8,13 +8,13 @@ import useOnFollow from "../../common/hooks/use-on-follow";
 
 export interface NewsFeedTableProps {
     getDiscoverable?: boolean
-    getCurrentUser?: boolean
-    getSubscriptions?: boolean
+    getCurrentUserOwned?: boolean
+    getCurrentUserSubscribed?: boolean
     title?: string
 }
 
 export default function NewslettersTable(props?: NewsFeedTableProps) {
-    const { getDiscoverable = true, getCurrentUser = false, getSubscriptions = false } = props ?? { getDiscoverable: false, getCurrentUser: false }
+    const { getDiscoverable = true, getCurrentUserOwned = false, getCurrentUserSubscribed = false } = props ?? { getDiscoverable: false, getCurrentUserOwned: false, getCurrentUserSubscribed: false }
     const appContext = useContext(AppContext)
     const navigate = useNavigate()
     const onFollow = useOnFollow()
@@ -27,14 +27,14 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
             if (!appContext) { return }
             const apiClient = new ApiClient(appContext)
             try {
-                if (getDiscoverable || getCurrentUser) {
+                if (getDiscoverable || getCurrentUserOwned) {
                     const result = await apiClient.newsletters.listNewsletters({
-                        getCurrentUser, getDiscoverable
+                        getCurrentUserOwned, getDiscoverable
                     })
                     if (result.data !== undefined && result.errors === undefined) {
                         setNewsFeeds(result.data.getNewsletters as Newsletters)
                     }
-                } else if (getSubscriptions) {
+                } else if (getCurrentUserSubscribed) {
                     const result = await apiClient.newsletters.getUserNewsletterSubscriptions()
                     if (result.data !== undefined && result.errors === undefined) {
                         setNewsFeeds(result.data.getUserNewsletterSubscriptions as Newsletters)
@@ -46,7 +46,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
 
             }
             setLoadingNewsletters(false)
-        }, [appContext, getCurrentUser, getDiscoverable, getSubscriptions]
+        }, [appContext, getCurrentUserOwned, getCurrentUserSubscribed, getDiscoverable]
     )
 
     const handleUpdateDropdownItemClick = (event: CustomEvent<ButtonDropdownProps.ItemClickDetails>) => {

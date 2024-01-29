@@ -13,6 +13,7 @@ import DataFeedsDashboard from "./pages/data-feeds/dashboard";
 import CreateDataFeed from "./pages/data-feeds/create";
 import DataFeedDetails from "./pages/data-feeds/detail";
 import MyNewsletters from "./pages/newsletters/my-newsletters";
+import MyNewsletterSubscriptions from "./pages/newsletters/my-subscriptions";
 function App() {
   return (
     <div style={{ height: "100%" }}>
@@ -24,6 +25,7 @@ function App() {
             <Route index path="/" element={<Welcome />} />
             <Route path="/newsletters" element={<NewslettersDashboard />} />
             <Route path="/newsletters/my-newsletters" element={<MyNewsletters />}/>
+            <Route path="/newsletters/my-subscriptions" element={<MyNewsletterSubscriptions/>}/>
             <Route path="/newsletters/create" element={<CreateNewsletter />} />
             <Route path="/newsletters/:newsletterId" element={<NewsletterDetail />} />
             <Route path="/newsletters/:newsletterId/edit" element={<EditNewsletter />} />

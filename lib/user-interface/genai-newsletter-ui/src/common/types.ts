@@ -11,7 +11,7 @@ export interface AppConfig {
     emailBucket: string
   }
   ui?: {
-    sideNavigition?: Array<{
+    sideNavigation?: Array<{
       title: string
       url: string
     }>

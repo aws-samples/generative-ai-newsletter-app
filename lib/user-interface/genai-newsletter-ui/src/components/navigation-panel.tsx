@@ -82,14 +82,14 @@ export default function NavigationPanel() {
         ]
       },
     ]
-    if (appContext?.ui?.sideNavigition !== undefined && appContext?.ui?.sideNavigition.length > 0) {
+    if (appContext?.ui?.sideNavigation !== undefined && appContext?.ui?.sideNavigation.length > 0) {
       sideNavigation.push({
         type: "divider"
       })
       sideNavigation.push({
         type: "section",
         text: "External Links",
-        items: appContext.ui.sideNavigition.map(link => ({
+        items: appContext.ui.sideNavigation.map(link => ({
           type: "link",
           text: link.title,
           href: link.url

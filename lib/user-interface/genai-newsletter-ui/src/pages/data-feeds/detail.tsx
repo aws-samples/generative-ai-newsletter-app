@@ -41,7 +41,7 @@ export default function DataFeedDetails() {
                             actions={
                                 <SpaceBetween size="xs" direction="horizontal">
                                     <Button onClick={() => { navigate(`/feeds/${subscriptionId}/edit`) }}>Edit</Button>
-                                    <Button disabled>Delete</Button>
+                                    <Button disabled>Delete (Not Yet Implemented)</Button>
                                 </SpaceBetween>
                             }
 

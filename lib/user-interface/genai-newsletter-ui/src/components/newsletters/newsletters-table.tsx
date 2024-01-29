@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { Newsletter, Newsletters } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
-import { Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
+import { Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useNavigate } from "react-router-dom";
 import useOnFollow from "../../common/hooks/use-on-follow";
 
@@ -108,6 +108,14 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
             loadingText="Loading"
             resizableColumns
             loading={loadingNewsletters}
+            empty={
+                <Box>
+                    <SpaceBetween size="m" direction="vertical">
+                        <b>No Newsletters Found</b>
+                        {getCurrentUserSubscribed ? <Button onClick={()=>{navigate('/newsletters')}}>Subscribe to a Newsletter</Button> : <Button onClick={()=>{navigate('/newsletters/create')}}>Create a Newsletter</Button>}
+                    </SpaceBetween>
+                </Box>
+            }
             variant="embedded"
             selectionType="single"
             filter={

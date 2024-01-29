@@ -14,7 +14,7 @@ export default function Welcome() {
             <Container>
                 <SpaceBetween direction="vertical" size="m">
                     <h1>Welcome to the GenAI Newsletter Platform</h1>
-                    <p>This platform is designed to automate ingestion of news articles subsribed from RSS/ATOM feeds, summarization and aggregation into a newsletter and programmatic distribution</p>
+                    <h3>A solution designed to intake data, summarize & tune information, and generate high quality newsletters</h3>
                 </SpaceBetween>
             </Container>
         </ContentLayout>

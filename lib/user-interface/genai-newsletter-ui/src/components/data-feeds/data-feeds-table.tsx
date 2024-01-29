@@ -1,4 +1,4 @@
-import { Badge, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
+import { Badge, Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { AppContext } from "../../common/app-context";
 import { DataFeedSubscription } from "../../API";
@@ -110,6 +110,14 @@ export default function DataFeedsTable() {
             }}
             filter={
                 <TextFilter filteringPlaceholder="Search for Feeds [Not Yet Implemented]" filteringText="" />
+            }
+            empty={
+                <Box>
+                   <SpaceBetween size="m" direction="vertical">
+                    <b>No Data Feeds</b>
+                    <Button onClick={()=>{navigate('/feeds/create')}}>Create a Data Feed</Button>
+                    </SpaceBetween> 
+                </Box>
             }
             header={<Header actions={
                 <SpaceBetween size="s" direction="horizontal">

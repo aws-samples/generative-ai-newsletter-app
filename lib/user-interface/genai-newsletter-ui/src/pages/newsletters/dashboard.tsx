@@ -37,7 +37,7 @@ export default function NewslettersDashboard() {
                         </Header>
                     }>
                     <Container>
-                        <NewslettersTable />
+                        <NewslettersTable getCurrentUserOwned={true} getDiscoverable={true} />
                     </Container>
                 </BaseContentLayout>
             } />

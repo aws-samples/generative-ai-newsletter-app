@@ -145,8 +145,9 @@ export class NewslettersClient {
         return {} as GraphQLResult<GraphQLQuery<UnsubscribeFromNewsletterMutation>>
     }
 
-    async getUserNewsletterSubscriptions(nextToken?: string, limit?:number): Promise<GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>> {
-        try {
+
+    async getUserNewsletterSubscriptions(nextToken?: string, limit?: number): Promise<GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>> {
+        try{
             const result = await client.graphql({
                 query: getUserNewsletterSubscriptions,
                 variables: { nextToken, limit },
@@ -155,9 +156,11 @@ export class NewslettersClient {
                 throw result.errors
             }
             return result as GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>
-        } catch (e) {
+            
+        }catch(e){
             console.error(e)
         }
         return {} as GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>
     }
+    
 }

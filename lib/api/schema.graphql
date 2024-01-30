@@ -69,9 +69,14 @@ input GetNewsletterInput {
     newsletterId: String!
 }
 
+enum NewsletterLookupType {
+    CURRENT_USER_OWNED,
+    DISCOVERABLE,
+    CURRENT_USER_SUBSCRIBED
+}
+
 input GetNewslettersInput {
-    getCurrentUserOwned: Boolean
-    getDiscoverable: Boolean
+    lookupType: NewsletterLookupType!
 }
 
 type DataFeedSubscription @aws_cognito_user_pools {

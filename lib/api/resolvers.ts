@@ -13,6 +13,7 @@ export class ApiResolvers extends Construct {
     const { api, newsSubscriptionTable, newsletterTable } = props
 
     const newsletterTableSource = api.addDynamoDbDataSource('NewsletterTableSource', newsletterTable)
+    newsletterTable.grantReadData(newsletterTableSource)
     const newsSubscriptionTableSource = api.addDynamoDbDataSource('NewsSubscriptionTableSource', newsSubscriptionTable)
 
     const getNewslettersResolverFunction = new AppsyncFunction(this, 'GetNewslettersResolverFunction', {
@@ -403,6 +404,32 @@ export class ApiResolvers extends Construct {
       fieldName: 'getUserNewsletterSubscriptionStatus',
       code: Code.fromInline(`
       export function request(ctx) {
+        ctx.args.newsletterTable = '` + newsletterTable.tableName + `'
+        return {}
+      }
+
+      export function response(ctx) {
+          return ctx.prev.result;
+      }
+      `),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getUserNewsletterSubscriptionStatusFunction]
+    })
+
+    const getUserNewsletterSubscriptionsFunction = new AppsyncFunction(this, 'GetUserNewsletterSubscriptionsFunction', {
+      name: 'getUserNewsletterSubscriptions',
+      api,
+      dataSource: newsletterTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getUserNewsletterSubscriptions.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'GetUserNewsletterSubscriptionsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getUserNewsletterSubscriptions',
+      code: Code.fromInline(`
+      export function request(ctx) {
         return {};
         }
 
@@ -411,7 +438,7 @@ export class ApiResolvers extends Construct {
         }
       `),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getUserNewsletterSubscriptionStatusFunction]
+      pipelineConfig: [getUserNewsletterSubscriptionsFunction, getNewslettersResolverFunction]
     })
 
     const getNewsletterSubscriberStatsFunction = new AppsyncFunction(this, 'getNewsletterSubscriberStatsFunction', {

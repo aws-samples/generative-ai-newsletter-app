@@ -57,11 +57,11 @@ export default function NavigationPanel() {
             text: "My Newsletters",
             href: "/newsletters/my-newsletters"
           },
-          {
-            type: "link",
-            text: "My Newsletter Subscriptions",
-            href: "/newsletters/my-subscriptions"
-          },
+          // {
+          //   type: "link",
+          //   text: "My Newsletter Subscriptions",
+          //   href: "/newsletters/my-subscriptions"
+          // },
           {
             type: "link",
             text: "Create Newsletter",

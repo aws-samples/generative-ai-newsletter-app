@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Newsletter, Newsletters } from "../../API";
+import { Newsletter, NewsletterLookupType } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
 import { Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
@@ -18,7 +18,10 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
     const appContext = useContext(AppContext)
     const navigate = useNavigate()
     const onFollow = useOnFollow()
-    const [newsFeeds, setNewsFeeds] = useState<Newsletters>({ newsletters: [], nextToken: null, __typename: "Newsletters" } as Newsletters)
+    const [newsFeeds, setNewsFeeds] = useState<Newsletter[]>([])
+    // const [discoverableNextToken, setDiscoverableNextToken] = useState<string>('')
+    // const [currentUserOwnedNextToken, setCurrentUserOwnedNextToken] = useState<string>('')
+    // const [currentUserSubscribedNextToken, setCurrentUserSubscribedNextToken] = useState<string>('')
     const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter>()
     const [loadingNewsletters, setLoadingNewsletters] = useState<boolean>(true)
 
@@ -26,21 +29,31 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
         async () => {
             if (!appContext) { return }
             const apiClient = new ApiClient(appContext)
+            const results: Newsletter[] = []
             try {
-                if (getDiscoverable || getCurrentUserOwned) {
+                if (getDiscoverable) {
                     const result = await apiClient.newsletters.listNewsletters({
-                        getCurrentUserOwned, getDiscoverable
+                        lookupType: NewsletterLookupType.DISCOVERABLE
                     })
                     if (result.data !== undefined && result.errors === undefined) {
-                        setNewsFeeds(result.data.getNewsletters as Newsletters)
-                    }
-                } else if (getCurrentUserSubscribed) {
-                    const result = await apiClient.newsletters.getUserNewsletterSubscriptions()
-                    if (result.data !== undefined && result.errors === undefined) {
-                        setNewsFeeds(result.data.getUserNewsletterSubscriptions as Newsletters)
+                        results.push(...result.data.getNewsletters.newsletters as Newsletter[])
                     }
                 }
-
+                if (getCurrentUserOwned) {
+                    const result = await apiClient.newsletters.listNewsletters({
+                        lookupType: NewsletterLookupType.CURRENT_USER_SUBSCRIBED
+                    })
+                    if (result.data !== undefined && result.errors === undefined) {
+                        results.push(...result.data.getNewsletters.newsletters as Newsletter[])
+                    }
+                }
+                if (getCurrentUserSubscribed) {
+                    const result = await apiClient.newsletters.getUserNewsletterSubscriptions()
+                    if (result.data !== undefined && result.errors === undefined) {
+                        results.push(...result.data.getUserNewsletterSubscriptions?.newsletters as Newsletter[])
+                    }
+                }
+                setNewsFeeds([...results as Newsletter[]])
             } catch (e) {
                 console.error(e)
 
@@ -104,7 +117,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
     return (<>
         <Table
             columnDefinitions={newslettersTableColumnDefinitons}
-            items={newsFeeds?.newsletters}
+            items={newsFeeds}
             loadingText="Loading"
             resizableColumns
             loading={loadingNewsletters}
@@ -112,7 +125,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
                 <Box>
                     <SpaceBetween size="m" direction="vertical">
                         <b>No Newsletters Found</b>
-                        {getCurrentUserSubscribed ? <Button onClick={()=>{navigate('/newsletters')}}>Subscribe to a Newsletter</Button> : <Button onClick={()=>{navigate('/newsletters/create')}}>Create a Newsletter</Button>}
+                        {getCurrentUserSubscribed ? <Button onClick={() => { navigate('/newsletters') }}>Subscribe to a Newsletter</Button> : <Button onClick={() => { navigate('/newsletters/create') }}>Create a Newsletter</Button>}
                     </SpaceBetween>
                 </Box>
             }

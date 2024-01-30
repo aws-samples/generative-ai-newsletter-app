@@ -87,9 +87,15 @@ export type UpdateDataFeedSubscriptionInput = {
 };
 
 export type GetNewslettersInput = {
-  getCurrentUserOwned?: boolean | null,
-  getDiscoverable?: boolean | null,
+  lookupType: NewsletterLookupType,
 };
+
+export enum NewsletterLookupType {
+  CURRENT_USER_OWNED = "CURRENT_USER_OWNED",
+  DISCOVERABLE = "DISCOVERABLE",
+  CURRENT_USER_SUBSCRIBED = "CURRENT_USER_SUBSCRIBED",
+}
+
 
 export type Newsletters = {
   __typename: "Newsletters",

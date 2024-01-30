@@ -41,7 +41,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
                 }
                 if (getCurrentUserOwned) {
                     const result = await apiClient.newsletters.listNewsletters({
-                        lookupType: NewsletterLookupType.CURRENT_USER_SUBSCRIBED
+                        lookupType: NewsletterLookupType.CURRENT_USER_OWNED
                     })
                     if (result.data !== undefined && result.errors === undefined) {
                         results.push(...result.data.getNewsletters.newsletters as Newsletter[])

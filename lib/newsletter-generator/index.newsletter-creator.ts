@@ -74,6 +74,7 @@ const storeNewsletterData = async (newsletterId: string, title: string, subscrip
     numberOfDaysToInclude,
     scheduleId,
     shared,
+    discoverable,
     owner
   })
   const createdAt = new Date().toISOString()
@@ -87,6 +88,7 @@ const storeNewsletterData = async (newsletterId: string, title: string, subscrip
       numberOfDaysToInclude,
       scheduleId,
       shared,
+      discoverable,
       createdAt,
       owner
     })

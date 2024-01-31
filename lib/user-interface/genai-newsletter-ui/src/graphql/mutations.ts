@@ -23,6 +23,7 @@ export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeed
       createdAt
       title
       summarizationPrompt
+      flaggedContent
       __typename
     }
     title
@@ -97,4 +98,11 @@ export const updateDataFeed = /* GraphQL */ `mutation UpdateDataFeed(
 ` as GeneratedMutation<
   APITypes.UpdateDataFeedMutationVariables,
   APITypes.UpdateDataFeedMutation
+>;
+export const flagDataFeedArticle = /* GraphQL */ `mutation FlagDataFeedArticle($input: FlagDataFeedArticleInput!) {
+  flagDataFeedArticle(input: $input)
+}
+` as GeneratedMutation<
+  APITypes.FlagDataFeedArticleMutationVariables,
+  APITypes.FlagDataFeedArticleMutation
 >;

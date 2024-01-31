@@ -29,6 +29,28 @@ export default function DataFeedArticleTable() {
             setLoading(false)
         }, [appContext, subscriptionId])
 
+    const flagDataFeedArticle = useCallback(
+        async (articleId: string, flaggedContent: boolean) => {
+            console.log('flagged Data Feed Article!')
+            if (!appContext) { return }
+            if (!subscriptionId) { return }
+            const apiClient = new ApiClient(appContext)
+            const result = await apiClient.dataFeeds.flagDataFeedArticle(subscriptionId, articleId, flaggedContent)
+            if (result.errors) {
+                console.log(result.errors)
+                return
+            }
+            const updatedFeedArticles = feedArticles.map(article => {
+                if (article.articleId === articleId) {
+                    article.flaggedContent = flaggedContent
+                }
+                return article
+            })
+            setFeedArticles(updatedFeedArticles)
+            
+        }, [appContext, subscriptionId, feedArticles]
+    )
+
     useEffect(() => {
         if (subscriptionId) {
             getDataFeedArticles()
@@ -39,8 +61,8 @@ export default function DataFeedArticleTable() {
     return (
         <Container>
             <Table
-                columnDefinitions={DataFeedArticlesTableColumnDefiniton}
-                columnDisplay={DataFeedArticlesTableColumnDisplay}
+                columnDefinitions={DataFeedArticlesTableColumnDefiniton(flagDataFeedArticle)}
+                columnDisplay={DataFeedArticlesTableColumnDisplay()}
                 resizableColumns
                 items={feedArticles}
                 loading={loading}

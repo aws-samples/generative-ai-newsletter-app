@@ -38,6 +38,7 @@ export type DataFeedArticle = {
   createdAt: string,
   title: string,
   summarizationPrompt?: string | null,
+  flaggedContent?: boolean | null,
 };
 
 export type CreateNewsletter = {
@@ -84,6 +85,12 @@ export type UpdateDataFeedSubscriptionInput = {
   title: string,
   description?: string | null,
   summarizationPrompt?: string | null,
+};
+
+export type FlagDataFeedArticleInput = {
+  subscriptionId: string,
+  articleId: string,
+  flaggedContent: boolean,
 };
 
 export type GetNewslettersInput = {
@@ -187,6 +194,7 @@ export type CreateDataFeedSubscriptionMutation = {
       createdAt: string,
       title: string,
       summarizationPrompt?: string | null,
+      flaggedContent?: boolean | null,
     } | null > | null,
     title: string,
     description?: string | null,
@@ -256,6 +264,14 @@ export type UpdateDataFeedMutationVariables = {
 
 export type UpdateDataFeedMutation = {
   updateDataFeed?: boolean | null,
+};
+
+export type FlagDataFeedArticleMutationVariables = {
+  input: FlagDataFeedArticleInput,
+};
+
+export type FlagDataFeedArticleMutation = {
+  flagDataFeedArticle?: boolean | null,
 };
 
 export type GetNewslettersQueryVariables = {
@@ -358,6 +374,7 @@ export type GetDataFeedSubscriptionQuery = {
       createdAt: string,
       title: string,
       summarizationPrompt?: string | null,
+      flaggedContent?: boolean | null,
     } | null > | null,
     title: string,
     description?: string | null,
@@ -383,6 +400,7 @@ export type GetDataFeedArticlesQuery = {
       createdAt: string,
       title: string,
       summarizationPrompt?: string | null,
+      flaggedContent?: boolean | null,
     } | null > | null,
     nextToken?: string | null,
   } | null,

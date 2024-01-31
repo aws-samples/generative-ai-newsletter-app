@@ -98,7 +98,7 @@ export default function DataFeedsTable() {
     return (
         <Table
             columnDefinitions={dataFeedsTableColumnDefiniton}
-            columnDisplay={DataFeedsTableColumnDisplay}
+            columnDisplay={DataFeedsTableColumnDisplay()}
             items={dataFeeds}
             resizableColumns
             loading={loadingDataFeeds}

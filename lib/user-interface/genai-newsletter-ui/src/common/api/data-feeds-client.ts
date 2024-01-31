@@ -1,8 +1,8 @@
 import { GraphQLQuery, generateClient } from "aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api";
-import { CreateDataFeedSubscriptionInput, CreateDataFeedSubscriptionMutation, GetDataFeedArticlesQuery, GetDataFeedSubscriptionInput, GetDataFeedSubscriptionQuery, GetDataFeedSubscriptionsQuery, UpdateDataFeedMutation, UpdateDataFeedSubscriptionInput } from "../../API";
+import { CreateDataFeedSubscriptionInput, CreateDataFeedSubscriptionMutation, FlagDataFeedArticleMutation, GetDataFeedArticlesQuery, GetDataFeedSubscriptionInput, GetDataFeedSubscriptionQuery, GetDataFeedSubscriptionsQuery, UpdateDataFeedMutation, UpdateDataFeedSubscriptionInput } from "../../API";
 import { getDataFeedArticles, getDataFeedSubscription, getDataFeedSubscriptions } from "../../graphql/queries";
-import { createDataFeedSubscription, updateDataFeed } from "../../graphql/mutations";
+import { createDataFeedSubscription, flagDataFeedArticle, updateDataFeed } from "../../graphql/mutations";
 
 const client = generateClient({
     authMode: "userPool",
@@ -36,7 +36,7 @@ export class DataFeedsClient {
         }
     }
 
-    async createDataFeed(input: CreateDataFeedSubscriptionInput): Promise<GraphQLResult<CreateDataFeedSubscriptionMutation>> {
+    async createDataFeed(input: CreateDataFeedSubscriptionInput): Promise<GraphQLResult<GraphQLQuery<CreateDataFeedSubscriptionMutation>>> {
         try {
             const result = await client.graphql({
                 query: createDataFeedSubscription,
@@ -63,13 +63,26 @@ export class DataFeedsClient {
     
     }
 
-    async getDataFeedArticles(subscriptionId: string, nextToken?: string, limit: number = 1000): Promise<GraphQLResult<GetDataFeedArticlesQuery>> {
+    async getDataFeedArticles(subscriptionId: string, nextToken?: string, limit: number = 1000): Promise<GraphQLResult<GraphQLQuery<GetDataFeedArticlesQuery>>> {
         try {
             const result = await client.graphql({
                 query: getDataFeedArticles,
                 variables: {input:{subscriptionId}, nextToken, limit},
             })
             return result as GraphQLResult<GraphQLQuery<GetDataFeedArticlesQuery>>
+        }catch(e){
+            console.error(e)
+            throw e
+        }
+    }
+
+    async flagDataFeedArticle(subscriptionId: string, articleId: string, flaggedContent: boolean): Promise<GraphQLResult<GraphQLQuery<FlagDataFeedArticleMutation>>> {
+        try {
+            const result = await client.graphql({
+                query: flagDataFeedArticle,
+                variables: {input:{subscriptionId, articleId, flaggedContent}},
+            })
+            return result as GraphQLResult<GraphQLQuery<FlagDataFeedArticleMutation>>
         }catch(e){
             console.error(e)
             throw e

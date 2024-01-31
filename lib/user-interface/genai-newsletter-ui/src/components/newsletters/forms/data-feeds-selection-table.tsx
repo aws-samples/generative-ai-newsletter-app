@@ -102,8 +102,8 @@ export default function NewsletterDataFeedsSelectionForm(props: NewsletterNewsFe
                     />}
                 ></Header>
             }
-            columnDefinitions={NewsletterWizardDataFeedsTableColumnDefinition}
-            columnDisplay={NewsletterWizardNewsFeedsTableColumnDisplay}
+            columnDefinitions={NewsletterWizardDataFeedsTableColumnDefinition()}
+            columnDisplay={NewsletterWizardNewsFeedsTableColumnDisplay()}
         />
     )
 }

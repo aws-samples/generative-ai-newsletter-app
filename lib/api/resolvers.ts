@@ -251,6 +251,30 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getDataFeedArticlesResolverFunction]
     })
 
+    const flagDataFeedArticleFunction = new AppsyncFunction(this, 'FlagDataFeedArticleFunction', {
+      name: 'flagDataFeedArticle',
+      api,
+      dataSource: newsSubscriptionTableSource,
+      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/flagDataFeedArticle.js')),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'FlagDataFeedArticleResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'flagDataFeedArticle',
+      code: Code.fromInline(`
+      export function request(ctx) {
+        return {}
+      }
+    
+      export function response(ctx) {
+        return true;
+      }`),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [flagDataFeedArticleFunction]
+    })
+
     const dataFeedSubscriberLambdaSource = new LambdaDataSource(this, 'DataFeedSubscriberLambdaSource', {
       api,
       lambdaFunction: props.functions.feedSubscriberFunction,

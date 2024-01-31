@@ -100,6 +100,7 @@ export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscript
       createdAt
       title
       summarizationPrompt
+      flaggedContent
       __typename
     }
     title
@@ -126,6 +127,7 @@ export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
       createdAt
       title
       summarizationPrompt
+      flaggedContent
       __typename
     }
     nextToken

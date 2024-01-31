@@ -136,6 +136,7 @@ type DataFeedArticle @aws_cognito_user_pools {
     createdAt: AWSDateTime!
     title: String!
     summarizationPrompt: String
+    flaggedContent: Boolean
 }
 
 type DataFeedArticles @aws_cognito_user_pools {
@@ -145,6 +146,12 @@ type DataFeedArticles @aws_cognito_user_pools {
 
 input DataFeedArticlesInput {
     subscriptionId: String
+}
+
+input FlagDataFeedArticleInput {
+    subscriptionId: String!
+    articleId: String!
+    flaggedContent: Boolean!
 }
 
 type Subscriber @aws_cognito_user_pools {
@@ -171,6 +178,7 @@ type Mutation {
     unsubscribeFromNewsletter(input: UnsubscribeFromNewsletterInput): Boolean @aws_cognito_user_pools
     updateNewsletter(input: UpdateNewsletterInput!, newsletterId: String!): Boolean @aws_cognito_user_pools
     updateDataFeed(input: UpdateDataFeedSubscriptionInput!, subscriptionId: String!): Boolean @aws_cognito_user_pools
+    flagDataFeedArticle(input: FlagDataFeedArticleInput!): Boolean @aws_cognito_user_pools
 }
 
 type Query {

@@ -161,6 +161,13 @@ const generateArticleSummary = async (articleBody: string, summarizationPrompt?:
   const matchedSummary = summary.match(/(?<=<summary>)(.*?)(?=<\/summary>)/g)
   const matchedError = summary.match(/(?<=<error>)(.*?)(?=<\/error>)/g)
   if (matchedSummary === null || (matchedError !== null && matchedError.length > 0)) {
+    console.error('Bad summary!')
+    tracer.putMetadata('summaryGenerated', false)
+    metrics.addMetric('BadArticleSummaryGenerated', MetricUnits.Count, 1)
+    tracer.putMetadata('ArticleData', {
+      articleBody,
+      summarizationPrompt
+    })
     throw new Error(`No summary found - ${matchedError as string | null}`)
   } else {
     return matchedSummary[0]

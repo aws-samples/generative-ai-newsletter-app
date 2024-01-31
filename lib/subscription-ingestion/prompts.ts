@@ -11,10 +11,11 @@ export class ArticleIngestorPromptConfiguration {
   private static readonly USER_PROMPT_INCLUDED_PROMPT = 'Use the provided user prompt as guidance for how you should summarize the information in the article'
 
   private static readonly PROMPT_RESTRICTIONS =
-    'If you cannot access the article, response with an error message inside <error></error> tags\n' +
+    'If you cannot access the article, respond with an error message inside <error></error> tags and do not include any <summary> tags\n' +
     'Never include a preamble or any text prior to the summary.\n' +
     'If you do not know something, do not make it up.\n' +
-    'If you are unable to read the content of the article, return null\n'
+    'If you are unable to read the content of the article, return null inside the <error> tag\n' +
+    'An error tag and a summary tag should not overlap, an error tag cannot be inside of a summary tag. \n'
 
   private static readonly PROMPT_RESPONSE_FORMAT_PROMPT = 'Respond to the prompt using with the summary in <summary></summary> tags:\n'
 

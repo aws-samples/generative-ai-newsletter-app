@@ -53,7 +53,8 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
                         results.push(...result.data.getUserNewsletterSubscriptions?.newsletters as Newsletter[])
                     }
                 }
-                setNewsFeeds([...results as Newsletter[]])
+                const filteredResults = results.filter((newsletter, index) => results.indexOf(newsletter) === index)
+                setNewsFeeds([...filteredResults as Newsletter[]])
             } catch (e) {
                 console.error(e)
 

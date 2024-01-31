@@ -60,8 +60,8 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   const date = new Date()
   const emailId = uuidv4()
   const emailContents = await generateEmail(articles)
-  await storeEmailInS3(emailContents, date, emailId)
-  await recordEmailDetails(event.newsletterId, emailId, date)
+  const emailKey = await storeEmailInS3(emailContents, date, emailId)
+  await recordEmailDetails(newsletterId, emailId, date, emailKey)
   await sendNewsletter(newsletterId, emailId)
   logger.debug('Email generator complete')
 }
@@ -155,7 +155,7 @@ const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailCon
   return { html, text }
 }
 
-const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<void> => {
+const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<string> => {
   logger.debug('Storing email in S3 Email Bucket')
   const year = date.getUTCFullYear()
   const month: string = (date.getUTCMonth() + 1 < 10) ? (date.getUTCMonth() + 1).toString() : '0' + date.getUTCMonth() + 1
@@ -209,9 +209,10 @@ const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId
     tracer.addErrorAsMetadata(error as Error)
     tracer.putAnnotation('textUploadComplete', false)
   }
+  return emailKey
 }
 
-const recordEmailDetails = async (newsletterId: string, emailId: string, date: Date): Promise<void> => {
+const recordEmailDetails = async (newsletterId: string, emailId: string, date: Date, emailKey: string): Promise<void> => {
   console.debug('Recording email details')
   const input: PutItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -222,6 +223,9 @@ const recordEmailDetails = async (newsletterId: string, emailId: string, date: D
       },
       createdAt: {
         S: date.toISOString()
+      },
+      emailKey: {
+        S: emailKey
       }
     }
   }

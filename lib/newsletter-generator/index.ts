@@ -1,6 +1,6 @@
 import { RemovalPolicy, Duration, Aws, Stack } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
-import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
+import { Effect, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
@@ -108,6 +108,7 @@ export class NewsletterGenerator extends Construct {
       logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      memorySize: 512, // Bumping memory up on this function since it is doing rendering and processing
       timeout: Duration.minutes(5),
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
@@ -115,7 +116,8 @@ export class NewsletterGenerator extends Construct {
         NEWS_SUBSCRIPTION_TABLE_LSI: props.newsSubscriptionTableLSI,
         NEWSLETTER_TABLE: newsletterTable.tableName,
         EMAIL_BUCKET: emailBucket.bucketName,
-        NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION: newsletterCampaignCreatorFunction.functionName
+        NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION: newsletterCampaignCreatorFunction.functionName,
+        APP_HOST_NAME: this.node.tryGetContext('appHostName')
       }
     })
     props.newsSubscriptionTable.grantReadData(emailGeneratorFunction)
@@ -132,6 +134,13 @@ export class NewsletterGenerator extends Construct {
       description: 'Role used by the scheduler to invoke the email generator function'
     })
     emailGeneratorFunction.grantInvoke(emailGeneratorSchedulerInvokeRole)
+    emailGeneratorFunction.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: ['*'],
+        effect: Effect.ALLOW
+      })
+    )
     const newsletterCreatorFunction = new NodejsFunction(this, 'newsletter-creator', {
       description: 'Function responsible for creating and scheduling the newsletter',
       handler: 'handler',

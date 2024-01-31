@@ -10,6 +10,10 @@ import { NewsletterEmail } from './react-email-generator/emails/newsletter'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
+import { type ArticleData } from '../types/newsletter-generator'
+import { NewsletterSummaryPrompt } from '../prompts/newsletter-summary-prompt'
+import { BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
+import { PromptResponseHandler } from '../prompts/prompt-response-handler'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -20,12 +24,16 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const s3 = tracer.captureAWSv3Client(new S3Client())
 const lambda = tracer.captureAWSv3Client(new LambdaClient())
+const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
+
+const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
 const NEWS_SUBSCRIPTION_TABLE_LSI = process.env.NEWS_SUBSCRIPTION_TABLE_LSI
 const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 const NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION = process.env.NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION
+const APP_HOST_NAME = process.env.APP_HOST_NAME
 
 interface EmailGeneratorInput {
   newsletterId: string
@@ -36,20 +44,14 @@ interface GeneratedEmailContents {
   text: string
 }
 
-interface ArticleData {
-  title: string
-  url: string
-  content: string
-  createdAt: string
-}
-
 const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   const { newsletterId } = event
   logger.debug('Starting email generator', {
     newsletterId
   })
+  logger.debug('Base App Hostname = ' + APP_HOST_NAME)
   tracer.putMetadata('subscriptionIds', newsletterId)
-  const { subscriptionIds, numberOfDaysToInclude } = await getNewsletterDetails(newsletterId)
+  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title } = await getNewsletterDetails(newsletterId)
 
   tracer.putMetadata('numberOfDaysToInclude', numberOfDaysToInclude)
   const articles = await getArticlesForSubscriptions(subscriptionIds, numberOfDaysToInclude)
@@ -59,14 +61,15 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   }
   const date = new Date()
   const emailId = uuidv4()
-  const emailContents = await generateEmail(articles)
+  const newsletterSummary = await generateNewsletterSummary(articles, newsletterIntroPrompt)
+  const emailContents = await generateEmail(articles, newsletterSummary, title)
   const emailKey = await storeEmailInS3(emailContents, date, emailId)
   await recordEmailDetails(newsletterId, emailId, date, emailKey)
-  await sendNewsletter(newsletterId, emailId)
+  await sendNewsletter(newsletterId, emailId, emailKey)
   logger.debug('Email generator complete')
 }
 
-const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number }> => {
+const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number, newsletterIntroPrompt: string, title: string }> => {
   console.debug('Getting newsletter details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -83,9 +86,12 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptio
     throw new Error('No newsletter found')
   }
   const newsletterItem = unmarshall(response.Item)
+  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title } = newsletterItem
   return {
-    subscriptionIds: newsletterItem.subscriptionIds as string[],
-    numberOfDaysToInclude: newsletterItem.numberOfDaysToInclude as number
+    subscriptionIds,
+    numberOfDaysToInclude,
+    newsletterIntroPrompt,
+    title
   }
 }
 
@@ -121,7 +127,8 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
             title: item.title.S,
             url: item.url.S,
             content: item.articleSummary.S,
-            createdAt: item.createdAt.S
+            createdAt: item.createdAt.S,
+            flagLink: `/feeds/${subscriptionId}?flagArticle=true&articleId=${item.compoundSortKey.S?.substring(6)}`
           })
         } else {
           logger.warn('Item does not contain title, url, articleSummary or createdAt', item)
@@ -135,11 +142,44 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
   return articlesData
 }
 
-const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailContents> => {
+const generateNewsletterSummary = async (articles: ArticleData[], newsletterIntroPrompt: string): Promise<string> => {
+  console.debug('Generating newsletter summary')
+  tracer.putAnnotation('Newsletter has summary prompt', true)
+  const prompt = new NewsletterSummaryPrompt(newsletterIntroPrompt, articles).getCompiledSummaryPrompt()
+  console.debug('Prompt generated', { prompt })
+  const bedrockInput: InvokeModelCommandInput = {
+    body: JSON.stringify({
+      prompt,
+      max_tokens_to_sample: 4000,
+      stop_sequences: ['\n\nHuman:']
+    }),
+    modelId: BEDROCK_MODEL_ID,
+    accept: 'application/json',
+    contentType: 'application/json'
+  }
+  const command = new InvokeModelCommand(bedrockInput)
+  const response = await bedrock.send(command)
+  const responseData = new TextDecoder().decode(response.body)
+  const formattedResponse = PromptResponseHandler.formatSummaryResponse(responseData)
+  if (formattedResponse.error.length > 0) {
+    console.error('Error generating summary', { formattedResponse })
+  }
+  if (formattedResponse.summary.length > 0) {
+    metrics.addMetric('NewsletterSummaryGenerated', MetricUnits.Count, 1)
+    tracer.putAnnotation('summaryGenerated', true)
+    return formattedResponse.summary
+  } else {
+    throw new Error('Error generating summary')
+  }
+}
+
+const generateEmail = async (articles: ArticleData[], newsletterSummary: string, title: string): Promise<GeneratedEmailContents> => {
   console.debug('Starting email generation')
   const html = render(NewsletterEmail({
     articles,
-    title: 'Newsletter'
+    title,
+    newsletterSummary,
+    appHostName: APP_HOST_NAME
   }))
   metrics.addMetric('HTMLEmailsGenerated', MetricUnits.Count, 1)
   console.debug('HTML email generated', { html })
@@ -158,10 +198,10 @@ const generateEmail = async (articles: ArticleData[]): Promise<GeneratedEmailCon
 const storeEmailInS3 = async (email: GeneratedEmailContents, date: Date, emailId: string): Promise<string> => {
   logger.debug('Storing email in S3 Email Bucket')
   const year = date.getUTCFullYear()
-  const month: string = (date.getUTCMonth() + 1 < 10) ? (date.getUTCMonth() + 1).toString() : '0' + date.getUTCMonth() + 1
-  const day = date.getUTCDate()
-
+  const month: string = ((date.getUTCMonth() + 1).toString().length < 2) ? '0' + (date.getUTCMonth() + 1).toString() : (date.getUTCMonth() + 1).toString()
+  const day = date.getUTCDate() < 10 ? '0' + date.getUTCDate() : date.getUTCDate()
   const emailKey = `newsletter-content/${year}/${month}/${day}/${emailId}`
+  logger.debug('Email Key', { emailKey })
   const htmlUpload = new Upload({
     client: s3,
     params: {
@@ -233,15 +273,17 @@ const recordEmailDetails = async (newsletterId: string, emailId: string, date: D
   await dynamodb.send(command)
 }
 
-const sendNewsletter = async (newsletterId: string, emailId: string): Promise<void> => {
+const sendNewsletter = async (newsletterId: string, emailId: string, emailKey: string): Promise<void> => {
   console.debug('Sending Newsletter')
   const command = new InvokeCommand({
     FunctionName: NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION,
     Payload: JSON.stringify({
       newsletterId,
-      emailId
+      emailId,
+      emailKey
     })
   })
+  logger.debug('Sending newsletter campaign', { command })
   const { Payload, LogResult, FunctionError } = await lambda.send(command)
   if (FunctionError !== undefined) {
     logger.error('Error creating email campaign', { FunctionError, LogResult, Payload })

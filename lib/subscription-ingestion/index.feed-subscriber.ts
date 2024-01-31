@@ -25,7 +25,7 @@ const lambdaHander = async (event: { owner: string, input: CreateDataFeedSubscri
   logger.debug('Starting Feed Subscriber, input: ' + JSON.stringify(event))
   metrics.addMetric('SubscriberInvocations', MetricUnits.Count, 1)
   const { url, summarizationPrompt, title, description, enabled } = event.input
-  const owner = event.owner
+  const { owner } = event
   try {
     const response = await axios.get(url)
     const $ = cheerio.load(response.data as string, { xmlMode: true })

@@ -24,6 +24,7 @@ export const getNewsletters = /* GraphQL */ `query GetNewsletters(
       scheduleId
       createdAt
       owner
+      newsletterIntroPrompt
       __typename
     }
     nextToken
@@ -56,6 +57,7 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
     scheduleId
     createdAt
     owner
+    newsletterIntroPrompt
     __typename
   }
 }
@@ -197,6 +199,7 @@ export const getUserNewsletterSubscriptions = /* GraphQL */ `query GetUserNewsle
       scheduleId
       createdAt
       owner
+      newsletterIntroPrompt
       __typename
     }
     nextToken

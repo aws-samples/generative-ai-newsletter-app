@@ -19,7 +19,6 @@
         "jsx": "react-jsx",
         // "outDir": "dist"
     },
-    "extends":["../../../tsconfig.json"],
     "include": ["emails/*.**"],
     "exclude": ["dist/*"]
 }

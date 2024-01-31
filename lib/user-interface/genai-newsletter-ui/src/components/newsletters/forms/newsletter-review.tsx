@@ -1,4 +1,4 @@
-import { Button, FormField, Header, SpaceBetween, Toggle } from "@cloudscape-design/components";
+import { Button, FormField, Header, Link, SpaceBetween, Toggle } from "@cloudscape-design/components";
 import { DataFeedSubscription } from "../../../API";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -11,12 +11,13 @@ interface NewsletterReviewForm {
     formTitle: string
     formDescription?: string
     formMode?: 'wizard' | 'detail'
+    newsletterIntroPrompt?: string
 }
 
 export default function NewsletterReviewForm(props: NewsletterReviewForm) {
     const navigate = useNavigate()
     const { newsletterId } = useParams()
-    const { title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, formTitle, formDescription, formMode = 'wizard' } = props
+    const { title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, formTitle, formDescription, formMode = 'wizard', newsletterIntroPrompt } = props
     return (
         <SpaceBetween direction="vertical" size="l">
             <Header description={formDescription}
@@ -43,9 +44,14 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
             </FormField>
             <FormField label="Subscriptions">
                 <ul>
-                    {selectedSubscriptions.map(subscription => <li key={`selected-subscription-${subscription.subscriptionId}`}>{subscription.url}</li>)}
+                    {selectedSubscriptions.map(subscription => <li key={`selected-subscription-${subscription.subscriptionId}`}>
+                            <Link href={`/feeds/${subscription.subscriptionId}`} target="_blank">{subscription.title}</Link>
+                        </li>)}
                     {selectedSubscriptions.length === 0 && <li>No subscriptions selected</li>}
                 </ul>
+            </FormField>
+            <FormField label="Newsletter Intro Summary Prompt">
+                {newsletterIntroPrompt ?? 'No Custom Prompt Provided'}
             </FormField>
         </SpaceBetween>
     )

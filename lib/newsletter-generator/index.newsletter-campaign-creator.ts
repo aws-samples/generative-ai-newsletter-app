@@ -25,18 +25,19 @@ const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 interface NewsletterCampaignCreatorInput {
   newsletterId: string
   emailId: string
+  emailKey?: string
 }
 
 const lambdaHandler = async (event: NewsletterCampaignCreatorInput): Promise<void> => {
   logger.debug('Starting newsletter campaign creator', { event })
-  const s3Prefix = await getEmailContentsPath(event.newsletterId, event.emailId)
-  const { title } = await getNewsletterDetails(event.newsletterId)
-  const { html, text } = await getEmailBodiesFromS3(s3Prefix, event.emailId)
-  const campaignId = await createEmailCampaign(event.newsletterId, html, text, title)
-  await saveCampaignId(event.newsletterId, event.emailId, campaignId)
+  const { newsletterId, emailId, emailKey } = event
+  const { title } = await getNewsletterDetails(newsletterId)
+  const { html, text } = emailKey !== undefined ? await getEmailBodiesFromS3(emailKey) : await getEmailBodiesFromS3(await getEmailKey(newsletterId, emailId))
+  const campaignId = await createEmailCampaign(newsletterId, html, text, title)
+  await saveCampaignId(newsletterId, emailId, campaignId)
 }
 
-const getEmailContentsPath = async (newsletterId: string, emailId: string): Promise<string> => {
+const getEmailKey = async (newsletterId: string, emailId: string): Promise<string> => {
   logger.debug('Getting email details')
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -48,11 +49,8 @@ const getEmailContentsPath = async (newsletterId: string, emailId: string): Prom
   const command = new GetItemCommand(input)
   const response = await dynamodb.send(command)
   console.debug('Newsletter Details Repsponse', { response })
-  if (response.Item?.createdAt?.S !== undefined) {
-    logger.debug('Email details found', { response })
-    const date = new Date(response.Item.createdAt.S)
-    const prefix = `newsletter-content/${date.getUTCFullYear()}/${date.getUTCMonth() + 1}/${date.getUTCDate()}`
-    return prefix
+  if (response.Item?.emailKey?.S !== undefined) {
+    return response.Item?.emailKey?.S
   } else {
     logger.error('Email details not found', { response })
     throw new Error('Email details not found')
@@ -79,12 +77,12 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ title: stri
   }
 }
 
-const getEmailBodiesFromS3 = async (emailContentsPath: string, emailId: string): Promise<{ html: string, text: string }> => {
-  logger.debug('Getting email bodies from S3', { emailContentsPath, emailId })
+const getEmailBodiesFromS3 = async (emailKey: string): Promise<{ html: string, text: string }> => {
+  logger.debug('Getting email bodies from S3', { emailKey })
   try {
     const htmlInput: GetObjectCommandInput = {
       Bucket: EMAIL_BUCKET,
-      Key: `${emailContentsPath}/${emailId}.html`
+      Key: `${emailKey}.html`
     }
     const htmlCommand = new GetObjectCommand(htmlInput)
     const htmlResponse = await s3.send(htmlCommand)
@@ -95,7 +93,7 @@ const getEmailBodiesFromS3 = async (emailContentsPath: string, emailId: string):
     logger.debug('HTML body retrieved')
     const textInput: GetObjectCommandInput = {
       Bucket: EMAIL_BUCKET,
-      Key: `${emailContentsPath}/${emailId}.txt`
+      Key: `${emailKey}.txt`
     }
     const textCommand = new GetObjectCommand(textInput)
     const textResponse = await s3.send(textCommand)

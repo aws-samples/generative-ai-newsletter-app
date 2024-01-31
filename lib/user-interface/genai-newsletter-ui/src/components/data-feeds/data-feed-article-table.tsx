@@ -1,17 +1,19 @@
-import { Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
+import { Alert, AlertProps, Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
 import { DataFeedArticle } from "../../API";
 import { ApiClient } from "../../common/api";
 import { DataFeedArticlesTableColumnDefiniton, DataFeedArticlesTableColumnDisplay } from "../newsletters/definitions";
 
 export default function DataFeedArticleTable() {
-    const { subscriptionId } = useParams()
+    const navigate = useNavigate()
+    const { subscriptionId, flagArticle = false, articleId, flaggedArticleSuccess } = useParams()
     const appContext = useContext(AppContext)
     const [feedArticles, setFeedArticles] = useState<DataFeedArticle[]>([])
     const [loading, setLoading] = useState<boolean>(true)
-
+    const [tableAlertMessage, setTableAlertMessage] = useState('')
+    const [tableAlertType, setTableAlertType] = useState<AlertProps.Type>('success')
     const getDataFeedArticles = useCallback(
         async () => {
             if (!appContext) { return }
@@ -47,19 +49,41 @@ export default function DataFeedArticleTable() {
                 return article
             })
             setFeedArticles(updatedFeedArticles)
-            
+
         }, [appContext, subscriptionId, feedArticles]
+    )
+
+    const flagDataFeedArticleFromLink = useCallback(
+        async () => {
+            if (flagArticle && articleId !== undefined && articleId.length > 0) {
+                try {
+                    await flagDataFeedArticle(articleId, true)
+                    navigate(`/feeds/${subscriptionId}?flaggedArticleSuccess=true`)
+                } catch (error) {
+                    console.error(error)
+                    setTableAlertMessage('Error flagging Data Feed Article. See console log for details')
+                    setTableAlertType('error')
+                }
+            }
+        }, [articleId, flagArticle, flagDataFeedArticle, navigate, subscriptionId]
     )
 
     useEffect(() => {
         if (subscriptionId) {
             getDataFeedArticles()
         }
+        flagDataFeedArticleFromLink()
+        if (flaggedArticleSuccess !== undefined && flaggedArticleSuccess === 'true') {
+            setTableAlertMessage('Data Feed Article flagged successfully')
+            setTableAlertType('success')
+        }
 
-    }, [getDataFeedArticles, subscriptionId])
+    }, [flagDataFeedArticleFromLink, flaggedArticleSuccess, getDataFeedArticles, subscriptionId])
 
     return (
         <Container>
+            {tableAlertMessage !== undefined && tableAlertMessage.length > 0 ?
+                <Alert type={tableAlertType}>{tableAlertMessage}</Alert> : <></>}
             <Table
                 columnDefinitions={DataFeedArticlesTableColumnDefiniton(flagDataFeedArticle)}
                 columnDisplay={DataFeedArticlesTableColumnDisplay()}

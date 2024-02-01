@@ -33,3 +33,4 @@ lib/user-interface/genai-newsletter-ui/public/aws-exports.json
 
 lib/user-interface/genai-newsletter-ui/.env.local
 lib/user-interface/genai-newsletter-ui/public/amplifyconfiguration.json
+lib/user-interface/genai-newsletter-ui/.DS_Store

@@ -215,7 +215,7 @@ export class NewsletterGenerator extends Construct {
       }
     })
     newsletterTable.grantReadWriteData(userSubscriberFunction)
-    UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(userSubscriberFunction, 'cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser')
+    UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(userSubscriberFunction, 'cognito-idp:ListUsers')
     userSubscriberFunction.addToRolePolicy(pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement)
 
     const userUnsubscriberFunction = new NodejsFunction(this, 'user-unsubscriber', {

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { DynamoDBClient, PutItemCommand, type PutItemCommandInput } from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { PinpointClient, UpdateEndpointCommand, type UpdateEndpointCommandInput } from '@aws-sdk/client-pinpoint'
-import { AdminGetUserCommand, CognitoIdentityProviderClient, type AdminGetUserCommandInput } from '@aws-sdk/client-cognito-identity-provider'
+import { CognitoIdentityProviderClient, type ListUsersCommandInput, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider'
 import { SubscriberType } from '../types/newsletter-generator'
 
 const SERVICE_NAME = 'user-subscriber'
@@ -106,16 +106,23 @@ const subscribeExternalUser = async (newsletterId: string, userEmail: string, ex
 
 const getCognitoUserEmail = async (cognitoUserId: string): Promise<string> => {
   logger.debug('Getting Cognito User Email', { cognitoUserId })
-  const input: AdminGetUserCommandInput = {
+  const input: ListUsersCommandInput = {
     UserPoolId: COGNITO_USER_POOL_ID,
-    Username: cognitoUserId
+    Limit: 1,
+    Filter: `"sub" = "${cognitoUserId}"`
   }
-  const command = new AdminGetUserCommand(input)
+  const command = new ListUsersCommand(input)
   const response = await cognitoIdp.send(command)
-  if (response.UserAttributes !== undefined) {
-    const userEmail = response.UserAttributes.find(attribute => attribute.Name === 'email')
-    if (userEmail?.Value !== undefined) {
-      return userEmail.Value
+  if (response.Users === undefined) {
+    logger.error('Error getting Cognito User Email', { response })
+    tracer.addErrorAsMetadata(new Error('Error getting Cognito User Email'))
+    throw new Error('Error getting Cognito User Email')
+  }
+  if (response.Users.length === 1 && response.Users[0].Attributes !== undefined) {
+    for (const attribute of response.Users[0].Attributes) {
+      if (attribute.Name === 'email' && attribute.Value !== undefined) {
+        return attribute.Value
+      }
     }
   }
   logger.error('Error getting Cognito User Email', { response })

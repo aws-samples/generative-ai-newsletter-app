@@ -1,14 +1,14 @@
 import { Alert, AlertProps, Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
 import { DataFeedArticle } from "../../API";
 import { ApiClient } from "../../common/api";
 import { DataFeedArticlesTableColumnDefiniton, DataFeedArticlesTableColumnDisplay } from "../newsletters/definitions";
 
 export default function DataFeedArticleTable() {
-    const navigate = useNavigate()
-    const { subscriptionId, flagArticle = false, articleId, flaggedArticleSuccess } = useParams()
+    const { subscriptionId } = useParams()
+    const [searchParams, setSearchParams] = useSearchParams()
     const appContext = useContext(AppContext)
     const [feedArticles, setFeedArticles] = useState<DataFeedArticle[]>([])
     const [loading, setLoading] = useState<boolean>(true)
@@ -53,32 +53,36 @@ export default function DataFeedArticleTable() {
         }, [appContext, subscriptionId, feedArticles]
     )
 
-    const flagDataFeedArticleFromLink = useCallback(
-        async () => {
-            if (flagArticle && articleId !== undefined && articleId.length > 0) {
+    useEffect(() => {
+        
+            console.log('searchparams')
+            const articleId = searchParams.get('articleId')
+            const flagArticle = searchParams.get('flagArticle')
+            if (flagArticle !== null && flagArticle == 'true' && articleId !== null) {
                 try {
-                    await flagDataFeedArticle(articleId, true)
-                    navigate(`/feeds/${subscriptionId}?flaggedArticleSuccess=true`)
-                } catch (error) {
-                    console.error(error)
-                    setTableAlertMessage('Error flagging Data Feed Article. See console log for details')
+                    console.log('TRIGGER')
+                    flagDataFeedArticle(articleId, true)
+                }catch(error) {
+                    console.log(error)
+                    setTableAlertMessage('There was an error flagging the article.')
                     setTableAlertType('error')
                 }
+                const params = searchParams
+                params.delete('articleId')
+                params.delete('flagArticle')
+                setSearchParams(params)
+                
             }
-        }, [articleId, flagArticle, flagDataFeedArticle, navigate, subscriptionId]
-    )
+        
+    }, [flagDataFeedArticle, searchParams, setSearchParams])
+
 
     useEffect(() => {
         if (subscriptionId) {
             getDataFeedArticles()
         }
-        flagDataFeedArticleFromLink()
-        if (flaggedArticleSuccess !== undefined && flaggedArticleSuccess === 'true') {
-            setTableAlertMessage('Data Feed Article flagged successfully')
-            setTableAlertType('success')
-        }
 
-    }, [flagDataFeedArticleFromLink, flaggedArticleSuccess, getDataFeedArticles, subscriptionId])
+    }, [getDataFeedArticles, subscriptionId])
 
     return (
         <Container>

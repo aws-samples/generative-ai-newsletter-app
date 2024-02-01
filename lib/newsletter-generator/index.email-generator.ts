@@ -128,7 +128,7 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
             url: item.url.S,
             content: item.articleSummary.S,
             createdAt: item.createdAt.S,
-            flagLink: `/feeds/${subscriptionId}?flagArticle=true&articleId=${item.compoundSortKey.S?.substring(6)}`
+            flagLink: `/feeds/${subscriptionId}?flagArticle=true&articleId=${item.compoundSortKey.S?.substring(8)}`
           })
         } else {
           logger.warn('Item does not contain title, url, articleSummary or createdAt', item)

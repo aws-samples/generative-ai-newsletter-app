@@ -54,11 +54,11 @@ export default function DataFeedArticleTable() {
     )
 
     useEffect(() => {
-        
             console.log('searchparams')
             const articleId = searchParams.get('articleId')
             const flagArticle = searchParams.get('flagArticle')
             if (flagArticle !== null && flagArticle == 'true' && articleId !== null) {
+                setLoading(true)
                 try {
                     console.log('TRIGGER')
                     flagDataFeedArticle(articleId, true)
@@ -71,10 +71,10 @@ export default function DataFeedArticleTable() {
                 params.delete('articleId')
                 params.delete('flagArticle')
                 setSearchParams(params)
-                
+                getDataFeedArticles()
             }
         
-    }, [flagDataFeedArticle, searchParams, setSearchParams])
+    }, [flagDataFeedArticle, getDataFeedArticles, searchParams, setSearchParams])
 
 
     useEffect(() => {

@@ -7,6 +7,7 @@ import { AppContext } from "../../../common/app-context"
 import NewsletterDataFeedsSelectionForm from "./data-feeds-selection-table"
 import NewsletterDetailsForm from "./newsletter-details"
 import NewsletterReviewForm from "./newsletter-review"
+import NewsletterIntroPrompt from "./newsletter-intro-prompt"
 
 interface NewsletterWizardProps {
     newsletterId?: string
@@ -22,6 +23,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
     const [numberOfDaysToInclude, setNumberOfDaysToInclude] = useState<number>(7)
     const [selectedSubscriptions, setSelectedSubscriptions] = useState<DataFeedSubscription[]>([])
     const [activeWizardStep, setActiveWizardStep] = useState<number>(0)
+    const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
     const [titleError, setTitleError] = useState<string>('')
     const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] = useState<string>('')
     const [saving, setSaving] = useState<boolean>(false)
@@ -29,6 +31,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
     const [wizardAlertMessage, setWizardAlertMessage] = useState<string | null>(null)
     const [wizardAlertHeader, setWizardAlertHeader] = useState<string | null>(null)
     const [wizardAlertType, setWizardAlertType] = useState<AlertProps.Type>('info')
+
 
     const submitCreateNewsletter = useCallback(
         async () => {
@@ -40,7 +43,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                 discoverable,
                 shared,
                 numberOfDaysToInclude,
-                subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId)
+                subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
+                newsletterIntroPrompt
             })
             if (result.errors) {
                 console.error(result.errors)
@@ -51,7 +55,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             } else {
                 navigate(`/newsletters/${result.data.createNewsletter?.newsletterId}`)
             }
-        }, [title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, appContext, navigate]
+        }, [appContext, title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, newsletterIntroPrompt, navigate]
     )
 
     const loadNewsletterDetails = useCallback(
@@ -95,7 +99,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                         discoverable,
                         shared,
                         numberOfDaysToInclude,
-                        subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId)
+                        subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
+                        newsletterIntroPrompt
                     }
                 )
                 if (result.errors) {
@@ -110,7 +115,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             }
 
 
-        }, [appContext, discoverable, navigate, newsletterId, numberOfDaysToInclude, selectedSubscriptions, shared, title]
+        }, [appContext, discoverable, navigate, newsletterId, newsletterIntroPrompt, numberOfDaysToInclude, selectedSubscriptions, shared, title]
     )
 
     const cancelWizard = useCallback(
@@ -216,6 +221,26 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                         isOptional: newsletterId !== undefined && selectedSubscriptions.length > 0
                     },
                     {
+                        title: "Define your Newsletter Intro",
+                        description: "Create a prompt to provide guidance to the GenAI Model when it is generating a summary for a Newsletter." +
+                            "The model will try to create a high-level newsletter summary from the article summaries included in the newsletter." +
+                            "By adding a prompt here, the model's generated summary will be customized according to the prompt." +
+                            "The prompt does not impact any formatting or any articles included as is purely for the summary",
+                        content: (
+                            <Container>
+                                {wizardAlertHeader ?
+                                    <Alert type={wizardAlertType}
+                                        header={wizardAlertHeader}
+                                    >
+                                        {wizardAlertMessage}
+                                    </Alert> : <></>}
+
+                                <NewsletterIntroPrompt newsletterIntroPrompt={newsletterIntroPrompt} setNewsletterIntroPrompt={setNewsletterIntroPrompt} />
+                            </Container>
+                        ),
+                        isOptional: true
+                    },
+                    {
                         title: "Review Newsletter",
                         description: "Review your newsletter details before creating it.",
                         content: (<Container>
@@ -233,6 +258,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                                 selectedSubscriptions={selectedSubscriptions}
                                 formTitle="Review and Finalize Details"
                                 formDescription="Review and finalize the details of your newsletter before saving."
+                                newsletterIntroPrompt={newsletterIntroPrompt}
                             />
                         </Container>)
                     }

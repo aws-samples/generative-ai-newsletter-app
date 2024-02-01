@@ -25,7 +25,7 @@ input CreateNewsletter {
     subscriptionIds: [String!]!
     discoverable: Boolean
     shared: Boolean
-    # newsletterIntroPrompt: String
+    newsletterIntroPrompt: String
 }
 
 input UpdateNewsletterInput {
@@ -34,7 +34,7 @@ input UpdateNewsletterInput {
     subscriptionIds: [String]
     discoverable: Boolean
     shared: Boolean
-    # newsletterIntroPrompt: String
+    newsletterIntroPrompt: String
 }
 
 input SubscribeToNewsletterInput {
@@ -57,7 +57,7 @@ type Newsletter @aws_cognito_user_pools {
     scheduleId: String!
     createdAt: AWSDateTime!
     owner: String
-    # newsletterIntroPrompt: String
+    newsletterIntroPrompt: String
 }
 
 type Newsletters @aws_cognito_user_pools {

@@ -58,6 +58,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
     scheduleId
     createdAt
     owner
+    newsletterIntroPrompt
     __typename
   }
 }

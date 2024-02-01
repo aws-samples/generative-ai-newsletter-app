@@ -1,6 +1,6 @@
-import { Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
+import { Alert, AlertProps, Container, Header, SpaceBetween, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
 import { DataFeedArticle } from "../../API";
 import { ApiClient } from "../../common/api";
@@ -8,10 +8,12 @@ import { DataFeedArticlesTableColumnDefiniton, DataFeedArticlesTableColumnDispla
 
 export default function DataFeedArticleTable() {
     const { subscriptionId } = useParams()
+    const [searchParams, setSearchParams] = useSearchParams()
     const appContext = useContext(AppContext)
     const [feedArticles, setFeedArticles] = useState<DataFeedArticle[]>([])
     const [loading, setLoading] = useState<boolean>(true)
-
+    const [tableAlertMessage, setTableAlertMessage] = useState('')
+    const [tableAlertType, setTableAlertType] = useState<AlertProps.Type>('success')
     const getDataFeedArticles = useCallback(
         async () => {
             if (!appContext) { return }
@@ -47,9 +49,33 @@ export default function DataFeedArticleTable() {
                 return article
             })
             setFeedArticles(updatedFeedArticles)
-            
+
         }, [appContext, subscriptionId, feedArticles]
     )
+
+    useEffect(() => {
+        
+            console.log('searchparams')
+            const articleId = searchParams.get('articleId')
+            const flagArticle = searchParams.get('flagArticle')
+            if (flagArticle !== null && flagArticle == 'true' && articleId !== null) {
+                try {
+                    console.log('TRIGGER')
+                    flagDataFeedArticle(articleId, true)
+                }catch(error) {
+                    console.log(error)
+                    setTableAlertMessage('There was an error flagging the article.')
+                    setTableAlertType('error')
+                }
+                const params = searchParams
+                params.delete('articleId')
+                params.delete('flagArticle')
+                setSearchParams(params)
+                
+            }
+        
+    }, [flagDataFeedArticle, searchParams, setSearchParams])
+
 
     useEffect(() => {
         if (subscriptionId) {
@@ -60,6 +86,8 @@ export default function DataFeedArticleTable() {
 
     return (
         <Container>
+            {tableAlertMessage !== undefined && tableAlertMessage.length > 0 ?
+                <Alert type={tableAlertType}>{tableAlertMessage}</Alert> : <></>}
             <Table
                 columnDefinitions={DataFeedArticlesTableColumnDefiniton(flagDataFeedArticle)}
                 columnDisplay={DataFeedArticlesTableColumnDisplay()}

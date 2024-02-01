@@ -47,6 +47,7 @@ export type CreateNewsletter = {
   subscriptionIds: Array< string >,
   discoverable?: boolean | null,
   shared?: boolean | null,
+  newsletterIntroPrompt?: string | null,
 };
 
 export type Newsletter = {
@@ -61,6 +62,7 @@ export type Newsletter = {
   scheduleId: string,
   createdAt: string,
   owner?: string | null,
+  newsletterIntroPrompt?: string | null,
 };
 
 export type SubscribeToNewsletterInput = {
@@ -77,6 +79,7 @@ export type UpdateNewsletterInput = {
   subscriptionIds?: Array< string | null > | null,
   discoverable?: boolean | null,
   shared?: boolean | null,
+  newsletterIntroPrompt?: string | null,
 };
 
 export type UpdateDataFeedSubscriptionInput = {
@@ -229,6 +232,7 @@ export type CreateNewsletterMutation = {
     scheduleId: string,
     createdAt: string,
     owner?: string | null,
+    newsletterIntroPrompt?: string | null,
   } | null,
 };
 
@@ -294,6 +298,7 @@ export type GetNewslettersQuery = {
       scheduleId: string,
       createdAt: string,
       owner?: string | null,
+      newsletterIntroPrompt?: string | null,
     } >,
     nextToken?: string | null,
   },
@@ -326,6 +331,7 @@ export type GetNewsletterQuery = {
     scheduleId: string,
     createdAt: string,
     owner?: string | null,
+    newsletterIntroPrompt?: string | null,
   },
 };
 
@@ -471,6 +477,7 @@ export type GetUserNewsletterSubscriptionsQuery = {
       scheduleId: string,
       createdAt: string,
       owner?: string | null,
+      newsletterIntroPrompt?: string | null,
     } >,
     nextToken?: string | null,
   } | null,

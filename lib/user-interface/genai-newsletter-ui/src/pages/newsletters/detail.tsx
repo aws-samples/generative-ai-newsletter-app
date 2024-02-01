@@ -71,6 +71,7 @@ export default function NewsletterDetail() {
                             formTitle="Newsletter Details"
                             formDescription="Below are the details about the newsletter."
                             formMode="detail"
+                            newsletterIntroPrompt={newsletter.newsletterIntroPrompt !== null && newsletter.newsletterIntroPrompt !== undefined && newsletter.newsletterIntroPrompt.length > 0 ? newsletter.newsletterIntroPrompt : undefined}
                         />
                         : <>
                             <StatusIndicator type="loading">

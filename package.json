@@ -13,7 +13,8 @@
     "lint": "eslint . --fix --ext .ts,.tsx --report-unused-disable-directives",
     "test": "jest",
     "deploy": "cdk deploy",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "commit": "cz"
   },
   "devDependencies": {
     "@aws-amplify/cli": "^12.10.1",
@@ -39,7 +40,9 @@
     "ansi-escape-sequences": "^6.2.2",
     "aws-amplify": "^6.0.9",
     "aws-cdk": "2.110.1",
+    "commitizen": "^4.3.0",
     "compare-versions": "^6.1.0",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.56.0",
     "eslint-config-standard-with-typescript": "^43.0.0",
     "eslint-plugin-import": "^2.29.1",
@@ -82,5 +85,10 @@
     "puppeteer": "^21.6.0",
     "react-dom": "^18.2.0",
     "source-map-support": "^0.5.21"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

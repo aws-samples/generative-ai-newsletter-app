@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
-import { DataFeedSubscription, Newsletter } from "../../API";
+import { ArticleSummaryType, DataFeedSubscription, Newsletter } from "../../API";
 import BaseAppLayout from "../../components/base-app-layout";
 import { BreadcrumbGroup, Container, SpaceBetween, StatusIndicator } from "@cloudscape-design/components";
 import useOnFollow from "../../common/hooks/use-on-follow";
@@ -72,6 +72,7 @@ export default function NewsletterDetail() {
                             formDescription="Below are the details about the newsletter."
                             formMode="detail"
                             newsletterIntroPrompt={newsletter.newsletterIntroPrompt !== null && newsletter.newsletterIntroPrompt !== undefined && newsletter.newsletterIntroPrompt.length > 0 ? newsletter.newsletterIntroPrompt : undefined}
+                            articleSummaryType={(newsletter.articleSummaryType !== undefined && newsletter.articleSummaryType !== null) ? newsletter.articleSummaryType : ArticleSummaryType.SHORT_SUMMARY}
                         />
                         : <>
                             <StatusIndicator type="loading">

@@ -19,7 +19,6 @@ export default function Authenticator(props: PropsWithChildren) {
             try {
                 const user = await getCurrentUser()
                 if (user.userId) {
-                    setUserId(user.userId)
                     try {
                         console.debug('fetching user attributes')
                         const attributes = await fetchUserAttributes()
@@ -29,6 +28,11 @@ export default function Authenticator(props: PropsWithChildren) {
                         }
                         if (attributes.family_name) {
                             setUserFamilyName(attributes.family_name)
+                        }
+                        if (attributes.sub) {
+                            setUserId(attributes.sub)
+                        }else {
+                            setUserId(user.userId)
                         }
                     } catch (error) {
                         //Error is okay

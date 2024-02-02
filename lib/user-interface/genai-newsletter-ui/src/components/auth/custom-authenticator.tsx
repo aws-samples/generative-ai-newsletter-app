@@ -18,7 +18,7 @@ export default function Authenticator(props: PropsWithChildren) {
         const setUser = async () => {
             try {
                 const user = await getCurrentUser()
-                if (user.userId) {
+                if (user) {
                     try {
                         console.debug('fetching user attributes')
                         const attributes = await fetchUserAttributes()
@@ -31,8 +31,8 @@ export default function Authenticator(props: PropsWithChildren) {
                         }
                         if (attributes.sub) {
                             setUserId(attributes.sub)
-                        }else {
-                            setUserId(user.userId)
+                        } else {
+                            console.error('No sub found in user attributes')
                         }
                     } catch (error) {
                         //Error is okay
@@ -45,6 +45,13 @@ export default function Authenticator(props: PropsWithChildren) {
 
 
         }
+
+        const clearUser = async () => {
+            setUserId('')
+            setUserGroups([])
+            setUserGivenName('')
+            setUserFamilyName('')
+        }
         if (appContext.Auth.Cognito.loginWith?.oauth) {
             console.log('CUSTOM HUB IS SET TO LISTEN')
             setUser()
@@ -54,23 +61,19 @@ export default function Authenticator(props: PropsWithChildren) {
                         setUser()
                         break
                     case "signedOut":
-                        setUserId('')
+                        clearUser()
                         break
                 }
             })
         } else {
             Hub.listen("auth", ({ payload }) => {
                 if (payload.event === "signedOut") {
-                    setUserId('')
+                    clearUser()
                 }
                 if (payload.event === "signedIn") {
                     try {
                         console.log('SIGNED IN')
-                        getCurrentUser().then((user) => {
-                            if (user.userId) {
-                                setUserId(user.userId)
-                            }
-                        })
+                        setUser()
                     } catch (error) {
                         console.log(error)
                     }

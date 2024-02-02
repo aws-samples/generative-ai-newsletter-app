@@ -12,10 +12,13 @@ export function DefaultAuthenticator() {
     const [authStep, setAuthStep] = useState<'LOGIN' | 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED'>('LOGIN')
     const [newPasswordOne, setNewPasswordOne] = useState<string>('')
     const [newPasswordTwo, setNewPasswordTwo] = useState<string>('')
+    const [userGivenName, setUserGivenName] = useState<string>('')
+    const [userFamilyName, setUserFamilyName] = useState<string>('')
 
     const handleSignIn = useCallback(
         async () => {
             try {
+                // Better to error on no user than error on signout with no user
                 await getCurrentUser()
                 await signOut()
             } catch (error) {
@@ -52,7 +55,13 @@ export function DefaultAuthenticator() {
                 if (newPasswordOne === newPasswordTwo) {
                     setLoading(true)
                     const response = await confirmSignIn({
-                        challengeResponse: newPasswordOne
+                        challengeResponse: newPasswordOne,
+                        options: {
+                            userAttributes: {
+                                given_name: userGivenName,
+                                family_name: userFamilyName,
+                            }
+                        }
                     })
                     console.debug(response)
                 } else {
@@ -84,7 +93,13 @@ export function DefaultAuthenticator() {
                                 actions={
                                     <Button loading={loading} variant='primary'>Update Password & Sign In</Button>
                                 }
-                            >
+                            >   
+                                <FormField label="Given Name (first name)">
+                                    <Input value={userGivenName} onChange={e => setUserGivenName(e.detail.value)} />
+                                </FormField>
+                                <FormField label="Family Name (last name)">
+                                    <Input value={userFamilyName} onChange={e => setUserFamilyName(e.detail.value)} />
+                                </FormField>
                                 <FormField label="New Password">
                                     <Input value={newPasswordOne} type='password' onChange={e => setNewPasswordOne(e.detail.value)} />
                                 </FormField>
@@ -134,15 +149,12 @@ export function DefaultAuthenticator() {
 
 export function CustomAuthenticator() {
     const appContext = useContext(AppContext)
-
     const handleFederateClick = () => {
-        console.log('handleFederateFlickStart')
         let provider = null
         if (!appContext) { return }
         console.log(appContext)
         if (!appContext.Auth.Cognito.loginWith?.oauth) { return }
         if (appContext.Auth.Cognito.loginWith?.oauth?.providers !== undefined) {
-            console.log('providers present')
             for (const listedProvider of appContext.Auth.Cognito.loginWith.oauth.providers) {
                 provider = listedProvider.toString()
             }

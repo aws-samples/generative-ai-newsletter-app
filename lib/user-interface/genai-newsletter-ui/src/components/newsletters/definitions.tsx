@@ -1,4 +1,4 @@
-import { Box, Button, Icon, Link, Popover } from "@cloudscape-design/components";
+import { Badge, Box, Button, Icon, Link, Popover, SpaceBetween } from "@cloudscape-design/components";
 import { DataFeedArticle, DataFeedSubscription } from "../../API";
 
 
@@ -82,18 +82,42 @@ export const DataFeedArticlesTableColumnDefiniton = (flaggedContentHandler: (art
         {
             id: 'summary',
             cell: (item: DataFeedArticle) => (
-                <Popover
+                item.shortSummary !== null ? (
+                    <Popover
+                        content={
+                            <Box>
+                                {item.longSummary}
+                            </Box>
+                        }
+                    >
+                        {item.shortSummary}
+                    </Popover>
+                ) : <Popover
                     content={
                         <Box>
                             {item.articleSummary}
                         </Box>
                     }
                 >
-                    {item.articleSummary.length < 75 ? item.articleSummary : item.articleSummary.substring(0, 75) + "..."}
+                    {item.articleSummary !== undefined && item.articleSummary && item.articleSummary.length > 75 ? item.articleSummary?.substring(0, 75) + '...' : item.articleSummary}
                 </Popover>
             ),
             header: 'Article Summary',
             isHeaderRow: true,
+        },
+        {
+            id: 'keywords',
+            cell: (item: DataFeedArticle) => (
+                <SpaceBetween size="xs" direction="horizontal">
+                    {
+                        item.keywords?.split(',').map((keyword) => {
+                            return <Badge color="blue">{keyword}</Badge>
+                        })
+                    }
+                </SpaceBetween>
+            ),
+            header: 'Article Keywords',
+            isHeaderRow: true
         },
         {
             id: 'createdAt',
@@ -104,12 +128,12 @@ export const DataFeedArticlesTableColumnDefiniton = (flaggedContentHandler: (art
         {
             id: 'flagged',
             cell: (item: DataFeedArticle) => (
-                
+
                 <Button variant="link" onClick={() => { flaggedContentHandler(item.articleId, item.flaggedContent !== undefined ? !item.flaggedContent : false) }}>
                     <Icon name="flag" size="big" variant={item.flaggedContent ? "error" : "normal"}
                     />
                 </Button>
-                
+
             ),
             header: 'Flagged Summary',
             isHeaderRow: true,
@@ -125,6 +149,7 @@ export const DataFeedArticlesTableColumnDisplay = () => {
         { id: 'title', visible: true },
         { id: 'url', visible: true },
         { id: 'summary', visible: true },
+        { id: 'keywords', visible: true },
         { id: 'createdAt', visible: true },
         { id: 'flagged', visible: true }
     ]

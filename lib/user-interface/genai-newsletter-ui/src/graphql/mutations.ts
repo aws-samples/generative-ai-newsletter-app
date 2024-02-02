@@ -19,11 +19,14 @@ export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeed
       subscriptionId
       articleId
       url
-      articleSummary
       createdAt
       title
       summarizationPrompt
       flaggedContent
+      articleSummary
+      keywords
+      shortSummary
+      longSummary
       __typename
     }
     title

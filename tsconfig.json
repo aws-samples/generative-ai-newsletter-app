@@ -39,12 +39,10 @@
     "cdk.out",
     "lib/user-interface/genai-newsletter-ui", 
     "lib/api/resolverFunctions/*.js",
-    "lib/user-interface/newsletter-article-edge-router/*"
   ],
   "include": [
     "bin/",
     "lib/",
     "cli/",
-    "lib/newsletter-generator/react-email-generator/tsconfig.json"
   ]
 } 

@@ -98,11 +98,14 @@ export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscript
       subscriptionId
       articleId
       url
-      articleSummary
       createdAt
       title
       summarizationPrompt
       flaggedContent
+      articleSummary
+      keywords
+      shortSummary
+      longSummary
       __typename
     }
     title
@@ -125,11 +128,14 @@ export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
       subscriptionId
       articleId
       url
-      articleSummary
       createdAt
       title
       summarizationPrompt
       flaggedContent
+      articleSummary
+      keywords
+      shortSummary
+      longSummary
       __typename
     }
     nextToken

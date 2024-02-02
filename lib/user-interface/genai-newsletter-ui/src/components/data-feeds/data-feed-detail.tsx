@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DataFeedSubscription } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
@@ -9,6 +9,7 @@ import { UserContext } from "../../common/user-context";
 
 export default function DataFeedDetail() {
     const { subscriptionId } = useParams()
+    const navigate = useNavigate()
     const userContext = useContext(UserContext)
     const appContext = useContext(AppContext)
     const [feed, setFeed] = useState<DataFeedSubscription | null>(null)
@@ -37,7 +38,7 @@ export default function DataFeedDetail() {
         <Container header={
             <Header actions={
                 <SpaceBetween direction="horizontal" size="s">
-                    <Button variant="primary" disabled={feed?.owner !== userContext?.userId} >Edit Data Feed</Button>
+                    <Button variant="primary" disabled={feed?.owner !== userContext?.userId} onClick={()=>{navigate(`/feeds/${subscriptionId}/edit`)}} >Edit Data Feed</Button>
                 </SpaceBetween>
             }/>
         }>

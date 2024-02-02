@@ -1,35 +1,65 @@
-import { TaggedElement, type PromptElementContext, FormattedRespone as FormattedResponse } from '../prompts/prompt-processing'
+import { TaggedElement, MultiSizeFormattedResponse } from '../prompts/prompt-processing'
+import { PromptHandler } from './prompt-handler'
 import { type ArticleData } from './types'
 
-export class NewsletterSummaryBuilder {
+export class NewsletterSummaryBuilder extends PromptHandler {
   private readonly newletterArticles: ArticleData[]
-  private readonly newsletterIntroPrompt = new TaggedElement('newsletterIntroPrompt')
+  private readonly newsletterIntroPrompt = new TaggedElement('tone')
   private readonly articles = new TaggedElement('articles')
-  private readonly response = new FormattedResponse()
   constructor (newletterArticles: ArticleData[], newsletterIntroPrompt: string | null) {
+    super({
+      promptStart: '\n\nHuman:',
+      promptEnd: '\n\nAssistant:'
+    })
+    this.taskContext = 'You are an AI responsible for reading article summaries\n' +
+                    'and generating a newsletter summary.\n' +
+                    'Read the summaries and follow the guidance and instructions for creating a summarization'
     if (newsletterIntroPrompt !== null) {
       this.newsletterIntroPrompt.response = newsletterIntroPrompt
+      this.toneContext = 'Here is the tone of the article\n' +
+        this.newsletterIntroPrompt.wrappedElement + '\n'
     }
     this.newletterArticles = newletterArticles
     this.generatePromptFormattedArticles()
+    this.data = 'Here are the articles you should use for reference:\n' + this.articles.wrappedElement + '\n'
+    this.taskDescription = 'Here are some important rules to follow:\n' +
+                            (newsletterIntroPrompt !== null
+                              ? '-Always match the tone you are instructed to use\n'
+                              : '') +
+                            '-If you are unable to summarize content, do not make things up\n' +
+                            '-The summary should aim to give a broad overview of the included articles, but doesn\'t' +
+                              'to summarize all articles, especially if there are a lot\n'
+    this.instructions = '1. Create up to 3 unique keywords that describe the newsletter (keywords)\n' +
+                              '2. Create a single sentence that clearly summarizes the newsletter (shortSummary)\n' +
+                              '3. Create a 1-2 paragraph summary the clearly summarizes the newsletter (longSummary)\n' +
+                              'If you are unable to complete your task exactly as you were instructed, it is considered an error (error)\n' +
+                              '---\nThink about your response before proceeding to answer.\n'
+    this.outputFormat = 'The only valid XML tags you can respond with are:\n' +
+      '<keywords>, <shortSummary>, <longSummary>, <error>\n' +
+      'If you cannot complete the task, your output should be inside the <error> tag'
   }
 
   getCompiledPrompt (): string {
-    return 'Human:\n\n' +
-      this.getArticlesContextPrompt().before +
-      this.articles.wrappedElement +
-      this.getArticlesContextPrompt().after +
-      this.getIntroPromptContextPrompt().before +
-      (this.newsletterIntroPrompt.response !== null
-        ? this.newsletterIntroPrompt.wrappedElement
-        : '') +
-      this.getIntroPromptContextPrompt().after +
-      '\n\nAssistant:'
+    return this.promptStart +
+      this.taskContext +
+      this.toneContext +
+      this.data +
+      this.taskDescription +
+      this.instructions +
+      this.outputFormat +
+      this.promptEnd
   }
 
-  getProcessedResponse (response: string): FormattedResponse {
-    this.response.processResponse(response)
-    return this.response
+  getProcessedResponse (response?: string): MultiSizeFormattedResponse {
+    if (response !== undefined) {
+      this.response = response
+    }
+    if (this.response !== undefined) {
+      const response = new MultiSizeFormattedResponse()
+      return response.processResponse(this.response)
+    } else {
+      throw Error('No response set!')
+    }
   }
 
   private generatePromptFormattedArticles (): void {
@@ -58,38 +88,5 @@ export class NewsletterSummaryBuilder {
     }
 
     this.articles.response = formattedArticles
-  }
-
-  private getArticlesContextPrompt (): PromptElementContext {
-    const articlesTag = new TaggedElement('articles')
-    return {
-      before: `Read the following text inside the ${articlesTag.openTag} tags. You will use the information later\n\n, tag. You will use the information later\n\n`,
-      after: ''
-    }
-  }
-
-  private getIntroPromptContextPrompt (): PromptElementContext {
-    if (this.newsletterIntroPrompt === null) {
-      return {
-        before: '\n',
-        after: 'Using the summarized articles you read in the <article> tags, generate 1 to 2 Newsletter introduction paragraphs.\n' +
-        'The summary should be high-level.\n' +
-        'The summary should be written in simple markdown format\n' +
-        'The newsletter summary content should be output inside of the tag <generatedOutput>\n' +
-        'If you are unable to create a summary or have any other issues causing you to fail to complete the generation of the summary \n' +
-        'output the errors/problems inside of the tag <error>.\n'
-      }
-    }
-    return {
-      before: 'Read the following text inside the <newsletterIntroPrompt> tags. You will use the prompt later\n\n',
-      after: 'Using the summarized articles you read in the <article> tags, generate 1 to 2 Newsletter introduction paragraphs.\n' +
-            'The summary should be high-level.\n' +
-            'The summary should be written in simple markdown format\n' +
-            'Use the text provided in the <newsletterIntroPrompt> tag as guidance to help direct how you create the newsletter introduction.\n' +
-            'The newsletter summary content should be output inside of the tag <generatedOutput>\n' +
-            'If you are unable to create a summary or have any other issues causing you to fail to complete the generation of the summary \n' +
-            'output the errors/problems inside of the tag <error>.\n'
-
-    }
   }
 }

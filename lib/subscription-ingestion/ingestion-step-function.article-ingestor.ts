@@ -12,7 +12,8 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
-import { ArticleIngestorPromptConfiguration } from './prompts'
+import { ArticleSummaryBuilder } from '../prompts/article-summary-prompt'
+import { type MultiSizeFormattedResponse } from '../prompts/prompt-processing'
 
 const SERVICE_NAME = 'article-ingestor'
 
@@ -40,6 +41,8 @@ interface ArticleIngestorInput {
 }
 
 const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
+  logger.debug('event', { event })
+  tracer.putMetadata('event', event)
   await ingestArticle(event)
 }
 
@@ -67,11 +70,11 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
         logger.error('Failed to load site content for ', link)
       }
       try {
-        const summary = await generateArticleSummary(articleText, summarizationPrompt)
-        if (summary !== undefined && summary !== null) {
-          await saveArticleData(summary, subscriptionId, articleId, link, title, summarizationPrompt)
+        const response = await generateArticleSummarization(articleText, summarizationPrompt)
+        if (response !== undefined && response !== null) {
+          await saveArticleData(response, subscriptionId, articleId, link, title, summarizationPrompt)
         } else {
-          throw new Error('Summary is undefined')
+          throw new Error('Response is undefined')
         }
       } catch (error) {
         logger.error('Failed to generate article summary for ' + link, { error })
@@ -80,7 +83,7 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
     } else {
       logger.error('Failed to generate article summary for ' + link)
       tracer.putAnnotation('summaryGenerated', false)
-      metrics.addMetric('EmptyAricleFound', MetricUnits.Count, 1)
+      metrics.addMetric('EmptyArticleFound', MetricUnits.Count, 1)
     }
   } catch (error) {
     logger.error('Error in website crawler', { error })
@@ -139,8 +142,9 @@ const storeSiteContent = async (text: string, subscriptionId: string, articleId:
   }
 }
 
-const generateArticleSummary = async (articleBody: string, summarizationPrompt?: string): Promise<string> => {
-  const prompt = ArticleIngestorPromptConfiguration.buildPrompt(articleBody, summarizationPrompt)
+const generateArticleSummarization = async (articleBody: string, summarizationPrompt?: string): Promise<MultiSizeFormattedResponse> => {
+  const summaryBuilder = new ArticleSummaryBuilder(articleBody, summarizationPrompt ?? null)
+  const prompt = summaryBuilder.getCompiledPrompt()
   console.debug(prompt)
   const bedrockInput: InvokeModelCommandInput = {
     body: JSON.stringify({
@@ -156,39 +160,36 @@ const generateArticleSummary = async (articleBody: string, summarizationPrompt?:
   const response = await bedrock.send(command)
   const responseData = new TextDecoder().decode(response.body)
   logger.debug('GenAI Output:\n' + responseData)
-  let summary = responseData.replace(/\\n-/g, '')
-  summary = summary.replace(/\\n/g, '')
-  const matchedSummary = summary.match(/(?<=<summary>)(.*?)(?=<\/summary>)/g)
-  const matchedError = summary.match(/(?<=<error>)(.*?)(?=<\/error>)/g)
-  if (matchedSummary === null || (matchedError !== null && matchedError.length > 0)) {
-    console.error('Bad summary!')
-    tracer.putMetadata('summaryGenerated', false)
-    metrics.addMetric('BadArticleSummaryGenerated', MetricUnits.Count, 1)
-    tracer.putMetadata('ArticleData', {
-      articleBody,
-      summarizationPrompt
-    })
-    throw new Error(`No summary found - ${matchedError as string | null}`)
-  } else {
-    return matchedSummary[0]
+  const processedResponse = summaryBuilder.getProcessedResponse(responseData)
+  if (processedResponse.error.response !== null) {
+    logger.error('Error in processed response from LLM', { processedResponse })
+    throw new Error('Error in processed response from LLM')
   }
+  return processedResponse
 }
 
-const saveArticleData = async (articleSummary: string, subscriptionId: string, articleId: string, url: string, title: string, summarizationPrompt?: string): Promise<void> => {
+const saveArticleData = async (processedResponse: MultiSizeFormattedResponse, subscriptionId: string, articleId: string, url: string, title: string, summarizationPrompt?: string): Promise<void> => {
   tracer.putMetadata('subscriptionId', subscriptionId, 'articleInfo')
   tracer.putMetadata('articleId', articleId, 'articleInfo')
   tracer.putMetadata('url', url, 'articleInfo')
+  tracer.putMetadata('title', title, 'articleInfo')
+  tracer.putMetadata('summarizationPrompt', summarizationPrompt, 'articleInfo')
+  const { keywords, shortSummary, longSummary } = processedResponse
   const input: PutItemCommandInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
     Item: marshall({
       subscriptionId,
       articleId,
       compoundSortKey: `article#${articleId}`,
-      articleSummary,
       createdAt: new Date().toISOString(),
       url,
       title,
-      summarizationPrompt
+      summarizationPrompt,
+      keywords: keywords.response,
+      shortSummary: shortSummary.response,
+      longSummary: longSummary.response
+    }, {
+      removeUndefinedValues: true
     })
   }
   const command = new PutItemCommand(input)

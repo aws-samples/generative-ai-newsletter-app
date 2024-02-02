@@ -132,11 +132,14 @@ type DataFeedArticle @aws_cognito_user_pools {
     subscriptionId: String!
     articleId: String!
     url: String!
-    articleSummary: String!
     createdAt: AWSDateTime!
     title: String!
     summarizationPrompt: String
     flaggedContent: Boolean
+    articleSummary: String @deprecated
+    keywords: String
+    shortSummary: String
+    longSummary: String
 }
 
 type DataFeedArticles @aws_cognito_user_pools {

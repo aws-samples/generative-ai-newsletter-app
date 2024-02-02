@@ -1,5 +1,6 @@
 {
   "name": "emails",
+  "type":"commonjs",
   "version": "0.0.18",
   "private": true,
   "workspaces": [

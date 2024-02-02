@@ -10,10 +10,10 @@ import { NewsletterEmail } from './react-email-generator/emails/newsletter'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
-import { type ArticleData } from '../types/newsletter-generator'
-import { NewsletterSummaryPrompt } from '../prompts/newsletter-summary-prompt'
+import { NewsletterSummaryBuilder } from '../prompts/newsletter-summary-prompt'
 import { BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
-import { PromptResponseHandler } from '../prompts/prompt-response-handler'
+import { type ArticleData } from '../prompts/types'
+import { MultiSizeFormattedResponse } from '../prompts/prompt-processing'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -123,10 +123,15 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
       for (const item of result.Items) {
         if (item.title.S !== undefined && item.url.S !== undefined && item.articleSummary.S !== undefined && item.createdAt.S !== undefined) {
           metrics.addMetric('ArticlesFound', MetricUnits.Count, 1)
+          const content = new MultiSizeFormattedResponse({
+            shortSummary: item.shortSummary.S,
+            longSummary: item.longSummary.S,
+            keywords: item.keywords.S
+          })
           articlesData.push({
             title: item.title.S,
             url: item.url.S,
-            content: item.articleSummary.S,
+            content,
             createdAt: item.createdAt.S,
             flagLink: `/feeds/${subscriptionId}?flagArticle=true&articleId=${item.compoundSortKey.S?.substring(8)}`
           })
@@ -145,7 +150,8 @@ const getArticlesForSubscriptions = async (subscriptionIds: string[], numberOfDa
 const generateNewsletterSummary = async (articles: ArticleData[], newsletterIntroPrompt: string): Promise<string> => {
   console.debug('Generating newsletter summary')
   tracer.putAnnotation('Newsletter has summary prompt', true)
-  const prompt = new NewsletterSummaryPrompt(newsletterIntroPrompt, articles).getCompiledSummaryPrompt()
+  const summaryBuilder = new NewsletterSummaryBuilder(articles, newsletterIntroPrompt)
+  const prompt = summaryBuilder.getCompiledPrompt()
   console.debug('Prompt generated', { prompt })
   const bedrockInput: InvokeModelCommandInput = {
     body: JSON.stringify({
@@ -160,17 +166,12 @@ const generateNewsletterSummary = async (articles: ArticleData[], newsletterIntr
   const command = new InvokeModelCommand(bedrockInput)
   const response = await bedrock.send(command)
   const responseData = new TextDecoder().decode(response.body)
-  const formattedResponse = PromptResponseHandler.formatSummaryResponse(responseData)
-  if (formattedResponse.error.length > 0) {
+  const formattedResponse = summaryBuilder.getProcessedResponse(responseData)
+  if (formattedResponse.error.response === null || formattedResponse.summary.response === null) {
     console.error('Error generating summary', { formattedResponse })
-  }
-  if (formattedResponse.summary.length > 0) {
-    metrics.addMetric('NewsletterSummaryGenerated', MetricUnits.Count, 1)
-    tracer.putAnnotation('summaryGenerated', true)
-    return formattedResponse.summary
-  } else {
     throw new Error('Error generating summary')
   }
+  return formattedResponse.summary.response
 }
 
 const generateEmail = async (articles: ArticleData[], newsletterSummary: string, title: string): Promise<GeneratedEmailContents> => {

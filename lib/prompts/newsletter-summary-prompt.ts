@@ -1,39 +1,69 @@
-import { type ArticleData } from '../types/newsletter-generator'
-import { type PromptElementContext } from '../types/prompts'
+import { TaggedElement, type PromptElementContext, FormattedRespone as FormattedResponse } from '../prompts/prompt-processing'
+import { type ArticleData } from './types'
 
-export class NewsletterSummaryPrompt {
-  private readonly newsletterIntroPrompt: string | null
+export class NewsletterSummaryBuilder {
   private readonly newletterArticles: ArticleData[]
-  constructor (newsletterIntroPrompt: string | null, newletterArticles: ArticleData[]) {
-    this.newsletterIntroPrompt = newsletterIntroPrompt
+  private readonly newsletterIntroPrompt = new TaggedElement('newsletterIntroPrompt')
+  private readonly articles = new TaggedElement('articles')
+  private readonly response = new FormattedResponse()
+  constructor (newletterArticles: ArticleData[], newsletterIntroPrompt: string | null) {
+    if (newsletterIntroPrompt !== null) {
+      this.newsletterIntroPrompt.response = newsletterIntroPrompt
+    }
     this.newletterArticles = newletterArticles
+    this.generatePromptFormattedArticles()
   }
 
-  getCompiledSummaryPrompt (): string {
+  getCompiledPrompt (): string {
     return 'Human:\n\n' +
       this.getArticlesContextPrompt().before +
-      this.getPromptFormattedArticles() +
+      this.articles.wrappedElement +
       this.getArticlesContextPrompt().after +
       this.getIntroPromptContextPrompt().before +
-      (this.newsletterIntroPrompt !== null ? '<newsletterIntroPrompt>' + this.newsletterIntroPrompt + '</newsletterIntroPrompt>' : '') +
+      (this.newsletterIntroPrompt.response !== null
+        ? this.newsletterIntroPrompt.wrappedElement
+        : '') +
       this.getIntroPromptContextPrompt().after +
       '\n\nAssistant:'
   }
 
-  private getPromptFormattedArticles (): string {
+  getProcessedResponse (response: string): FormattedResponse {
+    this.response.processResponse(response)
+    return this.response
+  }
+
+  private generatePromptFormattedArticles (): void {
     let formattedArticles = ''
     for (const article of this.newletterArticles) {
-      formattedArticles += '<article>' +
-            `<articleTitle>${article.title}</articleTitle>` +
-            `<articleSummary>${article.content}</articleSummary>` +
-            '</article>'
+      const articleTag = new TaggedElement('article')
+      const articleSummary = new TaggedElement('articleSummary')
+      const articleTitle = new TaggedElement('articleTitle')
+      if (article.content.shortSummary.response !== null) {
+        articleSummary.response = article.content.shortSummary.response
+      } else if (article.content.longSummary.response !== null) {
+        articleSummary.response = article.content.longSummary.response
+      } else {
+        continue
+      }
+      if (article.title !== null) {
+        articleTitle.response = article.title
+      }
+
+      formattedArticles += articleTag.openTag +
+        articleTitle.response != null
+        ? articleTitle.wrappedElement
+        : '' +
+        articleSummary.wrappedElement +
+        articleTag.closeTag
     }
-    return formattedArticles
+
+    this.articles.response = formattedArticles
   }
 
   private getArticlesContextPrompt (): PromptElementContext {
+    const articlesTag = new TaggedElement('articles')
     return {
-      before: 'Read the following text inside the <articles> tag. You will use the information later\n\n',
+      before: `Read the following text inside the ${articlesTag.openTag} tags. You will use the information later\n\n, tag. You will use the information later\n\n`,
       after: ''
     }
   }

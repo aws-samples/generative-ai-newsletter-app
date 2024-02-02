@@ -91,10 +91,11 @@ export class MultiSizeFormattedResponse {
     }
   }
 
-  public processResponse (response: string): void {
+  public processResponse (response: string): this {
     this.keywords.extractResponseValue(response)
     this.shortSummary.extractResponseValue(response)
     this.longSummary.extractResponseValue(response)
     this.error.extractResponseValue(response)
+    return this
   }
 }

@@ -2,6 +2,12 @@ enum DataFeedType {
     RSS
     ATOM
 }
+enum ArticleSummaryType {
+    SHORT_SUMMARY
+    LONG_SUMMARY
+    KEYWORDS
+}
+
 
 input CreateDataFeedSubscriptionInput {
     url: String!
@@ -26,6 +32,7 @@ input CreateNewsletter {
     discoverable: Boolean
     shared: Boolean
     newsletterIntroPrompt: String
+    articleSummaryType: ArticleSummaryType
 }
 
 input UpdateNewsletterInput {
@@ -35,6 +42,7 @@ input UpdateNewsletterInput {
     discoverable: Boolean
     shared: Boolean
     newsletterIntroPrompt: String
+    articleSummaryType: String
 }
 
 input SubscribeToNewsletterInput {
@@ -44,6 +52,7 @@ input SubscribeToNewsletterInput {
 input UnsubscribeFromNewsletterInput {
     newsletterId: String!
 }
+
 
 
 type Newsletter @aws_cognito_user_pools {
@@ -57,7 +66,9 @@ type Newsletter @aws_cognito_user_pools {
     scheduleId: String!
     createdAt: AWSDateTime!
     owner: String
-    newsletterIntroPrompt: String
+    newsletterIntroPrompt: String   
+    articleSummaryType: ArticleSummaryType
+
 }
 
 type Newsletters @aws_cognito_user_pools {

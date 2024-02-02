@@ -1,7 +1,7 @@
-import { Wizard, Container, StatusIndicator, Alert, AlertProps } from "@cloudscape-design/components"
+import { Wizard, Container, StatusIndicator, Alert, AlertProps, SelectProps } from "@cloudscape-design/components"
 import { useContext, useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { DataFeedSubscription } from "../../../API"
+import { ArticleSummaryType, DataFeedSubscription } from "../../../API"
 import { ApiClient } from "../../../common/api"
 import { AppContext } from "../../../common/app-context"
 import NewsletterDataFeedsSelectionForm from "./data-feeds-selection-table"
@@ -23,6 +23,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
     const [numberOfDaysToInclude, setNumberOfDaysToInclude] = useState<number>(7)
     const [selectedSubscriptions, setSelectedSubscriptions] = useState<DataFeedSubscription[]>([])
     const [activeWizardStep, setActiveWizardStep] = useState<number>(0)
+    const [articleSummaryType, setArticleSummaryType] = useState<SelectProps.Option>({ label: 'Short Summary', value: ArticleSummaryType.SHORT_SUMMARY as string })
     const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
     const [titleError, setTitleError] = useState<string>('')
     const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] = useState<string>('')
@@ -44,7 +45,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                 shared,
                 numberOfDaysToInclude,
                 subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
-                newsletterIntroPrompt
+                newsletterIntroPrompt,
+                articleSummaryType: articleSummaryType.value as ArticleSummaryType
             })
             if (result.errors) {
                 console.error(result.errors)
@@ -55,7 +57,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             } else {
                 navigate(`/newsletters/${result.data.createNewsletter?.newsletterId}`)
             }
-        }, [appContext, title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, newsletterIntroPrompt, navigate]
+        }, [appContext, title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, newsletterIntroPrompt, articleSummaryType.value, navigate]
     )
 
     const loadNewsletterDetails = useCallback(
@@ -80,6 +82,16 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                 setShared(result.data.getNewsletter?.shared ?? false)
                 setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
                 setSelectedSubscriptions(result.data.getNewsletter?.subscriptions as DataFeedSubscription[] ?? [])
+                console.log(result.data.getNewsletter.articleSummaryType + '<<<<')
+                if (result.data.getNewsletter.articleSummaryType === ArticleSummaryType.KEYWORDS) {
+                    setArticleSummaryType({ label: 'Keywords', value: ArticleSummaryType.KEYWORDS as string })
+                } else if (result.data.getNewsletter.articleSummaryType === ArticleSummaryType.LONG_SUMMARY) {
+                    setArticleSummaryType({ label: 'Long Summary', value: ArticleSummaryType.LONG_SUMMARY as string })
+                } else {
+                    setArticleSummaryType({ label: 'Short Summary', value: ArticleSummaryType.SHORT_SUMMARY as string })
+                }
+                setNewsletterIntroPrompt(result.data.getNewsletter?.newsletterIntroPrompt ?? '')
+
                 setLoading(false)
             }
 
@@ -100,7 +112,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                         shared,
                         numberOfDaysToInclude,
                         subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
-                        newsletterIntroPrompt
+                        newsletterIntroPrompt,
+                        articleSummaryType: articleSummaryType.value as ArticleSummaryType
                     }
                 )
                 if (result.errors) {
@@ -115,7 +128,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             }
 
 
-        }, [appContext, discoverable, navigate, newsletterId, newsletterIntroPrompt, numberOfDaysToInclude, selectedSubscriptions, shared, title]
+        }, [appContext, articleSummaryType.value, discoverable, navigate, newsletterId, newsletterIntroPrompt, numberOfDaysToInclude, selectedSubscriptions, shared, title]
     )
 
     const cancelWizard = useCallback(
@@ -200,6 +213,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                                         setNumberOfDaysToInclude={setNumberOfDaysToInclude}
                                         titleError={titleError}
                                         numberOfDaysToIncludeError={numberOfDaysToIncludeError}
+                                        articleSummaryType={articleSummaryType}
+                                        setArticleSummaryType={setArticleSummaryType}
                                     />}
                             </Container>
                         ),
@@ -259,6 +274,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                                 formTitle="Review and Finalize Details"
                                 formDescription="Review and finalize the details of your newsletter before saving."
                                 newsletterIntroPrompt={newsletterIntroPrompt}
+                                articleSummaryType={articleSummaryType.value as ArticleSummaryType}
                             />
                         </Container>)
                     }

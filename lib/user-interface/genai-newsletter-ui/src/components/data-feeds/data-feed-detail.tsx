@@ -3,11 +3,13 @@ import { useParams } from "react-router-dom";
 import { DataFeedSubscription } from "../../API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
-import { Container, FormField, SpaceBetween, Spinner, Toggle } from "@cloudscape-design/components";
+import { Button, Container, FormField, Header, SpaceBetween, Spinner, Toggle } from "@cloudscape-design/components";
+import { UserContext } from "../../common/user-context";
 
 
 export default function DataFeedDetail() {
     const { subscriptionId } = useParams()
+    const userContext = useContext(UserContext)
     const appContext = useContext(AppContext)
     const [feed, setFeed] = useState<DataFeedSubscription | null>(null)
     const [loading, setLoading] = useState(true)
@@ -32,7 +34,13 @@ export default function DataFeedDetail() {
     }, [getDataFeed, subscriptionId])
 
     return (
-        <Container>
+        <Container header={
+            <Header actions={
+                <SpaceBetween direction="horizontal" size="s">
+                    <Button variant="primary" disabled={feed?.owner !== userContext?.userId} >Edit Data Feed</Button>
+                </SpaceBetween>
+            }/>
+        }>
             {loading ?
                 <SpaceBetween size="l" alignItems="center" direction="vertical">
                     <Spinner size="big" />

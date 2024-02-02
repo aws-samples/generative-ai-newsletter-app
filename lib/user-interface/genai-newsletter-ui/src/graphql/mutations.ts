@@ -27,11 +27,13 @@ export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeed
       keywords
       shortSummary
       longSummary
+      owner
       __typename
     }
     title
     description
     summarizationPrompt
+    owner
     __typename
   }
 }
@@ -54,6 +56,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       title
       description
       summarizationPrompt
+      owner
       __typename
     }
     discoverable

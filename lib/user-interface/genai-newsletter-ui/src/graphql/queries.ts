@@ -50,6 +50,7 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
       title
       description
       summarizationPrompt
+      owner
       __typename
     }
     discoverable
@@ -76,6 +77,7 @@ export const getDataFeedSubscriptions = /* GraphQL */ `query GetDataFeedSubscrip
       title
       description
       summarizationPrompt
+      owner
       __typename
     }
     nextToken
@@ -106,11 +108,13 @@ export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscript
       keywords
       shortSummary
       longSummary
+      owner
       __typename
     }
     title
     description
     summarizationPrompt
+    owner
     __typename
   }
 }
@@ -136,6 +140,7 @@ export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
       keywords
       shortSummary
       longSummary
+      owner
       __typename
     }
     nextToken

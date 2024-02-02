@@ -14,6 +14,7 @@ import CreateDataFeed from "./pages/data-feeds/create";
 import DataFeedDetails from "./pages/data-feeds/detail";
 import MyNewsletters from "./pages/newsletters/my-newsletters";
 import MyNewsletterSubscriptions from "./pages/newsletters/my-subscriptions";
+import EditDataFeed from "./pages/data-feeds/edit";
 function App() {
   return (
     <div style={{ height: "100%" }}>
@@ -32,7 +33,7 @@ function App() {
             <Route path="/feeds" element={<DataFeedsDashboard />} />
             <Route path="/feeds/create" element={<CreateDataFeed />} />
             <Route path="/feeds/:subscriptionId" element={<DataFeedDetails />} />
-            <Route path="/feeds/:subscriptionId/edit" element={<CreateDataFeed />} />
+            <Route path="/feeds/:subscriptionId/edit" element={<EditDataFeed />} />
           </Routes>
         </div>
       </BrowserRouter>

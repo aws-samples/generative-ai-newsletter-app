@@ -21,6 +21,7 @@ export type DataFeedSubscription = {
   title: string,
   description?: string | null,
   summarizationPrompt?: string | null,
+  owner?: string | null,
 };
 
 export enum DataFeedType {
@@ -42,6 +43,7 @@ export type DataFeedArticle = {
   keywords?: string | null,
   shortSummary?: string | null,
   longSummary?: string | null,
+  owner?: string | null,
 };
 
 export type CreateNewsletter = {
@@ -204,10 +206,12 @@ export type CreateDataFeedSubscriptionMutation = {
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
+      owner?: string | null,
     } | null > | null,
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
+    owner?: string | null,
   } | null,
 };
 
@@ -232,6 +236,7 @@ export type CreateNewsletterMutation = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      owner?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -331,6 +336,7 @@ export type GetNewsletterQuery = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      owner?: string | null,
     } | null > | null,
     discoverable?: boolean | null,
     shared?: boolean | null,
@@ -359,6 +365,7 @@ export type GetDataFeedSubscriptionsQuery = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      owner?: string | null,
     } | null > | null,
     nextToken?: string | null,
     limit?: number | null,
@@ -390,10 +397,12 @@ export type GetDataFeedSubscriptionQuery = {
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
+      owner?: string | null,
     } | null > | null,
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
+    owner?: string | null,
   } | null,
 };
 
@@ -419,6 +428,7 @@ export type GetDataFeedArticlesQuery = {
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
+      owner?: string | null,
     } | null > | null,
     nextToken?: string | null,
   } | null,

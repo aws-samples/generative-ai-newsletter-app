@@ -36,7 +36,7 @@ const lambdaHandler = async (event: NewsletterCreatorEvent): Promise<Newsletter>
   const newsletterId = uuidv4()
   const scheduleExpression = `rate(${numberOfDaysToInclude} ${numberOfDaysToInclude === 1 ? 'day' : 'days'})`
   const scheduleId = await createNewsletterSchedule(newsletterId, scheduleExpression)
-  const newsletter = await storeNewsletterData(newsletterId, title, subscriptionIds, numberOfDaysToInclude, scheduleId, shared, discoverable, owner, newsletterIntroPrompt as string)
+  const newsletter = await storeNewsletterData(newsletterId, title, subscriptionIds, numberOfDaysToInclude, scheduleId, shared, discoverable, owner, newsletterIntroPrompt!)
   logger.debug('Newsletter created', { newsletterId })
   return newsletter
 }

@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "noEmit": true,
+        "strictNullChecks": true
+    },
+    "include": ["./**/*.ts"],
+    "extends": ["../../../tsconfig.json"]
+}

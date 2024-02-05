@@ -3,7 +3,7 @@ node_modules
 
 *.d.ts
 *.js
-!lib/api/resolverFunctions/*.js
+lib/api/resolver-functions/out/*
 !lib/user-interface/newsletter-article-edge-router/*
 
 *.tsbuildinfo

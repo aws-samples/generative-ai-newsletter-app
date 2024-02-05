@@ -1,6 +1,7 @@
+import { type DynamoDBGetItemRequest, type Context } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
-export function request (ctx) {
+export function request (ctx: Context): DynamoDBGetItemRequest {
   const { subscriptionId } = ctx.args.input
   return ddb.get({
     key: {
@@ -10,6 +11,6 @@ export function request (ctx) {
   })
 }
 
-export const response = (ctx) => {
+export const response = (ctx: Context): any => {
   return ctx.result
 }

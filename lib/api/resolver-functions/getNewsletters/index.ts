@@ -1,19 +1,22 @@
-import { util } from '@aws-appsync/utils'
+import { type Context, util, type DynamoDBQueryRequest, type DynamoDBBatchGetItemRequest, type AppSyncIdentityCognito } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 const newsletterTableItemTypeGSI = 'newsletter-item-type-index'
 
-export function request(ctx) {
+export function request (ctx: Context): DynamoDBQueryRequest | DynamoDBBatchGetItemRequest {
   const { nextToken, limit = 1000, newsletterTable } = ctx.args
   const { lookupType = 'DEFAULT' } = ctx.args.input
   const { newsletters } = ctx.prev.result
-  const { sub } = ctx.identity
+  if (ctx.identity === undefined || ctx.identity === null || Object.keys(ctx.identity).includes('sub')) {
+    util.error('Error! No authorized identity found!')
+  }
+  const sub = (ctx.identity as AppSyncIdentityCognito).sub
 
   if (newsletters !== undefined && newsletters.length > 0) {
     return {
       operation: 'BatchGetItem',
       tables: {
         [newsletterTable]: {
-          keys: newsletters.map((newsletterId) => util.dynamodb.toMapValues({ newsletterId, compoundSortKey: 'newsletter' })),
+          keys: newsletters.map((newsletterId: { newsletterId: string, compoundSortKey: string }) => util.dynamodb.toMapValues({ newsletterId, compoundSortKey: 'newsletter' }))
         }
       }
     }
@@ -62,17 +65,16 @@ export function request(ctx) {
   }
 }
 
-export const response = (ctx) => {
+export const response = (ctx: Context): any => {
   const { newsletterTable } = ctx.args
-  if (ctx.result.data !== undefined && ctx.result.data[newsletterTable]){
+  if (ctx.result.data !== undefined && ctx.result.data[newsletterTable] !== undefined) {
     return {
       newsletters: ctx.result.data[newsletterTable],
-      nextToken: ctx.result.nextToken,
+      nextToken: ctx.result.nextToken
     }
   }
   return {
     newsletters: ctx.result.items ?? [],
-    nextToken: ctx.result.nextToken,
+    nextToken: ctx.result.nextToken
   }
-  
 }

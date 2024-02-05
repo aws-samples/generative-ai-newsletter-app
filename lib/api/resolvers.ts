@@ -2,6 +2,8 @@ import { type GraphqlApi, Code, AppsyncFunction, FunctionRuntime, Resolver, Lamb
 import { Construct } from 'constructs'
 import path = require('path')
 import { type ApiProps } from '.'
+import { type BundlingOptions, DockerImage, BundlingOutput } from 'aws-cdk-lib'
+import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 
 interface ApiResolversProps extends ApiProps {
   api: GraphqlApi
@@ -16,11 +18,48 @@ export class ApiResolvers extends Construct {
     newsletterTable.grantReadData(newsletterTableSource)
     const newsSubscriptionTableSource = api.addDynamoDbDataSource('NewsSubscriptionTableSource', newsSubscriptionTable)
 
+    const resolversPath = path.join(__dirname, 'resolver-functions')
+    const getResolverBundlingOptions = (resolverName: string): BundlingOptions => {
+      return {
+        outputType: BundlingOutput.SINGLE_FILE,
+        command: [
+          'sh',
+          '-c',
+          [
+            `npm --silent --prefix "${resolversPath}" install`,
+            `npm --silent --prefix "${resolversPath}" run build -- -outdir=./${resolverName}/ ./${resolverName}/index.ts`,
+            'ls -la',
+            `mv -f ${resolversPath}/${resolverName}/index.js /asset-output/`
+          ].join(' && ')
+        ],
+        image: DockerImage.fromRegistry('public.ecr.aws/sam/build-nodejs20.x:latest'),
+        local: {
+          tryBundle (outputDir: string) {
+            try {
+              const options: ExecSyncOptionsWithBufferEncoding = {
+                stdio: 'inherit',
+                env: {
+                  ...process.env
+                }
+              }
+              execSync(`npm --silent --prefix "${resolversPath}" install`, options)
+              execSync(`npm --silent --prefix "${resolversPath}" run build -- --outdir=./${resolverName}/ ./${resolverName}/index.ts`, options)
+              execSync(`mv -f ${resolversPath}/${resolverName}/index.js ${outputDir}`, options)
+            } catch (e) {
+              console.error(e)
+              return false
+            }
+            return true
+          }
+        }
+      }
+    }
+
     const getNewslettersResolverFunction = new AppsyncFunction(this, 'GetNewslettersResolverFunction', {
       name: 'getNewsletters',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletters.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletters') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -45,7 +84,7 @@ export class ApiResolvers extends Construct {
       name: 'getNewsletterEmails',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterEmails.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterEmails') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -70,7 +109,7 @@ export class ApiResolvers extends Construct {
       name: 'getNewsletterEmail',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterEmail.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterEmail') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -125,7 +164,7 @@ export class ApiResolvers extends Construct {
       name: 'updateNewsletter',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/updateNewsletter.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('updateNewsletter') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -152,7 +191,7 @@ export class ApiResolvers extends Construct {
       name: 'getDataFeedSubscriptions',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedSubscriptions.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedSubscriptions') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -177,7 +216,7 @@ export class ApiResolvers extends Construct {
       name: 'getDataFeedSubscription',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedSubscription.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedSubscription') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -202,12 +241,12 @@ export class ApiResolvers extends Construct {
       name: 'updateDataFeed',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/updateDataFeed.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('updateDataFeed') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
     // TODO: Rename this.... spelling....
-    new Resolver(this, 'UpdatDataFeedResolver', {
+    new Resolver(this, 'UpdateDataFeedResolver', {
       api,
       typeName: 'Mutation',
       fieldName: 'updateDataFeed',
@@ -230,7 +269,7 @@ export class ApiResolvers extends Construct {
       name: 'getDataFeedArticles',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getDataFeedArticles.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedArticles') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -255,7 +294,7 @@ export class ApiResolvers extends Construct {
       name: 'flagDataFeedArticle',
       api,
       dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/flagDataFeedArticle.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('flagDataFeedArticle') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -418,7 +457,7 @@ export class ApiResolvers extends Construct {
       name: 'getUserNewsletterSubscriptionStatus',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getUserNewsletterSubscriptionStatus.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getUserNewsletterSubscriptionStatus') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -444,7 +483,7 @@ export class ApiResolvers extends Construct {
       name: 'getUserNewsletterSubscriptions',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getUserNewsletterSubscriptions.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getUserNewsletterSubscriptions') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -469,7 +508,7 @@ export class ApiResolvers extends Construct {
       name: 'getNewsletterSubscriberStats',
       api,
       dataSource: newsletterTableSource,
-      code: Code.fromAsset(path.join(__dirname, 'resolverFunctions/getNewsletterSubscriberStats.js')),
+      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterSubscriberStats') }),
       runtime: FunctionRuntime.JS_1_0_0
     })
 

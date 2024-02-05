@@ -1,7 +1,7 @@
-import { util } from '@aws-appsync/utils'
-import * as ddb from '@aws-appsync/utils/dynamodb';
+import { type Context, util, type DynamoDBQueryRequest } from '@aws-appsync/utils'
+import * as ddb from '@aws-appsync/utils/dynamodb'
 
-export function request(ctx) {
+export function request (ctx: Context): DynamoDBQueryRequest {
   const { nextToken, limit = 250 } = ctx.args
   const { newsletterId } = ctx.args.input
   return ddb.query({
@@ -11,12 +11,12 @@ export function request(ctx) {
     },
     limit,
     nextToken,
-    consistentRead: false,
+    consistentRead: false
   })
 }
 
-export const response = (ctx) => {
-  if (ctx.error) {
+export const response = (ctx: Context): any => {
+  if (ctx.error !== undefined && ctx.error !== null) {
     util.error(ctx.error.message, ctx.error.type)
   }
   const items = []
@@ -26,7 +26,7 @@ export const response = (ctx) => {
       const emailId = compoundSortKey.split('#')[1]
       let path = ''
       if (emailKey === undefined) {
-        const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(createdAt)
+        const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(createdAt as string)
         const year = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'YYYY')
         const month = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'MM')
         const day = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'DD')
@@ -38,19 +38,19 @@ export const response = (ctx) => {
           path = '/' + path
         }
       }
-      let htmlPath = path + '.html'
-      let textPath = path + '.txt'
+      const htmlPath = path + '.html'
+      const textPath = path + '.txt'
       items.push({
         newsletterId,
         emailId,
         createdAt,
         htmlPath,
-        textPath,
+        textPath
       })
     }
   }
   return {
     newsletterEmails: items,
-    nextToken: ctx.result.nextToken,
+    nextToken: ctx.result.nextToken
   }
 }

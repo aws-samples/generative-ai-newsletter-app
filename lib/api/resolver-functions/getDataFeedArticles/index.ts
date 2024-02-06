@@ -2,7 +2,7 @@ import { type Context, type DynamoDBQueryRequest, util } from '@aws-appsync/util
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
-  const { nextToken, limit = 50 } = ctx.args
+  const { nextToken, limit = 500 } = ctx.args
   const { subscriptionId } = ctx.args.input
   return ddb.query({
     query: {

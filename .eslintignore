@@ -1,3 +1,7 @@
 *.d.ts
 
 lib/api/API.ts
+lib/user-interface/genai-newsletter-ui/src/API.ts
+lib/user-interface/genai-newsletter-ui/src/graphql/*
+lib/user-interface/genai-newsletter-ui/vite.config.ts
+vite.config.ts

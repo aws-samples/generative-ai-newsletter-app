@@ -54,6 +54,7 @@ export type CreateNewsletter = {
   shared?: boolean | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: ArticleSummaryType | null,
+  newsletterStyle?: string | null,
 };
 
 export enum ArticleSummaryType {
@@ -77,6 +78,7 @@ export type Newsletter = {
   owner?: string | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: ArticleSummaryType | null,
+  newsletterStyle?: string | null,
 };
 
 export type SubscribeToNewsletterInput = {
@@ -95,6 +97,7 @@ export type UpdateNewsletterInput = {
   shared?: boolean | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: string | null,
+  newsletterStyle?: string | null,
 };
 
 export type UpdateDataFeedSubscriptionInput = {
@@ -255,6 +258,7 @@ export type CreateNewsletterMutation = {
     owner?: string | null,
     newsletterIntroPrompt?: string | null,
     articleSummaryType?: ArticleSummaryType | null,
+    newsletterStyle?: string | null,
   } | null,
 };
 
@@ -322,6 +326,7 @@ export type GetNewslettersQuery = {
       owner?: string | null,
       newsletterIntroPrompt?: string | null,
       articleSummaryType?: ArticleSummaryType | null,
+      newsletterStyle?: string | null,
     } >,
     nextToken?: string | null,
   },
@@ -357,6 +362,7 @@ export type GetNewsletterQuery = {
     owner?: string | null,
     newsletterIntroPrompt?: string | null,
     articleSummaryType?: ArticleSummaryType | null,
+    newsletterStyle?: string | null,
   },
 };
 
@@ -514,6 +520,7 @@ export type GetUserNewsletterSubscriptionsQuery = {
       owner?: string | null,
       newsletterIntroPrompt?: string | null,
       articleSummaryType?: ArticleSummaryType | null,
+      newsletterStyle?: string | null,
     } >,
     nextToken?: string | null,
   } | null,

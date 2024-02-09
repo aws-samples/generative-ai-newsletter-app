@@ -66,6 +66,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
     owner
     newsletterIntroPrompt
     articleSummaryType
+    newsletterStyle
     __typename
   }
 }

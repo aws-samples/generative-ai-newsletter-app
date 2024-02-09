@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DataFeedSubscription } from "../../API";
+import { DataFeedSubscription } from "@shared/api/API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
 import { Button, Container, FormField, Header, SpaceBetween, Spinner, Toggle } from "@cloudscape-design/components";

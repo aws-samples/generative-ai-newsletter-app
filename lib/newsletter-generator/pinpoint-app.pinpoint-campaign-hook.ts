@@ -3,7 +3,7 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import middy from '@middy/core'
 import { DynamoDBClient, type GetItemCommandInput, QueryCommand, type QueryCommandInput, GetItemCommand } from '@aws-sdk/client-dynamodb'
 import { type EndpointBatchItem, type MessageConfiguration } from '@aws-sdk/client-pinpoint'
-import { SubscriberType } from '../types/newsletter-generator'
+import { SubscriberType } from '../shared/common/newsletter-generator'
 
 const SERVICE_NAME = 'pinpoint-campaign-hook'
 

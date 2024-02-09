@@ -1,32 +1,16 @@
 import { Dispatch, SetStateAction } from "react"
 import { AuthConfig, APIConfig } from "@aws-amplify/core"
+import { UIConfig } from "@shared/common/deploy-config"
 
 
 
 export interface AppConfig {
-  aws_project_region: string
   Auth: AuthConfig
   API: APIConfig
   appConfig : {
     emailBucket: string
   }
-  ui?: {
-    sideNavigation?: Array<{
-      text: string
-      href: string
-    }>
-    headerLinks?: Array<{
-      text: string
-      href: string
-    }>
-    persistentAlert?: {
-      type: 'error' | 'success' | 'info' | 'warning'
-      message: string
-      buttonText?: string
-      buttonHref?: string
-      dismissable: boolean
-    }
-  }
+  ui?: UIConfig
 }
 
 export interface UserData {

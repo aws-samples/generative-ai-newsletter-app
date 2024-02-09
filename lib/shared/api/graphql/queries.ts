@@ -26,6 +26,7 @@ export const getNewsletters = /* GraphQL */ `query GetNewsletters(
       owner
       newsletterIntroPrompt
       articleSummaryType
+      newsletterStyle
       __typename
     }
     nextToken
@@ -61,6 +62,7 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
     owner
     newsletterIntroPrompt
     articleSummaryType
+    newsletterStyle
     __typename
   }
 }
@@ -214,6 +216,7 @@ export const getUserNewsletterSubscriptions = /* GraphQL */ `query GetUserNewsle
       owner
       newsletterIntroPrompt
       articleSummaryType
+      newsletterStyle
       __typename
     }
     nextToken

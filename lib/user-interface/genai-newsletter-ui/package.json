@@ -1,4 +1,5 @@
 {
+  "module": "true",
   "name": "genai-newsletter-ui",
   "private": true,
   "version": "0.0.0",
@@ -15,6 +16,7 @@
     "@cloudscape-design/components": "^3.0.472",
     "@cloudscape-design/global-styles": "^1.0.20",
     "aws-amplify": "^6.0.9",
+    "mui-color-input": "^2.0.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1"
   },

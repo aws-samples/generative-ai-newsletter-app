@@ -1,8 +1,8 @@
 import { GraphQLQuery, generateClient } from "aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api";
-import { CreateDataFeedSubscriptionInput, CreateDataFeedSubscriptionMutation, FlagDataFeedArticleMutation, GetDataFeedArticlesQuery, GetDataFeedSubscriptionInput, GetDataFeedSubscriptionQuery, GetDataFeedSubscriptionsQuery, UpdateDataFeedMutation, UpdateDataFeedSubscriptionInput } from "../../API";
-import { getDataFeedArticles, getDataFeedSubscription, getDataFeedSubscriptions } from "../../graphql/queries";
-import { createDataFeedSubscription, flagDataFeedArticle, updateDataFeed } from "../../graphql/mutations";
+import { CreateDataFeedSubscriptionInput, CreateDataFeedSubscriptionMutation, FlagDataFeedArticleMutation, GetDataFeedArticlesQuery, GetDataFeedSubscriptionInput, GetDataFeedSubscriptionQuery, GetDataFeedSubscriptionsQuery, UpdateDataFeedMutation, UpdateDataFeedSubscriptionInput } from "@shared/api/API";
+import { getDataFeedArticles, getDataFeedSubscription, getDataFeedSubscriptions } from "@shared/api/graphql/queries";
+import { createDataFeedSubscription, flagDataFeedArticle, updateDataFeed } from "@shared/api/graphql/mutations";
 
 const client = generateClient({
     authMode: "userPool",

@@ -9,6 +9,8 @@ enum ArticleSummaryType {
 }
 
 
+
+
 input CreateDataFeedSubscriptionInput {
     url: String!
     title: String!
@@ -33,6 +35,7 @@ input CreateNewsletter {
     shared: Boolean
     newsletterIntroPrompt: String
     articleSummaryType: ArticleSummaryType
+    newsletterStyle: AWSJSON
 }
 
 input UpdateNewsletterInput {
@@ -43,6 +46,7 @@ input UpdateNewsletterInput {
     shared: Boolean
     newsletterIntroPrompt: String
     articleSummaryType: String
+    newsletterStyle: AWSJSON
 }
 
 input SubscribeToNewsletterInput {
@@ -68,7 +72,7 @@ type Newsletter @aws_cognito_user_pools {
     owner: String
     newsletterIntroPrompt: String   
     articleSummaryType: ArticleSummaryType
-
+    newsletterStyle: AWSJSON
 }
 
 type Newsletters @aws_cognito_user_pools {

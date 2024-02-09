@@ -8,6 +8,7 @@ import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
 import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
 import { type IRole } from 'aws-cdk-lib/aws-iam'
+import { type UIConfig } from '@shared/common/deploy-config'
 
 interface UserInterfaceProps {
   userPoolClientId: string
@@ -92,7 +93,7 @@ export class UserInterface extends Construct {
           loginWith: {}
         }
       },
-      ui: this.node.tryGetContext('ui'),
+      ui: this.node.tryGetContext('ui') as UIConfig,
       API: {
         GraphQL: {
           endpoint: graphqlApiUrl,

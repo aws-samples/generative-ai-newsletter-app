@@ -3,7 +3,7 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
 import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
-import { type Newsletter, type GetNewsletterInput, type DataFeedSubscription } from '../api/API'
+import { type Newsletter, type GetNewsletterInput, type DataFeedSubscription } from '@shared/api/API'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 const SERVICE_NAME = 'get-newsletter'

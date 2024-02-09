@@ -1,7 +1,7 @@
 import { Badge, Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { AppContext } from "../../common/app-context";
-import { DataFeedSubscription } from "../../API";
+import { DataFeedSubscription } from "@shared/api/API";
 import { ApiClient } from "../../common/api";
 import { DataFeedsTableColumnDisplay } from "../newsletters/definitions";
 import { useNavigate } from "react-router-dom";

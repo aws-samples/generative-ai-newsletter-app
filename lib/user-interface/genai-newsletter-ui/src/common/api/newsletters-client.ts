@@ -1,9 +1,9 @@
 import { GraphQLQuery, generateClient } from "aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api";
 
-import { getNewsletter, getNewsletterEmails, getNewsletterSubscriberStats, getNewsletters, getUserNewsletterSubscriptionStatus, getUserNewsletterSubscriptions } from "../../graphql/queries";
-import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterEmailsInput, GetNewsletterEmailsQuery, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, GetUserNewsletterSubscriptionStatusQuery, UpdateNewsletterInput, UpdateNewsletterMutation, UserNewsletterSubscriptionStatusInput, GetNewsletterSubscriberStatsInput, GetNewsletterSubscriberStatsQuery, SubscribeToNewsletterInput, SubscribeToNewsletterMutation, UnsubscribeFromNewsletterInput, UnsubscribeFromNewsletterMutation, GetUserNewsletterSubscriptionsQuery } from "../../API";
-import { createNewsletter, subscribeToNewsletter, unsubscribeFromNewsletter, updateNewsletter } from "../../graphql/mutations";
+import { getNewsletter, getNewsletterEmails, getNewsletterSubscriberStats, getNewsletters, getUserNewsletterSubscriptionStatus, getUserNewsletterSubscriptions } from "@shared/api/graphql/queries";
+import { CreateNewsletter, CreateNewsletterMutation, GetNewsletterEmailsInput, GetNewsletterEmailsQuery, GetNewsletterQuery, GetNewslettersInput, GetNewslettersQuery, GetUserNewsletterSubscriptionStatusQuery, UpdateNewsletterInput, UpdateNewsletterMutation, UserNewsletterSubscriptionStatusInput, GetNewsletterSubscriberStatsInput, GetNewsletterSubscriberStatsQuery, SubscribeToNewsletterInput, SubscribeToNewsletterMutation, UnsubscribeFromNewsletterInput, UnsubscribeFromNewsletterMutation, GetUserNewsletterSubscriptionsQuery } from "@shared/api/API";
+import { createNewsletter, subscribeToNewsletter, unsubscribeFromNewsletter, updateNewsletter } from "@shared/api/graphql/mutations";
 
 const client = generateClient({
     authMode: "userPool",

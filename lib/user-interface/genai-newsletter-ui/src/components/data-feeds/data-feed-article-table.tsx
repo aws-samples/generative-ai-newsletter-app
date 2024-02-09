@@ -2,7 +2,7 @@ import { Alert, AlertProps, Container, Header, SpaceBetween, Table } from "@clou
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AppContext } from "../../common/app-context";
-import { DataFeedArticle } from "../../API";
+import { DataFeedArticle } from "@shared/api/API";
 import { ApiClient } from "../../common/api";
 import { DataFeedArticlesTableColumnDefiniton, DataFeedArticlesTableColumnDisplay } from "../newsletters/definitions";
 

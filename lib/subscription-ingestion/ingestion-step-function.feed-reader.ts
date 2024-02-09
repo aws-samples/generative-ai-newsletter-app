@@ -4,7 +4,7 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import middy from '@middy/core'
-import { type FeedArticle } from '../types/newsletter-ingestion'
+import { type FeedArticle } from '../shared/common/newsletter-ingestion'
 
 const SERVICE_NAME = 'feed-reader'
 

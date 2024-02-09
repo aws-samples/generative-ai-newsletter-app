@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { type DeployConfig } from './types'
+import { type DeployConfig } from '@shared/common/deploy-config'
 import { bigHeader, formatText } from './consts'
 import prompt from 'prompt-sync'
 import { CONFIG_VERSION } from './config-version'

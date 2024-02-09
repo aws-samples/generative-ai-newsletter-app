@@ -1,5 +1,5 @@
 import path from 'path'
-import { type DeployConfig } from '../cli/types'
+import { type DeployConfig } from '@shared/common/deploy-config'
 import { existsSync, readFileSync } from 'fs'
 
 export default function getConfig (): DeployConfig {

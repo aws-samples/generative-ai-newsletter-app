@@ -5,16 +5,19 @@
     "genai-newsletter-app": "bin/genai-newsletter-app.js"
   },
   "scripts": {
+    "postinstall": "cd ./lib/user-interface/genai-newsletter-ui/ && npm install",
     "config": "node ./cli/config.js --",
     "build": "tsc",
-    "codegen:prepare": "rm -f lib/api/API.ts && rm -f lib/user-interface/genai-newsletter-ui/src/graphql/*",
-    "codegen": "npm run codegen:prepare && cd lib/api && amplify codegen && cp ../user-interface/genai-newsletter-ui/src/API.ts ./API.ts",
+    "codegen:prepare": "rm -fr lib/shared/api/*.ts",
+    "codegen": "npm run codegen:prepare && cd lib/shared/api && amplify codegen",
     "watch": "tsc -w",
     "lint": "eslint . --fix --ext .ts,.tsx --report-unused-disable-directives",
     "test": "jest",
     "deploy": "cdk deploy",
     "cdk": "cdk",
-    "commit": "cz"
+    "commit": "cz",
+    "email:dev": "email dev -d lib/newsletter-react-email-generator/emails-preview",
+    "ui:dev": "cd lib/user-interface/genai-newsletter-ui && vite dev"
   },
   "devDependencies": {
     "@aws-amplify/cli": "^12.10.1",

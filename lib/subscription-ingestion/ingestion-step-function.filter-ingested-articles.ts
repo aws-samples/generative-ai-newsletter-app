@@ -2,7 +2,7 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import middy from '@middy/core'
 import { DynamoDBClient, QueryCommand, type QueryCommandInput } from '@aws-sdk/client-dynamodb'
-import { type FeedArticle } from '../types/newsletter-ingestion'
+import { type FeedArticle } from '../shared/common/newsletter-ingestion'
 
 const SERVICE_NAME = 'filter-ingested-articles'
 

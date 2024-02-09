@@ -1,5 +1,5 @@
 import { FormField, Input, Select, SelectProps, SpaceBetween, Toggle } from "@cloudscape-design/components";
-import { ArticleSummaryType } from "../../../API";
+import { ArticleSummaryType } from "@shared/api/API";
 
 interface NewsletterDetailsFormProps {
     title: string;

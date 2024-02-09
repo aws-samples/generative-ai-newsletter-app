@@ -6,15 +6,16 @@ import { DynamoDBClient, QueryCommand, type QueryCommandInput, GetItemCommand, t
 import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import NewsletterEmail from './react-email-generator/emails/newsletter'
+import NewsletterEmail from '@shared/react-email-generator/emails/newsletter'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
-import { NewsletterSummaryBuilder } from '../prompts/newsletter-summary-prompt'
+import { NewsletterSummaryBuilder } from '@shared/prompts/newsletter-summary-prompt'
 import { BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
-import { type ArticleData } from '../prompts/types'
-import { MultiSizeFormattedResponse } from '../prompts/prompt-processing'
-import { ArticleSummaryType } from '../api/API'
+import { type ArticleData } from '@shared/prompts/types'
+import { MultiSizeFormattedResponse } from '@shared/prompts/prompt-processing'
+import { ArticleSummaryType } from '@shared/api/API'
+import { NewsletterStyle } from '@shared/common/newsletter-style'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -52,7 +53,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   })
   logger.debug('Base App Hostname = ' + APP_HOST_NAME)
   tracer.putMetadata('subscriptionIds', newsletterId)
-  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title, articleSummaryType } = await getNewsletterDetails(newsletterId)
+  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title, articleSummaryType, newsletterStyle } = await getNewsletterDetails(newsletterId)
 
   tracer.putMetadata('numberOfDaysToInclude', numberOfDaysToInclude)
   const articles = await getArticlesForSubscriptions(subscriptionIds, numberOfDaysToInclude)
@@ -63,14 +64,14 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   const date = new Date()
   const emailId = uuidv4()
   const newsletterSummary = await generateNewsletterSummary(articles, newsletterIntroPrompt)
-  const emailContents = await generateEmail(articles, newsletterSummary, title, articleSummaryType)
+  const emailContents = await generateEmail(articles, newsletterSummary, title, articleSummaryType, newsletterStyle)
   const emailKey = await storeEmailInS3(emailContents, date, emailId)
   await recordEmailDetails(newsletterId, emailId, date, emailKey)
   await sendNewsletter(newsletterId, emailId, emailKey)
   logger.debug('Email generator complete')
 }
 
-const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number, newsletterIntroPrompt: string, title: string, articleSummaryType: ArticleSummaryType }> => {
+const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptionIds: string[], numberOfDaysToInclude: number, newsletterIntroPrompt: string, title: string, articleSummaryType: ArticleSummaryType, newsletterStyle: NewsletterStyle }> => {
   console.debug('Getting newsletter details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -87,13 +88,14 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ subscriptio
     throw new Error('No newsletter found')
   }
   const newsletterItem = unmarshall(response.Item)
-  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title, articleSummaryType } = newsletterItem
+  const { subscriptionIds, numberOfDaysToInclude, newsletterIntroPrompt, title, articleSummaryType, newsletterStyle = new NewsletterStyle() } = newsletterItem
   return {
     subscriptionIds,
     numberOfDaysToInclude,
     newsletterIntroPrompt,
     title,
-    articleSummaryType: articleSummaryType !== undefined ? articleSummaryType : ArticleSummaryType.SHORT_SUMMARY
+    articleSummaryType: articleSummaryType !== undefined ? articleSummaryType : ArticleSummaryType.SHORT_SUMMARY,
+    newsletterStyle
   }
 }
 
@@ -186,14 +188,15 @@ const generateNewsletterSummary = async (articles: ArticleData[], newsletterIntr
   return formattedResponse
 }
 
-const generateEmail = async (articles: ArticleData[], newsletterSummary: MultiSizeFormattedResponse, title: string, articleSummaryType: ArticleSummaryType): Promise<GeneratedEmailContents> => {
+const generateEmail = async (articles: ArticleData[], newsletterSummary: MultiSizeFormattedResponse, title: string, articleSummaryType: ArticleSummaryType, newsletterStyle: NewsletterStyle): Promise<GeneratedEmailContents> => {
   console.debug('Starting email generation')
   const html = render(NewsletterEmail({
     articles,
     title,
     newsletterSummary,
     appHostName: APP_HOST_NAME,
-    articleSummaryType
+    articleSummaryType,
+    styleProps: newsletterStyle
   }))
   metrics.addMetric('HTMLEmailsGenerated', MetricUnits.Count, 1)
   console.debug('HTML email generated', { html })

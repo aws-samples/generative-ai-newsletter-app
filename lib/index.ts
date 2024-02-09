@@ -5,7 +5,7 @@ import { Authentication } from './authentication'
 import { API } from './api'
 import { UserInterface } from './user-interface'
 import { type Construct } from 'constructs'
-import { type DeployConfig } from '../cli/types'
+import { type DeployConfig } from '@shared/common/deploy-config'
 
 interface GenAINewsletterStackProps extends StackProps {
   config: DeployConfig
@@ -21,7 +21,6 @@ export class GenAINewsletter extends Stack {
     this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled)
     this.node.setContext('authConfig', config.auth)
     this.node.setContext('ui', config.ui)
-    this.node.setContext('appHostName', config.appHostName?.domainName)
 
     const authentication = new Authentication(this, 'AuthenticationStack')
 

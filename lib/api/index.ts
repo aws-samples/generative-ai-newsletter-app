@@ -31,7 +31,7 @@ export class API extends Construct {
 
     const graphqlApi = new GraphqlApi(this, 'API', {
       name: Stack.of(this).stackName + 'GraphQLAPI',
-      definition: Definition.fromFile(path.join(__dirname, 'schema.graphql')),
+      definition: Definition.fromFile(path.join(__dirname, '../shared/api', 'schema.graphql')),
       authorizationConfig: {
         additionalAuthorizationModes: [
           {

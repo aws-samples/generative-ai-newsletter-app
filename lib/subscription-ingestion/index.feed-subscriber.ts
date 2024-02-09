@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { DynamoDBClient, PutItemCommand, type PutItemInput } from '@aws-sdk/client-dynamodb'
 import { SFNClient, StartExecutionCommand, type StartExecutionCommandInput } from '@aws-sdk/client-sfn'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { DataFeedType, type CreateDataFeedSubscriptionInput, type DataFeedSubscription } from '../api/API'
+import { DataFeedType, type CreateDataFeedSubscriptionInput, type DataFeedSubscription } from '@shared/api/API'
 
 const SERVICE_NAME = 'feed-subscriber'
 

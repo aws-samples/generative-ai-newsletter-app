@@ -1,21 +1,30 @@
-import { Wizard, Container, StatusIndicator, Alert, AlertProps, SelectProps } from "@cloudscape-design/components"
+import { Wizard, Container, StatusIndicator, Alert, AlertProps, SelectProps, SpaceBetween, Header, Button } from "@cloudscape-design/components"
 import { useContext, useState, useCallback, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { ArticleSummaryType, DataFeedSubscription } from "../../../API"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { ArticleSummaryType, DataFeedSubscription } from "@shared/api/API"
 import { ApiClient } from "../../../common/api"
 import { AppContext } from "../../../common/app-context"
 import NewsletterDataFeedsSelectionForm from "./data-feeds-selection-table"
 import NewsletterDetailsForm from "./newsletter-details"
 import NewsletterReviewForm from "./newsletter-review"
 import NewsletterIntroPrompt from "./newsletter-intro-prompt"
+import { NewsletterStyle } from "@shared/common/newsletter-style"
+import NewsletterDesignerForm from "./newsletter-designer"
 
 interface NewsletterWizardProps {
     newsletterId?: string
+    previewPane?: {
+        newsletterStyle?: NewsletterStyle
+        setNewsletterStyle: (style: NewsletterStyle) => void
+        splitPanelOpen: boolean
+        setSplitPanelOpen: (open: boolean) => void
+    }
 
 }
 
-export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps) {
+export default function NewsletterWizard({ newsletterId, previewPane }: NewsletterWizardProps) {
     const appContext = useContext(AppContext)
+    const [searchParams, setSearchParams] = useSearchParams()
     const navigate = useNavigate()
     const [title, setTitle] = useState<string>('')
     const [discoverable, setDiscoverable] = useState<boolean>(false)
@@ -27,11 +36,27 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
     const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
     const [titleError, setTitleError] = useState<string>('')
     const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] = useState<string>('')
+
+
+    const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(new NewsletterStyle())
+
+
     const [saving, setSaving] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
+
     const [wizardAlertMessage, setWizardAlertMessage] = useState<string | null>(null)
     const [wizardAlertHeader, setWizardAlertHeader] = useState<string | null>(null)
     const [wizardAlertType, setWizardAlertType] = useState<AlertProps.Type>('info')
+
+    useEffect(() => {
+        const step = searchParams.get('step')
+        if (newsletterId !== undefined && step !== null) {
+            setActiveWizardStep(parseInt(step))
+            const params = searchParams
+            params.delete('step')
+            setSearchParams(params)
+        }
+    }, [newsletterId, searchParams, setSearchParams])
 
 
     const submitCreateNewsletter = useCallback(
@@ -46,7 +71,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                 numberOfDaysToInclude,
                 subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
                 newsletterIntroPrompt,
-                articleSummaryType: articleSummaryType.value as ArticleSummaryType
+                articleSummaryType: articleSummaryType.value as ArticleSummaryType,
+                newsletterStyle: JSON.stringify(newsletterStyle)
             })
             if (result.errors) {
                 console.error(result.errors)
@@ -57,7 +83,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             } else {
                 navigate(`/newsletters/${result.data.createNewsletter?.newsletterId}`)
             }
-        }, [appContext, title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, newsletterIntroPrompt, articleSummaryType.value, navigate]
+        }, [appContext, title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, newsletterIntroPrompt, articleSummaryType.value, newsletterStyle, navigate]
     )
 
     const loadNewsletterDetails = useCallback(
@@ -91,11 +117,17 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                     setArticleSummaryType({ label: 'Short Summary', value: ArticleSummaryType.SHORT_SUMMARY as string })
                 }
                 setNewsletterIntroPrompt(result.data.getNewsletter?.newsletterIntroPrompt ?? '')
+                if (result.data.getNewsletter.newsletterStyle !== undefined && result.data.getNewsletter.newsletterStyle !== null) {
+                    setNewsletterStyle(JSON.parse(result.data.getNewsletter.newsletterStyle))
+                    if (previewPane) {
+                        previewPane.setNewsletterStyle(JSON.parse(result.data.getNewsletter.newsletterStyle))
+                    }
+                }
 
                 setLoading(false)
             }
 
-        }, [appContext, newsletterId]
+        }, [appContext, newsletterId, previewPane]
     )
 
     const updateNewsletter = useCallback(
@@ -113,7 +145,8 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                         numberOfDaysToInclude,
                         subscriptionIds: selectedSubscriptions.map(s => s.subscriptionId),
                         newsletterIntroPrompt,
-                        articleSummaryType: articleSummaryType.value as ArticleSummaryType
+                        articleSummaryType: articleSummaryType.value as ArticleSummaryType,
+                        newsletterStyle: JSON.stringify(newsletterStyle)
                     }
                 )
                 if (result.errors) {
@@ -128,7 +161,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             }
 
 
-        }, [appContext, articleSummaryType.value, discoverable, navigate, newsletterId, newsletterIntroPrompt, numberOfDaysToInclude, selectedSubscriptions, shared, title]
+        }, [appContext, articleSummaryType.value, discoverable, navigate, newsletterId, newsletterIntroPrompt, newsletterStyle, numberOfDaysToInclude, selectedSubscriptions, shared, title]
     )
 
     const cancelWizard = useCallback(
@@ -184,7 +217,7 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
             onSubmit={(newsletterId !== undefined && newsletterId !== null && newsletterId.length > 0) ? updateNewsletter : submitCreateNewsletter}
             isLoadingNextStep={saving}
             onCancel={cancelWizard}
-            allowSkipTo={false}
+            allowSkipTo={true}
             steps={
                 [
                     {
@@ -256,27 +289,75 @@ export default function NewsletterWizard({ newsletterId }: NewsletterWizardProps
                         isOptional: true
                     },
                     {
+                        title: "Design your Newsletter style (beta)",
+                        description: "Customize the style of your newsletter to make it yours.",
+                        isOptional: true,
+                        content: (
+                            <Container header={
+                                <Header
+                                    actions={
+                                        <SpaceBetween direction="horizontal" size="s">
+                                            {previewPane ? (
+                                                <Button
+                                                    variant="primary"
+                                                    iconAlign="right"
+                                                    onClick={() => { previewPane.setSplitPanelOpen(!previewPane.splitPanelOpen) }}
+                                                    iconName={previewPane.splitPanelOpen ? "angle-right" : "arrow-left"}>
+                                                    {previewPane.splitPanelOpen ? "Hide Preview" : "Show Preview"}
+                                                </Button>
+                                            ) : <></>}
+                                        </SpaceBetween>
+                                    } >
+                                        Customize the style of your Newsletter
+                                    </Header>
+                            }>
+                                <NewsletterDesignerForm style={newsletterStyle} setStyle={setNewsletterStyle} />
+                            </Container>
+                        )
+                    },
+                    {
                         title: "Review Newsletter",
                         description: "Review your newsletter details before creating it.",
-                        content: (<Container>
-                            {wizardAlertHeader ?
-                                <Alert type={wizardAlertType}
-                                    header={wizardAlertHeader}
+                        content: (
+                            <SpaceBetween direction="vertical" size="s">
+                                <Container
+                                    header={
+                                        <Header
+                                            actions={
+                                                <SpaceBetween direction="horizontal" size="s">
+                                                    {previewPane ? (
+                                                        <Button
+                                                            variant="primary"
+                                                            iconAlign="right"
+                                                            onClick={() => { previewPane.setSplitPanelOpen(!previewPane.splitPanelOpen) }}
+                                                            iconName={previewPane.splitPanelOpen ? "angle-right" : "arrow-left"}>
+                                                            {previewPane.splitPanelOpen ? "Hide Preview" : "Show Preview"}
+                                                        </Button>
+                                                    ) : <></>}
+                                                </SpaceBetween>
+                                            } />
+                                    }
+
                                 >
-                                    {wizardAlertMessage}
-                                </Alert> : <></>}
-                            <NewsletterReviewForm
-                                title={title}
-                                discoverable={discoverable}
-                                shared={shared}
-                                numberOfDaysToInclude={numberOfDaysToInclude}
-                                selectedSubscriptions={selectedSubscriptions}
-                                formTitle="Review and Finalize Details"
-                                formDescription="Review and finalize the details of your newsletter before saving."
-                                newsletterIntroPrompt={newsletterIntroPrompt}
-                                articleSummaryType={articleSummaryType.value as ArticleSummaryType}
-                            />
-                        </Container>)
+                                    {wizardAlertHeader ?
+                                        <Alert type={wizardAlertType}
+                                            header={wizardAlertHeader}
+                                        >
+                                            {wizardAlertMessage}
+                                        </Alert> : <></>}
+                                    <NewsletterReviewForm
+                                        title={title}
+                                        discoverable={discoverable}
+                                        shared={shared}
+                                        numberOfDaysToInclude={numberOfDaysToInclude}
+                                        selectedSubscriptions={selectedSubscriptions}
+                                        formTitle="Review and Finalize Details"
+                                        formDescription="Review and finalize the details of your newsletter before saving."
+                                        newsletterIntroPrompt={newsletterIntroPrompt}
+                                        articleSummaryType={articleSummaryType.value as ArticleSummaryType}
+                                    />
+                                </Container>
+                            </SpaceBetween>)
                     }
                 ]}
         />

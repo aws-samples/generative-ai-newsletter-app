@@ -1,5 +1,5 @@
 import { Badge, Button, FormField, Header, Link, SpaceBetween, Toggle } from "@cloudscape-design/components";
-import { ArticleSummaryType, DataFeedSubscription } from "../../../API";
+import { ArticleSummaryType, DataFeedSubscription } from "@shared/api/API";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface NewsletterReviewForm {
@@ -8,17 +8,22 @@ interface NewsletterReviewForm {
     shared: boolean
     numberOfDaysToInclude: number
     selectedSubscriptions: DataFeedSubscription[]
-    formTitle: string
+    formTitle?: string
     formDescription?: string
     formMode?: 'wizard' | 'detail'
     newsletterIntroPrompt?: string
     articleSummaryType: ArticleSummaryType
+    templatePreview?: {
+        splitPanelOpen: boolean
+        setSplitPanelOpen: (open: boolean) => void
+    }
 }
 
 export default function NewsletterReviewForm(props: NewsletterReviewForm) {
     const navigate = useNavigate()
     const { newsletterId } = useParams()
-    const { title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, formTitle, formDescription, formMode = 'wizard', newsletterIntroPrompt, articleSummaryType } = props
+    const { title, discoverable, shared, numberOfDaysToInclude, selectedSubscriptions, formTitle, formDescription, formMode = 'wizard', newsletterIntroPrompt, articleSummaryType, templatePreview } = props
+
     return (
         <SpaceBetween direction="vertical" size="l">
             <Header description={formDescription}
@@ -27,10 +32,17 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
                         <Button iconName="edit" onClick={() => { navigate(`/newsletters/${newsletterId}/edit`) }}>
                             Edit Newsletter
                         </Button>
+                        {templatePreview !== undefined ?
+                            <Button
+                            iconAlign="right"
+                            variant="primary" 
+                            onClick={()=>{templatePreview.setSplitPanelOpen(!templatePreview.splitPanelOpen)}}
+                            iconName={templatePreview.splitPanelOpen ? "angle-right" : "arrow-left"}>
+                                {templatePreview.splitPanelOpen ? "Hide Preview" : "Show Preview"}
+                            </Button>
+                            : <></>}
                     </SpaceBetween> : null}
-            >
-                {formTitle}
-            </Header>
+            >{formTitle}</Header>
             <FormField label="Newsletter Title">
                 {title}
             </FormField>
@@ -57,7 +69,7 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
                 </ul>
             </FormField>
             <FormField label="Newsletter Intro Summary Prompt" description="This prompt helps influence how the Newsletter summary will be written.">
-                {newsletterIntroPrompt ?? 'No Custom Prompt Provided'}
+                {newsletterIntroPrompt && newsletterIntroPrompt.length > 0 ? newsletterIntroPrompt : <Badge color="grey">No custom prompt provided</Badge>}
             </FormField>
         </SpaceBetween>
     )

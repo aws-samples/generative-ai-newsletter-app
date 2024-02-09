@@ -2,12 +2,12 @@ projects:
   Codegen Project:
     schemaPath: schema.graphql
     includes:
-      - ../user-interface/genai-newsletter-ui/src/graphql/**
+      - ./graphql/*
     extensions:
       amplify:
         codeGenTarget: typescript
-        generatedFileName: ../user-interface/genai-newsletter-ui/src/API.ts
-        docsFilePath: ../user-interface/genai-newsletter-ui/src/graphql
+        generatedFileName: ./API.ts
+        docsFilePath: ./graphql
         region: null
         apiId: null
         frontend: javascript

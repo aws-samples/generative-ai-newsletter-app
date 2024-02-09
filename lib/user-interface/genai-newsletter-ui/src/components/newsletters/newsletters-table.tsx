@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Newsletter, NewsletterLookupType } from "../../API";
+import { Newsletter, NewsletterLookupType } from "@shared/api/API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
 import { Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";

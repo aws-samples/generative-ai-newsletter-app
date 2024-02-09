@@ -6,7 +6,8 @@
     },
     "extends": [
         "standard-with-typescript",
-        "plugin:react/recommended"
+        "plugin:react/recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
     "parserOptions": {
         "ecmaVersion": "latest",
@@ -17,6 +18,7 @@
     ],
     "rules": {
         "no-new": "off",
-        "no-fallthrough": "off"
+        "no-fallthrough": "off",
+        "typescript-eslint/ban-tslint-comment":"off"
     }
 }

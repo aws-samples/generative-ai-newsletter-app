@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react"
 import { AppContext } from "../../common/app-context"
 import { useParams } from "react-router-dom"
-import { NewsletterEmail } from "../../API"
+import { NewsletterEmail } from "@shared/api/API"
 import { ApiClient } from "../../common/api"
 import { Button, Container, ExpandableSection, SpaceBetween, StatusIndicator } from "@cloudscape-design/components"
 
@@ -85,6 +85,8 @@ export default function NewsletterEmailsTable() {
                             )}
                         </Container>
                     </ExpandableSection>)
+                }else{
+                    return <></>
                 }
 
             })}

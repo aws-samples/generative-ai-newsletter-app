@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "jsx": "react-jsx",
     "target": "ES2020",
     "module": "commonjs",
@@ -7,12 +8,12 @@
       "es2020",
       "dom",
       "DOM.Iterable"
-    ],
+    ], 
     "declaration": true,
     "strict": true,
     "checkJs": true,
     "noImplicitAny": true,
-    "noEmit": false,
+    "noEmit": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
@@ -31,13 +32,16 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
+    "paths": {
+      "@shared/*" :["lib/shared/*"]
+    }
   },
   
   "exclude": [
     "dist",
     "node_modules",
     "cdk.out",
-    "lib/user-interface/genai-newsletter-ui", 
+    "lib/user-interface/genai-newsletter-ui/dist"
   ],
   "include": [
     "bin/",

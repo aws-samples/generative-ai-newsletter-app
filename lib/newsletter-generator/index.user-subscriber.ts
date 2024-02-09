@@ -7,7 +7,7 @@ import { DynamoDBClient, PutItemCommand, type PutItemCommandInput } from '@aws-s
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { PinpointClient, UpdateEndpointCommand, type UpdateEndpointCommandInput } from '@aws-sdk/client-pinpoint'
 import { CognitoIdentityProviderClient, type ListUsersCommandInput, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider'
-import { SubscriberType } from '../types/newsletter-generator'
+import { SubscriberType } from '../shared/common/newsletter-generator'
 
 const SERVICE_NAME = 'user-subscriber'
 

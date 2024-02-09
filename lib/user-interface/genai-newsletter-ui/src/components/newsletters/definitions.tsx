@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Icon, Link, Popover, SpaceBetween } from "@cloudscape-design/components";
-import { DataFeedArticle, DataFeedSubscription } from "../../API";
+import { DataFeedArticle, DataFeedSubscription } from "@shared/api/API";
 
 
 

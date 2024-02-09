@@ -6,7 +6,7 @@ import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import { type CreateScheduleCommandInput, SchedulerClient, CreateScheduleCommand } from '@aws-sdk/client-scheduler'
-import { type CreateNewsletter, type Newsletter } from '../api/API'
+import { type CreateNewsletter, type Newsletter } from '@shared/api/API'
 
 const SERVICE_NAME = 'newsletter-creator'
 
@@ -29,14 +29,14 @@ interface NewsletterCreatorEvent {
 
 const lambdaHandler = async (event: NewsletterCreatorEvent): Promise<Newsletter> => {
   logger.debug('Starting newsletter creator', { event })
-  const { title, numberOfDaysToInclude, subscriptionIds, newsletterIntroPrompt = null } = event.input
+  const { title, numberOfDaysToInclude, subscriptionIds, newsletterIntroPrompt, newsletterStyle } = event.input
   const { owner } = event
   const shared: boolean = event.input.shared ?? false
   const discoverable: boolean = event.input.discoverable ?? false
   const newsletterId = uuidv4()
   const scheduleExpression = `rate(${numberOfDaysToInclude} ${numberOfDaysToInclude === 1 ? 'day' : 'days'})`
   const scheduleId = await createNewsletterSchedule(newsletterId, scheduleExpression)
-  const newsletter = await storeNewsletterData(newsletterId, title, subscriptionIds, numberOfDaysToInclude, scheduleId, shared, discoverable, owner, newsletterIntroPrompt!)
+  const newsletter = await storeNewsletterData(newsletterId, title, subscriptionIds, numberOfDaysToInclude, scheduleId, shared, discoverable, owner, newsletterIntroPrompt ?? undefined, newsletterStyle ?? undefined)
   logger.debug('Newsletter created', { newsletterId })
   return newsletter
 }
@@ -65,7 +65,7 @@ const createNewsletterSchedule = async (newsletterId: string, scheduleExpression
   }
 }
 
-const storeNewsletterData = async (newsletterId: string, title: string, subscriptionIds: string[], numberOfDaysToInclude: number, scheduleId: string, shared: boolean, discoverable: boolean, owner: string, newsletterIntroPrompt?: string): Promise<Newsletter> => {
+const storeNewsletterData = async (newsletterId: string, title: string, subscriptionIds: string[], numberOfDaysToInclude: number, scheduleId: string, shared: boolean, discoverable: boolean, owner: string, newsletterIntroPrompt?: string, newsletterStyle?: string): Promise<Newsletter> => {
   logger.debug('Storing newsletter data', {
     newsletterId,
     compoundSortKey: 'newsletter#' + newsletterId,
@@ -76,7 +76,8 @@ const storeNewsletterData = async (newsletterId: string, title: string, subscrip
     shared,
     discoverable,
     owner,
-    newsletterIntroPrompt
+    newsletterIntroPrompt,
+    newsletterStyle
   })
   const createdAt = new Date().toISOString()
   const input: PutItemCommandInput = {
@@ -92,7 +93,8 @@ const storeNewsletterData = async (newsletterId: string, title: string, subscrip
       discoverable,
       createdAt,
       owner,
-      newsletterIntroPrompt
+      newsletterIntroPrompt,
+      newsletterStyle: JSON.stringify(newsletterStyle)
     })
   }
   const command = new PutItemCommand(input)
@@ -115,6 +117,7 @@ const storeNewsletterData = async (newsletterId: string, title: string, subscrip
     createdAt,
     owner,
     newsletterIntroPrompt,
+    newsletterStyle,
     __typename: 'Newsletter'
   }
 }

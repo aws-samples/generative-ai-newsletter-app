@@ -10,26 +10,7 @@ export interface DeployConfig {
     verifiedIdentity: string
     senderAddress: string
   }
-  appHostName?: {
-    domainName: string
-  }
-  ui?: {
-    sideNavigition?: Array<{
-      text: string
-      href: string
-    }>
-    headerLinks?: Array<{
-      text: string
-      href: string
-    }>
-    persistentAlert?: {
-      type: 'error' | 'success' | 'info' | 'warning'
-      message: string
-      buttonText?: string
-      buttonHref?: string
-      dismissable: boolean
-    }
-  }
+  ui?: UIConfig
   auth?: {
     cognito: {
       userPoolId: string
@@ -47,5 +28,24 @@ export interface DeployConfig {
       }
     }
 
+  }
+}
+
+export interface UIConfig {
+  hostName?: string
+  sideNavigation?: Array<{
+    text: string
+    href: string
+  }>
+  headerLinks?: Array<{
+    text: string
+    href: string
+  }>
+  persistentAlert?: {
+    type: 'error' | 'success' | 'info' | 'warning'
+    message: string
+    buttonText?: string
+    buttonHref?: string
+    dismissable: boolean
   }
 }

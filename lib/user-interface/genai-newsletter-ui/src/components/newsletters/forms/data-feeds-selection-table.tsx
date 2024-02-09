@@ -1,6 +1,6 @@
 import { Header, NonCancelableCustomEvent, Pagination, PaginationProps, Table } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { DataFeedSubscription } from "../../../API";
+import { DataFeedSubscription } from "@shared/api/API";
 import { AppContext } from "../../../common/app-context";
 import { ApiClient } from "../../../common/api";
 import { NewsletterWizardDataFeedsTableColumnDefinition, NewsletterWizardNewsFeedsTableColumnDisplay } from "../definitions";

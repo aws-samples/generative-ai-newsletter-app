@@ -1,3 +1,5 @@
+
+import { useCollection } from '@cloudscape-design/collection-hooks';
 import { Badge, Box, Button, ButtonDropdown, ButtonDropdownProps, Header, Link, SpaceBetween, Table, TextFilter } from "@cloudscape-design/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { AppContext } from "../../common/app-context";
@@ -45,6 +47,25 @@ export default function DataFeedsTable() {
         }
     }
 
+    const { items, actions, collectionProps, filterProps } = useCollection(
+        dataFeeds,
+        {
+            filtering: {
+                empty: <Box>
+                    No items
+                </Box>,
+                noMatch: (
+                    <SpaceBetween direction="vertical" size="s">
+                        <Header>title="No matches"</Header>
+                        action={<Button onClick={() => actions.setFiltering('')}>Clear filter</Button>}
+                    </SpaceBetween>
+                ),
+            },
+            pagination: { pageSize: 10 },
+
+        }
+    )
+
     const dataFeedsTableColumnDefiniton = [
         {
             id: 'subscriptionId',
@@ -55,9 +76,9 @@ export default function DataFeedsTable() {
         {
             id: 'title',
             cell: (item: DataFeedSubscription) => (
-                <Link 
-                onFollow={onFollow}
-                href={`/feeds/${item.subscriptionId}`}>{item.title}</Link>
+                <Link
+                    onFollow={onFollow}
+                    href={`/feeds/${item.subscriptionId}`}>{item.title}</Link>
             ),
             header: 'Title',
             isHeaderRow: true,
@@ -97,9 +118,10 @@ export default function DataFeedsTable() {
 
     return (
         <Table
+            {...collectionProps}
             columnDefinitions={dataFeedsTableColumnDefiniton}
             columnDisplay={DataFeedsTableColumnDisplay()}
-            items={dataFeeds}
+            items={items}
             resizableColumns
             loading={loadingDataFeeds}
             selectionType="single"
@@ -109,14 +131,18 @@ export default function DataFeedsTable() {
                 setSelectedDataFeed(detail.selectedItems[0])
             }}
             filter={
-                <TextFilter filteringPlaceholder="Search for Feeds [Not Yet Implemented]" filteringText="" />
+                <TextFilter
+                    filteringPlaceholder="Filter Data Feeds"
+                    {...filterProps}
+                    filteringAriaLabel="Filter Data Feeds"
+                />
             }
             empty={
                 <Box>
-                   <SpaceBetween size="m" direction="vertical">
-                    <b>No Data Feeds</b>
-                    <Button onClick={()=>{navigate('/feeds/create')}}>Create a Data Feed</Button>
-                    </SpaceBetween> 
+                    <SpaceBetween size="m" direction="vertical">
+                        <b>No Data Feeds</b>
+                        <Button onClick={() => { navigate('/feeds/create') }}>Create a Data Feed</Button>
+                    </SpaceBetween>
                 </Box>
             }
             header={<Header actions={

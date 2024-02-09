@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
+import { useCollection } from '@cloudscape-design/collection-hooks';
 import { Newsletter, NewsletterLookupType } from "@shared/api/API";
 import { AppContext } from "../../common/app-context";
 import { ApiClient } from "../../common/api";
@@ -19,9 +20,6 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
     const navigate = useNavigate()
     const onFollow = useOnFollow()
     const [newsFeeds, setNewsFeeds] = useState<Newsletter[]>([])
-    // const [discoverableNextToken, setDiscoverableNextToken] = useState<string>('')
-    // const [currentUserOwnedNextToken, setCurrentUserOwnedNextToken] = useState<string>('')
-    // const [currentUserSubscribedNextToken, setCurrentUserSubscribedNextToken] = useState<string>('')
     const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter>()
     const [loadingNewsletters, setLoadingNewsletters] = useState<boolean>(true)
 
@@ -116,10 +114,31 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
         getNewsletters()
     }, [getNewsletters])
 
+    const { items, actions, collectionProps, filterProps } = useCollection(
+        newsFeeds,
+        {
+            filtering: {
+                empty: <Box>
+                    No items
+                </Box>,
+                noMatch: (
+                    <SpaceBetween direction="vertical" size="s">
+                      <Header>title="No matches"</Header>
+                      action={<Button onClick={() => actions.setFiltering('')}>Clear filter</Button>}
+                      </SpaceBetween>
+                  ),
+            },
+            pagination: { pageSize: 10 },
+            
+        }
+    )
+
     return (<>
         <Table
+            {...collectionProps}
             columnDefinitions={newslettersTableColumnDefinitons}
-            items={newsFeeds}
+            items={items}
+            
             loadingText="Loading"
             resizableColumns
             loading={loadingNewsletters}
@@ -134,8 +153,12 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
             variant="embedded"
             selectionType="single"
             filter={
-                <TextFilter filteringPlaceholder="Search for Newsletters [Not Yet Implemented]" filteringText="" />
-            }
+                <TextFilter
+                    filteringPlaceholder="Filter Newsletters"
+                  {...filterProps}
+                  filteringAriaLabel="Filter Newsletters"
+                />
+              }
             selectedItems={selectedNewsletter ? [selectedNewsletter] : []}
             onSelectionChange={({ detail }) => { setSelectedNewsletter(detail.selectedItems[0] as Newsletter) }}
             header={<Header actions={<SpaceBetween size="s" direction="horizontal">

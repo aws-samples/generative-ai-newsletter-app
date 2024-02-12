@@ -1,3 +1,23 @@
+## **0.3.0**&emsp;<sub><sup>2024-02-12 (436940be53c5212c6798bf0d4fefa60ea379344c...655c7499b7b0b08297cc4cec2384d29d0fa62ef5)</sup></sub>
+
+### Features
+
+##### &ensp;`user-interface`
+
+- added Data Feed and Newsletter Table Filters (436940be53c5212c6798bf0d4fefa60ea379344c)
+
+### Bug Fixes
+
+##### &ensp;`newsletter-style`
+
+- fixed preview functionality for Newsletter Styler (17ddb980efda1fb09c85f1cc6f7ede010c4ac6f8)
+
+##### &ensp;`release`
+
+- fixed release versioning script (655c7499b7b0b08297cc4cec2384d29d0fa62ef5)
+
+<br>
+
 ## **0.2.0**&emsp;<sub><sup>2024-02-09 (232a37a4d2a0ea4986d0d0426069c1163a155c43...de04b957736b84fd50542518fd18ba49b2e5062d)</sup></sub>
 
 ### Features

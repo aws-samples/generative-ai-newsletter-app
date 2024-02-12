@@ -12,19 +12,12 @@ import {
   Hr,
   Img
 } from '@react-email/components'
-import { Markdown } from '@react-email/markdown'
 import { ArticleSummaryType } from '@shared/api/API'
 import { type NewsletterEmailProps } from '@shared/common/newsletter-generator'
 import { NewsletterStyle } from '@shared/common/newsletter-style'
 
 export default function NewsletterEmail (props: NewsletterEmailProps): React.ReactElement {
-  const { title, articles, appHostName, footerOverride, articleSummaryType, newsletterSummary, previewMode = false } = props
-  let { styleProps } = props
-  if (styleProps === undefined) {
-    styleProps = new NewsletterStyle()
-  }
-  console.log(styleProps)
-  console.log(styleProps.body.backgroundColor)
+  const { title, articles, appHostName, footerOverride, articleSummaryType, newsletterSummary, previewMode = false, styleProps = new NewsletterStyle() } = props
   let newsletterSummaryContent = ''
   if (articleSummaryType === ArticleSummaryType.LONG_SUMMARY && newsletterSummary?.longSummary.response !== undefined && newsletterSummary?.longSummary.response !== null) {
     newsletterSummaryContent = newsletterSummary.longSummary.response
@@ -32,28 +25,30 @@ export default function NewsletterEmail (props: NewsletterEmailProps): React.Rea
   if (articleSummaryType === ArticleSummaryType.SHORT_SUMMARY && newsletterSummary?.shortSummary.response != null) {
     newsletterSummaryContent = newsletterSummary.shortSummary.response
   }
-
   const body = (<Body style={styleProps.body}>
     <Container style={container}>
-      <h1>{title ?? 'Your GenAI Created Newsletter'}</h1>
-      <Markdown>
+      <Text style={styleProps.introHeader}>{title ?? 'Your GenAI Created Newsletter'}</Text>
+      <Text style={styleProps.introBody}>
         {newsletterSummaryContent}
-      </Markdown>
+      </Text>
 
       <Section key="ArticlesSection" style={styleProps.content}>
         {articles?.map((article) => {
           return (
             <Row key={`article-row-${article.url}`} style={articleRow}>
-              <h2>{article.title}</h2>
-              {articleSummaryType === ArticleSummaryType.LONG_SUMMARY
-                ? article.content.longSummary.response
-                : article.content.shortSummary.response
-              }
-              <Link href={article.url}>Read the article</Link>
+              <Text style={styleProps?.contentHeader}>{article.title}</Text>
+              <Text style={styleProps?.contentBody}>
+                {articleSummaryType === ArticleSummaryType.LONG_SUMMARY
+                  ? article.content.longSummary.response
+                  : article.content.shortSummary.response
+                }</Text>
+              <Text>
+                <Link href={article.url}>Read the article</Link>
+              </Text>
               {appHostName !== undefined && appHostName.length > 0 && article.flagLink !== undefined && article.flagLink.length > 0
-                ? <p>
+                ? <Text >
                   <Link href={`https://${appHostName}${article.flagLink}`} target='_blank' style={flagLink}>Flag this summary</Link>
-                </p>
+                </Text>
                 : <></>}
             </Row>
           )
@@ -76,8 +71,8 @@ export default function NewsletterEmail (props: NewsletterEmailProps): React.Rea
             <br />
             <Text>
               Some content may be inaccurate or misleading. If you feel content is incorrect,
-              click the &quote;Flag this summary&quote; link to flag the generated content
-              (*If &quote;Flag this summary&quote; link is available).
+              click the Flag this summary link to flag the generated content
+              (*If Flag this summary link is available).
             </Text>
           </Text>}
       </Section>
@@ -97,12 +92,6 @@ export default function NewsletterEmail (props: NewsletterEmailProps): React.Rea
     : (body)
 }
 
-// const main = {
-//   backgroundColor: '#ffffff',
-//   fontFamily:
-//     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
-// }
-
 const footer = {
   bottom: '0',
   width: '100%',
@@ -119,15 +108,9 @@ const flagLink = {
 const container = {
   margin: 'auto'
 }
-
-// const articlesSection = {
-//   margin: 'auto',
-//   backgroundColor: '#f9f9f9',
-//   paddingLeft: '10px',
-//   paddingRight: '10px'
-// }
-
 const articleRow = {
   margin: '0 auto',
+  paddingLeft: '10px',
+  paddingRight: '10px',
   minHeight: '50px'
 }

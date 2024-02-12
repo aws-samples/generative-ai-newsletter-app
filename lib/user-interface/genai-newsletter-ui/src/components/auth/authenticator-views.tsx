@@ -70,7 +70,7 @@ export function DefaultAuthenticator() {
                     setLoading(false)
                 }
             }
-        }, [newPasswordOne, newPasswordTwo])
+        }, [newPasswordOne, newPasswordTwo, userFamilyName, userGivenName])
 
     return (
         <Box display='block' margin={'l'} padding={'n'}>

@@ -13,7 +13,7 @@ import { useState } from "react";
 export default function EditNewsletter() {
     const { newsletterId } = useParams();
     const onFollow = useOnFollow()
-    const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle | undefined>()
+    const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(new NewsletterStyle())
     const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)
     return (
         <BaseAppLayout

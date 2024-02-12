@@ -12,7 +12,7 @@ export class DataFeedsClient {
     async listDataFeeds(args?: { nextToken?: string, limit?: number }): Promise<GraphQLResult<GetDataFeedSubscriptionsQuery>> {
         try {
             const { nextToken, limit } = args ?? { nextToken: null, limit: null }
-            let result = await client.graphql({
+            const result = await client.graphql({
                 query: getDataFeedSubscriptions,
                 variables: { nextToken, limit },
             })
@@ -74,7 +74,7 @@ export class DataFeedsClient {
 
     async getDataFeedArticles(subscriptionId: string, nextToken?: string, limit: number = 1000): Promise<GraphQLResult<GraphQLQuery<GetDataFeedArticlesQuery>>> {
         try {
-            let result = await client.graphql({
+            const result = await client.graphql({
                 query: getDataFeedArticles,
                 variables: { input: { subscriptionId }, nextToken, limit },
             })

@@ -1,5 +1,5 @@
 import { Wizard, Container, StatusIndicator, Alert, AlertProps, SelectProps, SpaceBetween, Header, Button } from "@cloudscape-design/components"
-import { useContext, useState, useCallback, useEffect } from "react"
+import { useContext, useState, useCallback, useEffect, SetStateAction, Dispatch } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ArticleSummaryType, DataFeedSubscription } from "@shared/api/API"
 import { ApiClient } from "../../../common/api"
@@ -15,7 +15,7 @@ interface NewsletterWizardProps {
     newsletterId?: string
     previewPane?: {
         newsletterStyle?: NewsletterStyle
-        setNewsletterStyle: (style: NewsletterStyle) => void
+        setNewsletterStyle: Dispatch<SetStateAction<NewsletterStyle>>
         splitPanelOpen: boolean
         setSplitPanelOpen: (open: boolean) => void
     }
@@ -25,6 +25,7 @@ interface NewsletterWizardProps {
 export default function NewsletterWizard({ newsletterId, previewPane }: NewsletterWizardProps) {
     const appContext = useContext(AppContext)
     const [searchParams, setSearchParams] = useSearchParams()
+    const [loadedNewsletterId, setLoadedNewsletterId] = useState<string | null>(null)
     const navigate = useNavigate()
     const [title, setTitle] = useState<string>('')
     const [discoverable, setDiscoverable] = useState<boolean>(false)
@@ -36,8 +37,6 @@ export default function NewsletterWizard({ newsletterId, previewPane }: Newslett
     const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
     const [titleError, setTitleError] = useState<string>('')
     const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] = useState<string>('')
-
-
     const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(new NewsletterStyle())
 
 
@@ -108,7 +107,6 @@ export default function NewsletterWizard({ newsletterId, previewPane }: Newslett
                 setShared(result.data.getNewsletter?.shared ?? false)
                 setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
                 setSelectedSubscriptions(result.data.getNewsletter?.subscriptions as DataFeedSubscription[] ?? [])
-                console.log(result.data.getNewsletter.articleSummaryType + '<<<<')
                 if (result.data.getNewsletter.articleSummaryType === ArticleSummaryType.KEYWORDS) {
                     setArticleSummaryType({ label: 'Keywords', value: ArticleSummaryType.KEYWORDS as string })
                 } else if (result.data.getNewsletter.articleSummaryType === ArticleSummaryType.LONG_SUMMARY) {
@@ -123,11 +121,11 @@ export default function NewsletterWizard({ newsletterId, previewPane }: Newslett
                         previewPane.setNewsletterStyle(JSON.parse(result.data.getNewsletter.newsletterStyle))
                     }
                 }
-
+                setLoadedNewsletterId(newsletterId)
                 setLoading(false)
             }
 
-        }, [appContext, newsletterId, previewPane]
+        }, [appContext, newsletterId, previewPane, setNewsletterStyle]
     )
 
     const updateNewsletter = useCallback(
@@ -171,13 +169,14 @@ export default function NewsletterWizard({ newsletterId, previewPane }: Newslett
     )
 
     useEffect(() => {
-        if (newsletterId !== undefined) {
+        if (loadedNewsletterId == null) {
             loadNewsletterDetails()
-        } else {
-            setLoading(false)
+        }
+        if (newsletterStyle !== undefined){
+            previewPane?.setNewsletterStyle(newsletterStyle)
         }
 
-    }, [newsletterId, loadNewsletterDetails])
+    }, [loadNewsletterDetails, loadedNewsletterId, newsletterStyle, previewPane])
     return (
         <Wizard
             i18nStrings={{
@@ -308,8 +307,8 @@ export default function NewsletterWizard({ newsletterId, previewPane }: Newslett
                                             ) : <></>}
                                         </SpaceBetween>
                                     } >
-                                        Customize the style of your Newsletter
-                                    </Header>
+                                    Customize the style of your Newsletter
+                                </Header>
                             }>
                                 <NewsletterDesignerForm style={newsletterStyle} setStyle={setNewsletterStyle} />
                             </Container>

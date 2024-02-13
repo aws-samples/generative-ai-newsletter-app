@@ -1,5 +1,5 @@
-
 ### A Newsletter Record
+
 ```json
 {
   "newsletterId": {
@@ -26,11 +26,13 @@
   }
 }
 ```
-*Data Note: `subscriptions` is a list of one or more `subscriptionId` values that can be found in the `NewsSubscriptionData` dynamodb table*
 
-*Future Improvement: `themeId` will eventually be implemented to pull the specific themed styling for the email generation.*
+_Data Note: `subscriptions` is a list of one or more `subscriptionId` values that can be found in the `NewsSubscriptionData` dynamodb table_
+
+_Future Improvement: `themeId` will eventually be implemented to pull the specific themed styling for the email generation._
 
 ### A Newsletter Subscriber Record
+
 ```json
 {
   "newsletterId": {
@@ -41,9 +43,11 @@
   }
 }
 ```
-*Data Note: UUID of subscriber is the `sub` attribute from Cognito User Pool*
+
+_Data Note: UUID of subscriber is the `sub` attribute from Cognito User Pool_
 
 ### A Newsletter Email Record
+
 ```json
 {
   "newsletterId": {
@@ -60,4 +64,5 @@
   }
 }
 ```
-*Data Note: Email content is in s3 with key derived from the `createdAt` date and the emails UUID. The S3 Path looks like `s3://[bucketname]/NEWSLETTERS/2023/12/21/b11a6fe8-84c6-46f8-842d-0812af22ea17.{html|txt}`*
+
+_Data Note: Email content is in s3 with key derived from the `createdAt` date and the emails UUID. The S3 Path looks like `s3://[bucketname]/NEWSLETTERS/2023/12/21/b11a6fe8-84c6-46f8-842d-0812af22ea17.{html|txt}`_

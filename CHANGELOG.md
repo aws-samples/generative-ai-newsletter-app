@@ -1,3 +1,8 @@
+## **0.3.1**&emsp;<sub><sup>2024-02-13 (b0ae277d89d3da79717c07eecb75184ffe293c30...fd31626d95bc93bb95f7edd38d2fcf58569e4779)</sup></sub>
+
+*no relevant changes*
+<br>
+
 ## **0.3.0**&emsp;<sub><sup>2024-02-12 (436940be53c5212c6798bf0d4fefa60ea379344c...655c7499b7b0b08297cc4cec2384d29d0fa62ef5)</sup></sub>
 
 ### Features

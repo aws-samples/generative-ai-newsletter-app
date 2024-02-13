@@ -18,7 +18,9 @@ interface FeedReaderInput {
   feedType: 'RSS' | 'ATOM'
 }
 
-const lambdaHandler = async (event: FeedReaderInput): Promise<FeedArticle[]> => {
+const lambdaHandler = async (
+  event: FeedReaderInput
+): Promise<FeedArticle[]> => {
   const url = event.url
   const feed = await getFeed(url)
   metrics.addMetric('FeedReader', MetricUnits.Count, 1)
@@ -32,11 +34,20 @@ const getFeed = async (url: string): Promise<string> => {
   return response.data
 }
 
-const parseArticlesFromFeed = async (feedContents: string, subscriptionId: string, feedType: 'ATOM' | 'RSS'): Promise<FeedArticle[]> => {
-  return feedType === 'RSS' ? await parseRssFeed(feedContents, subscriptionId) : await parseAtomFeed(feedContents, subscriptionId)
+const parseArticlesFromFeed = async (
+  feedContents: string,
+  subscriptionId: string,
+  feedType: 'ATOM' | 'RSS'
+): Promise<FeedArticle[]> => {
+  return feedType === 'RSS'
+    ? await parseRssFeed(feedContents, subscriptionId)
+    : await parseAtomFeed(feedContents, subscriptionId)
 }
 
-const parseRssFeed = async (feedContents: string, subscriptionId?: string): Promise<FeedArticle[]> => {
+const parseRssFeed = async (
+  feedContents: string,
+  subscriptionId?: string
+): Promise<FeedArticle[]> => {
   logger.debug('Parsing Articles from RSS Feed')
   const $ = cheerio.load(feedContents, { xmlMode: true })
   const articles: FeedArticle[] = []
@@ -50,10 +61,20 @@ const parseRssFeed = async (feedContents: string, subscriptionId?: string): Prom
       const publishDate = $(article).find('pubDate').text()
       const categories = $(article).find('category').text()
       if (link !== null && link.length > 0) {
-        articles.push({ title, link, description, publishDate, categories, guid, subscriptionId })
+        articles.push({
+          title,
+          link,
+          description,
+          publishDate,
+          categories,
+          guid,
+          subscriptionId
+        })
         metrics.addMetric('FeedArticleParsed', MetricUnits.Count, 1)
         metrics.addMetric('RSSFeedArticleParsed', MetricUnits.Count, 1)
-        logger.debug(`Article parsed from feed: title=${title}; link=${link}; description=${description}; publishDate=${publishDate}; categories=${categories}`)
+        logger.debug(
+          `Article parsed from feed: title=${title}; link=${link}; description=${description}; publishDate=${publishDate}; categories=${categories}`
+        )
       } else {
         throw Error('Link is empty')
       }
@@ -65,7 +86,10 @@ const parseRssFeed = async (feedContents: string, subscriptionId?: string): Prom
   return articles
 }
 
-const parseAtomFeed = async (feedContents: string, subscriptionId?: string): Promise<FeedArticle[]> => {
+const parseAtomFeed = async (
+  feedContents: string,
+  subscriptionId?: string
+): Promise<FeedArticle[]> => {
   logger.debug('Parsing Articles from Atom Feed')
   const $ = cheerio.load(feedContents, { xmlMode: true })
   const articles: FeedArticle[] = []
@@ -78,10 +102,19 @@ const parseAtomFeed = async (feedContents: string, subscriptionId?: string): Pro
       const description = $(article).find('content').text()
       const publishDate = $(article).find('updated').text()
       if (link !== null && link.length > 0) {
-        articles.push({ title, link, description, publishDate, guid, subscriptionId })
+        articles.push({
+          title,
+          link,
+          description,
+          publishDate,
+          guid,
+          subscriptionId
+        })
         metrics.addMetric('FeedArticleParsed', MetricUnits.Count, 1)
         metrics.addMetric('ATOMFeedArticleParsed', MetricUnits.Count, 1)
-        logger.debug(`Article parsed from feed: title=${title}; link=${link}; description=${description}; publishDate=${publishDate};`)
+        logger.debug(
+          `Article parsed from feed: title=${title}; link=${link}; description=${description}; publishDate=${publishDate};`
+        )
       } else {
         throw Error('Link is empty')
       }

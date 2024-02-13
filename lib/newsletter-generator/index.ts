@@ -1,7 +1,24 @@
 import { RemovalPolicy, Duration, Aws, Stack } from 'aws-cdk-lib'
-import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
-import { Effect, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
+import {
+  AttributeType,
+  BillingMode,
+  ProjectionType,
+  Table
+} from 'aws-cdk-lib/aws-dynamodb'
+import {
+  Effect,
+  PolicyStatement,
+  Role,
+  ServicePrincipal
+} from 'aws-cdk-lib/aws-iam'
+import {
+  ApplicationLogLevel,
+  Architecture,
+  LambdaInsightsVersion,
+  LogFormat,
+  Runtime,
+  Tracing
+} from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
@@ -31,7 +48,8 @@ export class NewsletterGenerator extends Construct {
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
     const { newsSubscriptionTable } = props
-    this.newsletterScheduleGroupName = Stack.of(this).stackName + 'NewsletterSubscriptions'
+    this.newsletterScheduleGroupName =
+      Stack.of(this).stackName + 'NewsletterSubscriptions'
     const newsletterTable = new Table(this, 'NewsletterTable', {
       removalPolicy: RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
       tableName: Stack.of(this).stackName + '-NewsletterTable',
@@ -72,34 +90,46 @@ export class NewsletterGenerator extends Construct {
       autoDeleteObjects: true
     })
 
-    const pinpointApp = new PinpointApp(this, 'NewsletterPinpoint', { newsletterTable, newsletterTableCampaignGSI })
-
-    const newsletterCampaignCreatorFunction = new NodejsFunction(this, 'newsletter-campaign-creator', {
-      description: 'Function responsible for creating the newsletter campaigns for each unique email',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: newsletterTable.tableName,
-        PINPOINT_APP_ID: pinpointApp.pinpointAppId,
-        PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId,
-        PINPOINT_CAMPAIGN_HOOK_FUNCTION: pinpointApp.pinpointCampaignHookFunction.functionName,
-        EMAIL_BUCKET: emailBucket.bucketName
-      }
+    const pinpointApp = new PinpointApp(this, 'NewsletterPinpoint', {
+      newsletterTable,
+      newsletterTableCampaignGSI
     })
-    newsletterCampaignCreatorFunction.addToRolePolicy(pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement)
+
+    const newsletterCampaignCreatorFunction = new NodejsFunction(
+      this,
+      'newsletter-campaign-creator',
+      {
+        description:
+          'Function responsible for creating the newsletter campaigns for each unique email',
+        handler: 'handler',
+        architecture: Architecture.ARM_64,
+        runtime: Runtime.NODEJS_20_X,
+        tracing: Tracing.ACTIVE,
+        logFormat: LogFormat.JSON,
+        logRetention: RetentionDays.ONE_WEEK,
+        applicationLogLevel: ApplicationLogLevel.DEBUG,
+        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+        timeout: Duration.minutes(5),
+        environment: {
+          POWERTOOLS_LOG_LEVEL: 'DEBUG',
+          NEWSLETTER_TABLE: newsletterTable.tableName,
+          PINPOINT_APP_ID: pinpointApp.pinpointAppId,
+          PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId,
+          PINPOINT_CAMPAIGN_HOOK_FUNCTION:
+            pinpointApp.pinpointCampaignHookFunction.functionName,
+          EMAIL_BUCKET: emailBucket.bucketName
+        }
+      }
+    )
+    newsletterCampaignCreatorFunction.addToRolePolicy(
+      pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement
+    )
     emailBucket.grantRead(newsletterCampaignCreatorFunction)
     newsletterTable.grantReadWriteData(newsletterCampaignCreatorFunction)
 
     const emailGeneratorFunction = new NodejsFunction(this, 'email-generator', {
-      description: 'Function responsible for generating the newsletter HTML & Plain Text emails',
+      description:
+        'Function responsible for generating the newsletter HTML & Plain Text emails',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -116,7 +146,8 @@ export class NewsletterGenerator extends Construct {
         NEWS_SUBSCRIPTION_TABLE_LSI: props.newsSubscriptionTableLSI,
         NEWSLETTER_TABLE: newsletterTable.tableName,
         EMAIL_BUCKET: emailBucket.bucketName,
-        NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION: newsletterCampaignCreatorFunction.functionName,
+        NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION:
+          newsletterCampaignCreatorFunction.functionName,
         APP_HOST_NAME: this.node.tryGetContext('appHostName')
       }
     })
@@ -125,14 +156,23 @@ export class NewsletterGenerator extends Construct {
     emailBucket.grantWrite(emailGeneratorFunction)
     newsletterCampaignCreatorFunction.grantInvoke(emailGeneratorFunction)
 
-    const newsletterScheduleGroup = new CfnScheduleGroup(this, 'NewsletterScheduleGroup', {
-      name: this.newsletterScheduleGroupName
-    })
+    const newsletterScheduleGroup = new CfnScheduleGroup(
+      this,
+      'NewsletterScheduleGroup',
+      {
+        name: this.newsletterScheduleGroupName
+      }
+    )
 
-    const emailGeneratorSchedulerInvokeRole = new Role(this, 'EmailGeneratorSchedulerInvokeRole', {
-      assumedBy: new ServicePrincipal('scheduler.amazonaws.com'),
-      description: 'Role used by the scheduler to invoke the email generator function'
-    })
+    const emailGeneratorSchedulerInvokeRole = new Role(
+      this,
+      'EmailGeneratorSchedulerInvokeRole',
+      {
+        assumedBy: new ServicePrincipal('scheduler.amazonaws.com'),
+        description:
+          'Role used by the scheduler to invoke the email generator function'
+      }
+    )
     emailGeneratorFunction.grantInvoke(emailGeneratorSchedulerInvokeRole)
     emailGeneratorFunction.addToRolePolicy(
       new PolicyStatement({
@@ -141,42 +181,50 @@ export class NewsletterGenerator extends Construct {
         effect: Effect.ALLOW
       })
     )
-    const newsletterCreatorFunction = new NodejsFunction(this, 'newsletter-creator', {
-      description: 'Function responsible for creating and scheduling the newsletter',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_DATA_TABLE: newsletterTable.tableName,
-        NEWSLETTER_SCHEDULE_GROUP_NAME: this.newsletterScheduleGroupName,
-        EMAIL_GENERATOR_FUNCTION_ARN: emailGeneratorFunction.functionArn,
-        EMAIL_GENERATOR_SCHEDULER_ROLE_ARN: emailGeneratorSchedulerInvokeRole.roleArn,
-        PINPOINT_APP_ID: pinpointApp.pinpointAppId,
-        PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId
+    const newsletterCreatorFunction = new NodejsFunction(
+      this,
+      'newsletter-creator',
+      {
+        description:
+          'Function responsible for creating and scheduling the newsletter',
+        handler: 'handler',
+        architecture: Architecture.ARM_64,
+        runtime: Runtime.NODEJS_20_X,
+        tracing: Tracing.ACTIVE,
+        logFormat: LogFormat.JSON,
+        logRetention: RetentionDays.ONE_WEEK,
+        applicationLogLevel: ApplicationLogLevel.DEBUG,
+        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+        timeout: Duration.minutes(5),
+        environment: {
+          POWERTOOLS_LOG_LEVEL: 'DEBUG',
+          NEWSLETTER_DATA_TABLE: newsletterTable.tableName,
+          NEWSLETTER_SCHEDULE_GROUP_NAME: this.newsletterScheduleGroupName,
+          EMAIL_GENERATOR_FUNCTION_ARN: emailGeneratorFunction.functionArn,
+          EMAIL_GENERATOR_SCHEDULER_ROLE_ARN:
+            emailGeneratorSchedulerInvokeRole.roleArn,
+          PINPOINT_APP_ID: pinpointApp.pinpointAppId,
+          PINPOINT_BASE_SEGMENT_ID: pinpointApp.pinpointBaseSegmentId
+        }
       }
-    })
+    )
     newsletterTable.grantReadWriteData(newsletterCreatorFunction)
-    newsletterCreatorFunction.addToRolePolicy(pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement)
-    newsletterCreatorFunction.addToRolePolicy(new PolicyStatement({
-      actions: [
-        'scheduler:CreateSchedule',
-        'iam:PassRole'
-      ],
-      resources: [
-        emailGeneratorSchedulerInvokeRole.roleArn,
-        `arn:aws:scheduler:${Aws.REGION}:${Aws.ACCOUNT_ID}:schedule/${this.newsletterScheduleGroupName}/*`
-      ]
-    }))
+    newsletterCreatorFunction.addToRolePolicy(
+      pinpointApp.pinpointAddNewsletterCampaignAndSegmentPolicyStatement
+    )
+    newsletterCreatorFunction.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['scheduler:CreateSchedule', 'iam:PassRole'],
+        resources: [
+          emailGeneratorSchedulerInvokeRole.roleArn,
+          `arn:aws:scheduler:${Aws.REGION}:${Aws.ACCOUNT_ID}:schedule/${this.newsletterScheduleGroupName}/*`
+        ]
+      })
+    )
 
     const getNewsletterFunction = new NodejsFunction(this, 'get-newsletter', {
-      description: 'Function responsible for getting looking up a Newsletter and its associated details',
+      description:
+        'Function responsible for getting looking up a Newsletter and its associated details',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -197,7 +245,8 @@ export class NewsletterGenerator extends Construct {
     newsSubscriptionTable.grantReadData(getNewsletterFunction)
 
     const userSubscriberFunction = new NodejsFunction(this, 'user-subscriber', {
-      description: 'Function responsible for subscribing a user to the newsletter',
+      description:
+        'Function responsible for subscribing a user to the newsletter',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -215,25 +264,35 @@ export class NewsletterGenerator extends Construct {
       }
     })
     newsletterTable.grantReadWriteData(userSubscriberFunction)
-    UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(userSubscriberFunction, 'cognito-idp:ListUsers')
-    userSubscriberFunction.addToRolePolicy(pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement)
+    UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId).grant(
+      userSubscriberFunction,
+      'cognito-idp:ListUsers'
+    )
+    userSubscriberFunction.addToRolePolicy(
+      pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement
+    )
 
-    const userUnsubscriberFunction = new NodejsFunction(this, 'user-unsubscriber', {
-      description: 'Function responsible for unsubscribing a user from the newsletter',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        NEWSLETTER_TABLE: newsletterTable.tableName
+    const userUnsubscriberFunction = new NodejsFunction(
+      this,
+      'user-unsubscriber',
+      {
+        description:
+          'Function responsible for unsubscribing a user from the newsletter',
+        handler: 'handler',
+        architecture: Architecture.ARM_64,
+        runtime: Runtime.NODEJS_20_X,
+        tracing: Tracing.ACTIVE,
+        logFormat: LogFormat.JSON,
+        logRetention: RetentionDays.ONE_WEEK,
+        applicationLogLevel: ApplicationLogLevel.DEBUG,
+        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+        timeout: Duration.minutes(5),
+        environment: {
+          POWERTOOLS_LOG_LEVEL: 'DEBUG',
+          NEWSLETTER_TABLE: newsletterTable.tableName
+        }
       }
-    })
+    )
     newsletterTable.grantReadWriteData(userUnsubscriberFunction)
 
     this.emailBucket = emailBucket

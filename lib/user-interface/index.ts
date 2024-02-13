@@ -1,5 +1,16 @@
-import { Aws, CfnOutput, DockerImage, Duration, RemovalPolicy } from 'aws-cdk-lib'
-import { CloudFrontAllowedMethods, CloudFrontWebDistribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront'
+import {
+  Aws,
+  CfnOutput,
+  DockerImage,
+  Duration,
+  RemovalPolicy
+} from 'aws-cdk-lib'
+import {
+  CloudFrontAllowedMethods,
+  CloudFrontWebDistribution,
+  OriginAccessIdentity,
+  ViewerProtocolPolicy
+} from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import { BlockPublicAccess, Bucket, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
@@ -22,7 +33,13 @@ interface UserInterfaceProps {
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
-    const { emailBucket, userPoolClientId, userPool, identityPool, graphqlApiUrl } = props
+    const {
+      emailBucket,
+      userPoolClientId,
+      userPool,
+      identityPool,
+      graphqlApiUrl
+    } = props
     const { identityPoolId } = identityPool
     const { userPoolId } = userPool
     super(scope, id)
@@ -44,41 +61,48 @@ export class UserInterface extends Construct {
     const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
     emailBucket.grantRead(newslettersOAI)
 
-    const cloudfrontDistribution = new CloudFrontWebDistribution(this, 'CloudFrontDistribution', {
-      loggingConfig: {
-        bucket: new Bucket(this, 'CloudFrontLoggingBucket', { objectOwnership: ObjectOwnership.OBJECT_WRITER })
-      },
-      originConfigs: [
-        {
-          behaviors: [{ isDefaultBehavior: true }],
-          s3OriginSource: {
-            s3BucketSource: websiteBucket,
-            originAccessIdentity: websiteOAI
-          }
+    const cloudfrontDistribution = new CloudFrontWebDistribution(
+      this,
+      'CloudFrontDistribution',
+      {
+        loggingConfig: {
+          bucket: new Bucket(this, 'CloudFrontLoggingBucket', {
+            objectOwnership: ObjectOwnership.OBJECT_WRITER
+          })
         },
-        {
-          behaviors: [{
-
-            pathPattern: 'newsletter-content/*',
-            allowedMethods: CloudFrontAllowedMethods.GET_HEAD,
-            viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            defaultTtl: Duration.seconds(0)
-          }],
-          s3OriginSource: {
-            s3BucketSource: emailBucket,
-            originAccessIdentity: newslettersOAI
+        originConfigs: [
+          {
+            behaviors: [{ isDefaultBehavior: true }],
+            s3OriginSource: {
+              s3BucketSource: websiteBucket,
+              originAccessIdentity: websiteOAI
+            }
+          },
+          {
+            behaviors: [
+              {
+                pathPattern: 'newsletter-content/*',
+                allowedMethods: CloudFrontAllowedMethods.GET_HEAD,
+                viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                defaultTtl: Duration.seconds(0)
+              }
+            ],
+            s3OriginSource: {
+              s3BucketSource: emailBucket,
+              originAccessIdentity: newslettersOAI
+            }
           }
-        }
-      ],
-      errorConfigurations: [
-        {
-          errorCode: 404,
-          errorCachingMinTtl: 0,
-          responseCode: 404,
-          responsePagePath: '/index.html'
-        }
-      ]
-    })
+        ],
+        errorConfigurations: [
+          {
+            errorCode: 404,
+            errorCachingMinTtl: 0,
+            responseCode: 404,
+            responsePagePath: '/index.html'
+          }
+        ]
+      }
+    )
 
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
@@ -108,10 +132,15 @@ export class UserInterface extends Construct {
     const auth = this.node.tryGetContext('authConfig')
 
     if (auth !== undefined && auth.cognito.oauth !== undefined) {
-      exports.Auth.Cognito.loginWith = { oauth: { ...auth.cognito.oauth } }
+      exports.Auth.Cognito.loginWith = {
+        oauth: { ...auth.cognito.oauth }
+      }
     }
 
-    const awsExports = s3deploy.Source.jsonData('amplifyconfiguration.json', exports)
+    const awsExports = s3deploy.Source.jsonData(
+      'amplifyconfiguration.json',
+      exports
+    )
 
     const frontEndAsset = s3deploy.Source.asset(appPath, {
       bundling: {

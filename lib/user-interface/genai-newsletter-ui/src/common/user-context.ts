@@ -1,15 +1,15 @@
-import { createContext } from "react";
-import { UserData } from "./types";
+import { createContext } from 'react'
+import { UserData } from './types'
 
 export const userContextDefault: UserData = {
-    userId: "",
-    userGroups: [],
-    userFamilyName: "",
-    userGivenName: "",
-    setUserGroups: () => {},
-    setUserId: () => {},
-    setUserFamilyName: () => {},
-    setUserGivenName: () => {},
+  userId: '',
+  userGroups: [],
+  userFamilyName: '',
+  userGivenName: '',
+  setUserGroups: () => {},
+  setUserId: () => {},
+  setUserFamilyName: () => {},
+  setUserGivenName: () => {}
 }
 
-export const UserContext = createContext<UserData | null>(userContextDefault);
+export const UserContext = createContext<UserData | null>(userContextDefault)

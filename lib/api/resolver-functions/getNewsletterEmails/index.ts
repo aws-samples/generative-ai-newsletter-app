@@ -1,4 +1,8 @@
-import { type Context, util, type DynamoDBQueryRequest } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBQueryRequest
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
@@ -26,9 +30,17 @@ export const response = (ctx: Context): any => {
       const emailId = compoundSortKey.split('#')[1]
       let path = ''
       if (emailKey === undefined) {
-        const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(createdAt as string)
-        const year = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'YYYY')
-        const month = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'MM')
+        const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(
+          createdAt as string
+        )
+        const year = util.time.epochMilliSecondsToFormatted(
+          epochCreatedAt,
+          'YYYY'
+        )
+        const month = util.time.epochMilliSecondsToFormatted(
+          epochCreatedAt,
+          'MM'
+        )
         const day = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'DD')
         const emailId = compoundSortKey.split('#')[1]
         path = `/newsletter-content/${year}/${month}/${day}/${emailId}`

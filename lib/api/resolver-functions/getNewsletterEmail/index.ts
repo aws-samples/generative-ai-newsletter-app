@@ -1,4 +1,8 @@
-import { type Context, util, type DynamoDBGetItemRequest } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBGetItemRequest
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
@@ -24,7 +28,9 @@ export const response = (ctx: Context): any => {
       path = '/' + path
     }
   } else {
-    const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(createdAt as string)
+    const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(
+      createdAt as string
+    )
     const year = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'YYYY')
     const month = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'MM')
     const day = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'DD')

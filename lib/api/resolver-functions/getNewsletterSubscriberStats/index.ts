@@ -1,5 +1,9 @@
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { type Context, type DynamoDBQueryRequest, util } from '@aws-appsync/utils'
+import {
+  type Context,
+  type DynamoDBQueryRequest,
+  util
+} from '@aws-appsync/utils'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const { newsletterId } = ctx.args.input
@@ -16,7 +20,11 @@ export function response (ctx: Context): any {
   if (ctx?.error !== undefined) {
     util.error(ctx.error.message, ctx.error.type)
   }
-  if (ctx.result === undefined || ctx.result.items === undefined || ctx.result.items.length < 1) {
+  if (
+    ctx.result === undefined ||
+    ctx.result.items === undefined ||
+    ctx.result.items.length < 1
+  ) {
     return {
       subscriberCount: 0
     }

@@ -1,4 +1,8 @@
-import { type Context, util, type DynamoDBQueryRequest } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBQueryRequest
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 const newsSubscriptionTableTypeIndex = 'type-index'
 

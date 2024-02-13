@@ -1,12 +1,24 @@
-import { type Context, util, type DynamoDBQueryRequest, type DynamoDBBatchGetItemRequest, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBQueryRequest,
+  type DynamoDBBatchGetItemRequest,
+  type AppSyncIdentityCognito
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 const newsletterTableItemTypeGSI = 'newsletter-item-type-index'
 
-export function request (ctx: Context): DynamoDBQueryRequest | DynamoDBBatchGetItemRequest {
+export function request (
+  ctx: Context
+): DynamoDBQueryRequest | DynamoDBBatchGetItemRequest {
   const { nextToken, limit = 1000, newsletterTable } = ctx.args
   const { lookupType = 'DEFAULT' } = ctx.args.input
   const { newsletters } = ctx.prev.result
-  if (ctx.identity === undefined || ctx.identity === null || Object.keys(ctx.identity).includes('sub')) {
+  if (
+    ctx.identity === undefined ||
+    ctx.identity === null ||
+    Object.keys(ctx.identity).includes('sub')
+  ) {
     util.error('Error! No authorized identity found!')
   }
   const sub = (ctx.identity as AppSyncIdentityCognito).sub
@@ -16,7 +28,13 @@ export function request (ctx: Context): DynamoDBQueryRequest | DynamoDBBatchGetI
       operation: 'BatchGetItem',
       tables: {
         [newsletterTable]: {
-          keys: newsletters.map((newsletterId: { newsletterId: string, compoundSortKey: string }) => util.dynamodb.toMapValues({ newsletterId, compoundSortKey: 'newsletter' }))
+          keys: newsletters.map(
+            (newsletterId: { newsletterId: string, compoundSortKey: string }) =>
+              util.dynamodb.toMapValues({
+                newsletterId,
+                compoundSortKey: 'newsletter'
+              })
+          )
         }
       }
     }
@@ -67,7 +85,10 @@ export function request (ctx: Context): DynamoDBQueryRequest | DynamoDBBatchGetI
 
 export const response = (ctx: Context): any => {
   const { newsletterTable } = ctx.args
-  if (ctx.result.data !== undefined && ctx.result.data[newsletterTable] !== undefined) {
+  if (
+    ctx.result.data !== undefined &&
+    ctx.result.data[newsletterTable] !== undefined
+  ) {
     return {
       newsletters: ctx.result.data[newsletterTable],
       nextToken: ctx.result.nextToken

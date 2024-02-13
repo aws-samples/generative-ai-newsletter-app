@@ -1,4 +1,9 @@
-import { AuthorizationType, Definition, FieldLogLevel, GraphqlApi } from 'aws-cdk-lib/aws-appsync'
+import {
+  AuthorizationType,
+  Definition,
+  FieldLogLevel,
+  GraphqlApi
+} from 'aws-cdk-lib/aws-appsync'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Construct } from 'constructs'
 import path = require('path')
@@ -31,13 +36,19 @@ export class API extends Construct {
 
     const graphqlApi = new GraphqlApi(this, 'API', {
       name: Stack.of(this).stackName + 'GraphQLAPI',
-      definition: Definition.fromFile(path.join(__dirname, '../shared/api', 'schema.graphql')),
+      definition: Definition.fromFile(
+        path.join(__dirname, '../shared/api', 'schema.graphql')
+      ),
       authorizationConfig: {
         additionalAuthorizationModes: [
           {
             authorizationType: AuthorizationType.USER_POOL,
             userPoolConfig: {
-              userPool: UserPool.fromUserPoolId(this, 'AuthUserPool', props.userPoolId)
+              userPool: UserPool.fromUserPoolId(
+                this,
+                'AuthUserPool',
+                props.userPoolId
+              )
             }
           }
         ]

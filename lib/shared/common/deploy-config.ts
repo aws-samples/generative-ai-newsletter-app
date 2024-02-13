@@ -27,7 +27,6 @@ export interface DeployConfig {
         responseType: string
       }
     }
-
   }
 }
 

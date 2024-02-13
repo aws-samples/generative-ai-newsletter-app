@@ -1,5 +1,8 @@
 import { type ArticleSummaryType } from '@shared/api/API'
-import { type ArticleData, type MultiSizeFormattedResponse } from '@shared/prompts'
+import {
+  type ArticleData,
+  type MultiSizeFormattedResponse
+} from '@shared/prompts'
 import { type NewsletterStyle } from './newsletter-style'
 
 export enum SubscriberType {

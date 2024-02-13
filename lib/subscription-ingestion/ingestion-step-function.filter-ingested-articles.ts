@@ -1,7 +1,11 @@
 import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import middy from '@middy/core'
-import { DynamoDBClient, QueryCommand, type QueryCommandInput } from '@aws-sdk/client-dynamodb'
+import {
+  DynamoDBClient,
+  QueryCommand,
+  type QueryCommandInput
+} from '@aws-sdk/client-dynamodb'
 import { type FeedArticle } from '../shared/common/newsletter-ingestion'
 
 const SERVICE_NAME = 'filter-ingested-articles'
@@ -18,21 +22,33 @@ interface FilterIngestedArticlesInput {
   articles: FeedArticle[]
 }
 
-const lambdaHandler = async (event: FilterIngestedArticlesInput): Promise<FeedArticle[]> => {
-  logger.debug('Filtering ingested articles for subscription ID ' + event.subscriptionId)
+const lambdaHandler = async (
+  event: FilterIngestedArticlesInput
+): Promise<FeedArticle[]> => {
+  logger.debug(
+    'Filtering ingested articles for subscription ID ' + event.subscriptionId
+  )
   logger.debug('Unfiltered new article count = ' + event.articles.length)
   const existingArticles = await getExistingArticles(event.subscriptionId)
-  const filteredArticles = event.articles.filter(article => !existingArticles.includes(article.guid))
+  const filteredArticles = event.articles.filter(
+    (article) => !existingArticles.includes(article.guid)
+  )
   logger.debug('Filtered new article count = ' + filteredArticles.length)
-  logger.debug('Filtered new article IDs = ' + filteredArticles.map(article => article.guid).join(', '))
+  logger.debug(
+    'Filtered new article IDs = ' +
+      filteredArticles.map((article) => article.guid).join(', ')
+  )
   return filteredArticles
 }
 
-const getExistingArticles = async (subscriptionId: string): Promise<string[]> => {
+const getExistingArticles = async (
+  subscriptionId: string
+): Promise<string[]> => {
   logger.debug('Getting existing articles for subscription ' + subscriptionId)
   const input: QueryCommandInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
-    KeyConditionExpression: '#subscriptionId = :subscriptionId and begins_with(#type,:type)',
+    KeyConditionExpression:
+      '#subscriptionId = :subscriptionId and begins_with(#type,:type)',
     ExpressionAttributeValues: {
       ':subscriptionId': { S: subscriptionId },
       ':type': { S: 'article' }

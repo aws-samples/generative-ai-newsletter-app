@@ -2,7 +2,11 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
-import { DynamoDBClient, QueryCommand, type QueryCommandInput } from '@aws-sdk/client-dynamodb'
+import {
+  DynamoDBClient,
+  QueryCommand,
+  type QueryCommandInput
+} from '@aws-sdk/client-dynamodb'
 
 const SERVICE_NAME = 'get-subscriptions'
 
@@ -13,7 +17,8 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
 const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
-const NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX = process.env.NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX
+const NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX =
+  process.env.NEWS_SUBSCRIPTION_TABLE_TYPE_INDEX
 
 interface SubscriptionsData {
   subscriptions: string[]

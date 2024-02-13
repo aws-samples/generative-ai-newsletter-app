@@ -3,10 +3,22 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import { DynamoDBClient, PutItemCommand, type PutItemCommandInput } from '@aws-sdk/client-dynamodb'
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  type PutItemCommandInput
+} from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import { PinpointClient, UpdateEndpointCommand, type UpdateEndpointCommandInput } from '@aws-sdk/client-pinpoint'
-import { CognitoIdentityProviderClient, type ListUsersCommandInput, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider'
+import {
+  PinpointClient,
+  UpdateEndpointCommand,
+  type UpdateEndpointCommandInput
+} from '@aws-sdk/client-pinpoint'
+import {
+  CognitoIdentityProviderClient,
+  type ListUsersCommandInput,
+  ListUsersCommand
+} from '@aws-sdk/client-cognito-identity-provider'
 import { SubscriberType } from '../shared/common/newsletter-generator'
 
 const SERVICE_NAME = 'user-subscriber'
@@ -21,7 +33,9 @@ const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID
 
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const pinpoint = tracer.captureAWSv3Client(new PinpointClient())
-const cognitoIdp = tracer.captureAWSv3Client(new CognitoIdentityProviderClient())
+const cognitoIdp = tracer.captureAWSv3Client(
+  new CognitoIdentityProviderClient()
+)
 
 interface UserSubscriberInput {
   newsletterId: string
@@ -41,7 +55,9 @@ interface ExternalUserSubscriberInput extends UserSubscriberInput {
 
 // TODO: Try/Catch with Rollback if failed to prevent bad data
 
-const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSubscriberInput): Promise<boolean> => {
+const lambdaHandler = async (
+  event: CognitoUserSubscriberInput | ExternalUserSubscriberInput
+): Promise<boolean> => {
   logger.debug('Starting User Subscriber', { event })
   if (event.cognitoUserId !== undefined) {
     const userEmail = await getCognitoUserEmail(event.cognitoUserId)
@@ -50,13 +66,20 @@ const lambdaHandler = async (event: CognitoUserSubscriberInput | ExternalUserSub
     await addPinpointEndpoint(event.cognitoUserId, userEmail, subscriberType)
   } else if (event.userEmail !== undefined) {
     const subscriberType = SubscriberType.EXTERNAL_SUBSCRIBER
-    const externalUserId = await subscribeExternalUser(event.newsletterId, event.userEmail, event.externalUserId)
+    const externalUserId = await subscribeExternalUser(
+      event.newsletterId,
+      event.userEmail,
+      event.externalUserId
+    )
     await addPinpointEndpoint(externalUserId, event.userEmail, subscriberType)
   }
   return true
 }
 
-const subscribeCognitoUser = async (newsletterId: string, cognitoUserId: string): Promise<void> => {
+const subscribeCognitoUser = async (
+  newsletterId: string,
+  cognitoUserId: string
+): Promise<void> => {
   logger.debug('Subscribing Cognito User', { newsletterId, cognitoUserId })
   try {
     const input: PutItemCommandInput = {
@@ -77,8 +100,15 @@ const subscribeCognitoUser = async (newsletterId: string, cognitoUserId: string)
   }
 }
 
-const subscribeExternalUser = async (newsletterId: string, userEmail: string, externalUserId: string | undefined): Promise<string> => {
-  logger.debug('Subscribing external user to newsletter', { newsletterId, externalUserId })
+const subscribeExternalUser = async (
+  newsletterId: string,
+  userEmail: string,
+  externalUserId: string | undefined
+): Promise<string> => {
+  logger.debug('Subscribing external user to newsletter', {
+    newsletterId,
+    externalUserId
+  })
   if (externalUserId === undefined) {
     externalUserId = uuidv4()
     logger.debug('Generated external user id', { externalUserId })
@@ -118,7 +148,10 @@ const getCognitoUserEmail = async (cognitoUserId: string): Promise<string> => {
     tracer.addErrorAsMetadata(new Error('Error getting Cognito User Email'))
     throw new Error('Error getting Cognito User Email')
   }
-  if (response.Users.length === 1 && response.Users[0].Attributes !== undefined) {
+  if (
+    response.Users.length === 1 &&
+    response.Users[0].Attributes !== undefined
+  ) {
     for (const attribute of response.Users[0].Attributes) {
       if (attribute.Name === 'email' && attribute.Value !== undefined) {
         return attribute.Value
@@ -130,7 +163,11 @@ const getCognitoUserEmail = async (cognitoUserId: string): Promise<string> => {
   throw new Error('Error getting Cognito User Email')
 }
 
-const addPinpointEndpoint = async (userId: string, userEmail: string, subscriberType: SubscriberType): Promise<void> => {
+const addPinpointEndpoint = async (
+  userId: string,
+  userEmail: string,
+  subscriberType: SubscriberType
+): Promise<void> => {
   console.debug('Adding Pinpoint Endpoint', { userId, userEmail })
   const input: UpdateEndpointCommandInput = {
     ApplicationId: PINPOINT_APP_ID,

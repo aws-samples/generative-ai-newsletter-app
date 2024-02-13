@@ -5,7 +5,9 @@ const program = new Command()
 
 program
   .name('npm run deploy-config')
-  .description('CLI utility for creating, viewing, and updating you GenAI Newsletter deployment configuration.')
+  .description(
+    'CLI utility for creating, viewing, and updating you GenAI Newsletter deployment configuration.'
+  )
   .version(CONFIG_VERSION)
   .configureOutput({
     writeOut: (str) => {

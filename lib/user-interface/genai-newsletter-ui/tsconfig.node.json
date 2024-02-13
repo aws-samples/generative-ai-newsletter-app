@@ -5,9 +5,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "types": ["ts-node","vite/client"],
+    "types": ["ts-node", "vite/client"],
     "paths": {
-      "@shared/*" :["../../shared/*"]
+      "@shared/*": ["../../shared/*"]
     }
   },
   "include": ["vite.config.ts", "../../shared/"],

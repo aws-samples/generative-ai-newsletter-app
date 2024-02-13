@@ -2,9 +2,23 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
-import { DynamoDBClient, type GetItemCommandInput, GetItemCommand, type UpdateItemCommandInput, UpdateItemCommand } from '@aws-sdk/client-dynamodb'
-import { CreateCampaignCommand, PinpointClient, type CreateCampaignCommandInput } from '@aws-sdk/client-pinpoint'
-import { GetObjectCommand, type GetObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
+import {
+  DynamoDBClient,
+  type GetItemCommandInput,
+  GetItemCommand,
+  type UpdateItemCommandInput,
+  UpdateItemCommand
+} from '@aws-sdk/client-dynamodb'
+import {
+  CreateCampaignCommand,
+  PinpointClient,
+  type CreateCampaignCommandInput
+} from '@aws-sdk/client-pinpoint'
+import {
+  GetObjectCommand,
+  type GetObjectCommandInput,
+  S3Client
+} from '@aws-sdk/client-s3'
 
 const SERVICE_NAME = 'newsletter-campaign-creator'
 
@@ -18,7 +32,8 @@ const pinpoint = tracer.captureAWSv3Client(new PinpointClient())
 
 const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const PINPOINT_APP_ID = process.env.PINPOINT_APP_ID
-const PINPOINT_CAMPAIGN_HOOK_FUNCTION = process.env.PINPOINT_CAMPAIGN_HOOK_FUNCTION
+const PINPOINT_CAMPAIGN_HOOK_FUNCTION =
+  process.env.PINPOINT_CAMPAIGN_HOOK_FUNCTION
 const PINPOINT_BASE_SEGMENT_ID = process.env.PINPOINT_BASE_SEGMENT_ID
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 
@@ -28,16 +43,24 @@ interface NewsletterCampaignCreatorInput {
   emailKey?: string
 }
 
-const lambdaHandler = async (event: NewsletterCampaignCreatorInput): Promise<void> => {
+const lambdaHandler = async (
+  event: NewsletterCampaignCreatorInput
+): Promise<void> => {
   logger.debug('Starting newsletter campaign creator', { event })
   const { newsletterId, emailId, emailKey } = event
   const { title } = await getNewsletterDetails(newsletterId)
-  const { html, text } = emailKey !== undefined ? await getEmailBodiesFromS3(emailKey) : await getEmailBodiesFromS3(await getEmailKey(newsletterId, emailId))
+  const { html, text } =
+    emailKey !== undefined
+      ? await getEmailBodiesFromS3(emailKey)
+      : await getEmailBodiesFromS3(await getEmailKey(newsletterId, emailId))
   const campaignId = await createEmailCampaign(newsletterId, html, text, title)
   await saveCampaignId(newsletterId, emailId, campaignId)
 }
 
-const getEmailKey = async (newsletterId: string, emailId: string): Promise<string> => {
+const getEmailKey = async (
+  newsletterId: string,
+  emailId: string
+): Promise<string> => {
   logger.debug('Getting email details')
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -57,7 +80,9 @@ const getEmailKey = async (newsletterId: string, emailId: string): Promise<strin
   }
 }
 
-const getNewsletterDetails = async (newsletterId: string): Promise<{ title: string }> => {
+const getNewsletterDetails = async (
+  newsletterId: string
+): Promise<{ title: string }> => {
   logger.debug('Getting Newsletter Details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
@@ -77,7 +102,9 @@ const getNewsletterDetails = async (newsletterId: string): Promise<{ title: stri
   }
 }
 
-const getEmailBodiesFromS3 = async (emailKey: string): Promise<{ html: string, text: string }> => {
+const getEmailBodiesFromS3 = async (
+  emailKey: string
+): Promise<{ html: string, text: string }> => {
   logger.debug('Getting email bodies from S3', { emailKey })
   try {
     const htmlInput: GetObjectCommandInput = {
@@ -110,7 +137,12 @@ const getEmailBodiesFromS3 = async (emailKey: string): Promise<{ html: string, t
   }
 }
 
-const createEmailCampaign = async (emailId: string, html: string, text: string, newsletterTitle: string): Promise<string> => {
+const createEmailCampaign = async (
+  emailId: string,
+  html: string,
+  text: string,
+  newsletterTitle: string
+): Promise<string> => {
   logger.debug('Creating email campaign', { emailId })
   const input: CreateCampaignCommandInput = {
     ApplicationId: PINPOINT_APP_ID,
@@ -148,7 +180,11 @@ const createEmailCampaign = async (emailId: string, html: string, text: string, 
   }
 }
 
-const saveCampaignId = async (newsletterId: string, emailId: string, campaignId: string): Promise<void> => {
+const saveCampaignId = async (
+  newsletterId: string,
+  emailId: string,
+  campaignId: string
+): Promise<void> => {
   logger.debug('Saving campaign ID', { newsletterId, emailId, campaignId })
   const input: UpdateItemCommandInput = {
     TableName: NEWSLETTER_TABLE,

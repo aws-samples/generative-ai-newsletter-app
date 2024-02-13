@@ -3,9 +3,15 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { S3Client } from '@aws-sdk/client-s3'
 import {
-  DynamoDBClient, PutItemCommand, type PutItemCommandInput
+  DynamoDBClient,
+  PutItemCommand,
+  type PutItemCommandInput
 } from '@aws-sdk/client-dynamodb'
-import { BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+  type InvokeModelCommandInput
+} from '@aws-sdk/client-bedrock-runtime'
 import { Upload } from '@aws-sdk/lib-storage'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import axios from 'axios'
@@ -37,7 +43,6 @@ interface ArticleIngestorInput {
     guid?: string
     title: string
   }
-
 }
 
 const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
@@ -50,7 +55,9 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
   const { subscriptionId, guid, link, title } = event.input
   const summarizationPrompt = event.summarizationPrompt
   const subsegment = tracer.getSegment()?.addNewSubsegment('### ingestArticle')
-  if (subsegment !== undefined) { tracer.setSegment(subsegment) }
+  if (subsegment !== undefined) {
+    tracer.setSegment(subsegment)
+  }
   try {
     if (link === undefined) {
       throw new Error('No url to crawl')
@@ -70,14 +77,26 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
         logger.error('Failed to load site content for ', link)
       }
       try {
-        const response = await generateArticleSummarization(articleText, summarizationPrompt)
+        const response = await generateArticleSummarization(
+          articleText,
+          summarizationPrompt
+        )
         if (response !== undefined && response !== null) {
-          await saveArticleData(response, subscriptionId, articleId, link, title, summarizationPrompt)
+          await saveArticleData(
+            response,
+            subscriptionId,
+            articleId,
+            link,
+            title,
+            summarizationPrompt
+          )
         } else {
           throw new Error('Response is undefined')
         }
       } catch (error) {
-        logger.error('Failed to generate article summary for ' + link, { error })
+        logger.error('Failed to generate article summary for ' + link, {
+          error
+        })
         tracer.addErrorAsMetadata(error as Error)
       }
     } else {
@@ -116,7 +135,11 @@ const getSiteContent = async (url: string): Promise<cheerio.Root> => {
   return $
 }
 
-const storeSiteContent = async (text: string, subscriptionId: string, articleId: string): Promise<void> => {
+const storeSiteContent = async (
+  text: string,
+  subscriptionId: string,
+  articleId: string
+): Promise<void> => {
   metrics.addMetric('TextsStored', MetricUnits.Count, 1)
 
   const body = Buffer.from(text)
@@ -142,8 +165,14 @@ const storeSiteContent = async (text: string, subscriptionId: string, articleId:
   }
 }
 
-const generateArticleSummarization = async (articleBody: string, summarizationPrompt?: string): Promise<MultiSizeFormattedResponse> => {
-  const summaryBuilder = new ArticleSummaryBuilder(articleBody, summarizationPrompt ?? null)
+const generateArticleSummarization = async (
+  articleBody: string,
+  summarizationPrompt?: string
+): Promise<MultiSizeFormattedResponse> => {
+  const summaryBuilder = new ArticleSummaryBuilder(
+    articleBody,
+    summarizationPrompt ?? null
+  )
   const prompt = summaryBuilder.getCompiledPrompt()
   console.debug(prompt)
   const bedrockInput: InvokeModelCommandInput = {
@@ -162,13 +191,22 @@ const generateArticleSummarization = async (articleBody: string, summarizationPr
   logger.debug('GenAI Output:\n' + responseData)
   const processedResponse = summaryBuilder.getProcessedResponse(responseData)
   if (processedResponse.error.response !== null) {
-    logger.error('Error in processed response from LLM', { processedResponse })
+    logger.error('Error in processed response from LLM', {
+      processedResponse
+    })
     throw new Error('Error in processed response from LLM')
   }
   return processedResponse
 }
 
-const saveArticleData = async (processedResponse: MultiSizeFormattedResponse, subscriptionId: string, articleId: string, url: string, title: string, summarizationPrompt?: string): Promise<void> => {
+const saveArticleData = async (
+  processedResponse: MultiSizeFormattedResponse,
+  subscriptionId: string,
+  articleId: string,
+  url: string,
+  title: string,
+  summarizationPrompt?: string
+): Promise<void> => {
   tracer.putMetadata('subscriptionId', subscriptionId, 'articleInfo')
   tracer.putMetadata('articleId', articleId, 'articleInfo')
   tracer.putMetadata('url', url, 'articleInfo')
@@ -177,20 +215,23 @@ const saveArticleData = async (processedResponse: MultiSizeFormattedResponse, su
   const { keywords, shortSummary, longSummary } = processedResponse
   const input: PutItemCommandInput = {
     TableName: NEWS_SUBSCRIPTION_TABLE,
-    Item: marshall({
-      subscriptionId,
-      articleId,
-      compoundSortKey: `article#${articleId}`,
-      createdAt: new Date().toISOString(),
-      url,
-      title,
-      summarizationPrompt,
-      keywords: keywords.response,
-      shortSummary: shortSummary.response,
-      longSummary: longSummary.response
-    }, {
-      removeUndefinedValues: true
-    })
+    Item: marshall(
+      {
+        subscriptionId,
+        articleId,
+        compoundSortKey: `article#${articleId}`,
+        createdAt: new Date().toISOString(),
+        url,
+        title,
+        summarizationPrompt,
+        keywords: keywords.response,
+        shortSummary: shortSummary.response,
+        longSummary: longSummary.response
+      },
+      {
+        removeUndefinedValues: true
+      }
+    )
   }
   const command = new PutItemCommand(input)
   const response = await dynamodbClient.send(command)

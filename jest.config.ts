@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/semi */
 module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
@@ -6,4 +5,4 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
   }
-};
+}

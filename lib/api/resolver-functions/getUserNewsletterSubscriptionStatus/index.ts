@@ -1,9 +1,18 @@
-import { type Context, util, type DynamoDBGetItemRequest, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBGetItemRequest,
+  type AppSyncIdentityCognito
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
   const { newsletterId } = ctx.args.input
-  if (ctx.identity === undefined || ctx.identity === null || Object.keys(ctx.identity).includes('sub')) {
+  if (
+    ctx.identity === undefined ||
+    ctx.identity === null ||
+    Object.keys(ctx.identity).includes('sub')
+  ) {
     util.error('No authorized identity found!')
   }
   const sub = (ctx.identity as AppSyncIdentityCognito).sub

@@ -1,6 +1,13 @@
 import * as cdk from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
+import {
+  ApplicationLogLevel,
+  Architecture,
+  LambdaInsightsVersion,
+  LogFormat,
+  Runtime,
+  Tracing
+} from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
@@ -57,21 +64,32 @@ export class NewsSubscriptionIngestion extends Construct {
       autoDeleteObjects: true
     })
 
-    const ingestionStepFunction = new NewsIngestionStepFunction(this, 'IngestionStepFunction', {
-      description: 'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
-      newsSubscriptionTable,
-      newsDataIngestBucket
-    })
+    const ingestionStepFunction = new NewsIngestionStepFunction(
+      this,
+      'IngestionStepFunction',
+      {
+        description:
+          'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
+        newsSubscriptionTable,
+        newsDataIngestBucket
+      }
+    )
 
-    const subscriptionPollStepFunction = new SubscriptionPollStepFunction(this, 'SubscriptionPollStepFunction', {
-      description: 'Step Function Responsible for getting enabled subscriptions and starting ingestion for each one.',
-      newsIngestionStateMachine: ingestionStepFunction.stateMachine,
-      newsSubscriptionTable,
-      newsSubscriptionTableTypeIndex
-    })
+    const subscriptionPollStepFunction = new SubscriptionPollStepFunction(
+      this,
+      'SubscriptionPollStepFunction',
+      {
+        description:
+          'Step Function Responsible for getting enabled subscriptions and starting ingestion for each one.',
+        newsIngestionStateMachine: ingestionStepFunction.stateMachine,
+        newsSubscriptionTable,
+        newsSubscriptionTableTypeIndex
+      }
+    )
 
     const feedSubscriberFunction = new NodejsFunction(this, 'feed-subscriber', {
-      description: 'Function responsible for subscribing to a specified RSS/ATOM feed',
+      description:
+        'Function responsible for subscribing to a specified RSS/ATOM feed',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -83,19 +101,25 @@ export class NewsSubscriptionIngestion extends Construct {
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         NEWS_SUBSCRIPTION_TABLE: newsSubscriptionTable.tableName,
-        INGESTION_STEP_FUNCTION: ingestionStepFunction.stateMachine.stateMachineArn
+        INGESTION_STEP_FUNCTION:
+          ingestionStepFunction.stateMachine.stateMachineArn
       },
       timeout: cdk.Duration.minutes(1)
     })
 
     newsSubscriptionTable.grantWriteData(feedSubscriberFunction)
-    ingestionStepFunction.stateMachine.grantStartExecution(subscriptionPollStepFunction.stateMachine)
-    ingestionStepFunction.stateMachine.grantStartExecution(feedSubscriberFunction)
+    ingestionStepFunction.stateMachine.grantStartExecution(
+      subscriptionPollStepFunction.stateMachine
+    )
+    ingestionStepFunction.stateMachine.grantStartExecution(
+      feedSubscriberFunction
+    )
 
     this.newsSubscriptionTable = newsSubscriptionTable
     this.dataIngestBucket = newsDataIngestBucket
     this.feedSubscriberFunction = feedSubscriberFunction
     this.ingestionStepFunctionStateMachine = ingestionStepFunction.stateMachine
-    this.subscriptionPollStepFunctionStateMachine = subscriptionPollStepFunction.stateMachine
+    this.subscriptionPollStepFunctionStateMachine =
+      subscriptionPollStepFunction.stateMachine
   }
 }

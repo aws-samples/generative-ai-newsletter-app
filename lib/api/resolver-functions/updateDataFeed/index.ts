@@ -1,16 +1,23 @@
-import { type Context, util, type DynamoDBUpdateItemRequest } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type DynamoDBUpdateItemRequest
+} from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBUpdateItemRequest {
   const { subscriptionId } = ctx.args
   const { ...rest } = ctx.args.input
-  const values = Object.entries(rest as Record<string, unknown>).reduce((obj: any, [key, value]): any => {
-    if (value !== undefined && value !== null && value !== '') {
-      obj[key] = value
-      return obj
-    }
-    return null
-  }, {})
+  const values = Object.entries(rest as Record<string, unknown>).reduce(
+    (obj: any, [key, value]): any => {
+      if (value !== undefined && value !== null && value !== '') {
+        obj[key] = value
+        return obj
+      }
+      return null
+    },
+    {}
+  )
 
   return ddb.update({
     key: {

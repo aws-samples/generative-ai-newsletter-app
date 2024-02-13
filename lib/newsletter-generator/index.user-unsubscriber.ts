@@ -2,7 +2,13 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
-import { DeleteItemCommand, type DeleteItemCommandInput, DynamoDBClient, type QueryCommandInput, QueryCommand } from '@aws-sdk/client-dynamodb'
+import {
+  DeleteItemCommand,
+  type DeleteItemCommandInput,
+  DynamoDBClient,
+  type QueryCommandInput,
+  QueryCommand
+} from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
 
 const SERVICE_NAME = 'user-unsubscriber'
@@ -33,7 +39,9 @@ interface ExternalUserUnsubscriberInput extends UserUnsubscriberInput {
 
 // TODO: Try/Catch with Rollback if failed to prevent bad data
 
-const lambdaHandler = async (event: CognitoUserUnsubscriberInput | ExternalUserUnsubscriberInput): Promise<boolean> => {
+const lambdaHandler = async (
+  event: CognitoUserUnsubscriberInput | ExternalUserUnsubscriberInput
+): Promise<boolean> => {
   logger.debug('Starting User Unsubscriber', { event })
   if (event.cognitoUserId !== undefined) {
     await unsubscribeCognitoUser(event.newsletterId, event.cognitoUserId)
@@ -43,7 +51,10 @@ const lambdaHandler = async (event: CognitoUserUnsubscriberInput | ExternalUserU
   return true
 }
 
-const unsubscribeCognitoUser = async (newsletterId: string, cognitoUserId: string): Promise<void> => {
+const unsubscribeCognitoUser = async (
+  newsletterId: string,
+  cognitoUserId: string
+): Promise<void> => {
   logger.debug('Unsubscribing Cognito User', { newsletterId, cognitoUserId })
   try {
     const input: DeleteItemCommandInput = {
@@ -64,10 +75,19 @@ const unsubscribeCognitoUser = async (newsletterId: string, cognitoUserId: strin
   }
 }
 
-const unsubscribeExternalUser = async (newsletterId: string, userEmail: string): Promise<void> => {
-  logger.debug('Unsubscribing external user to newsletter', { newsletterId, userEmail })
+const unsubscribeExternalUser = async (
+  newsletterId: string,
+  userEmail: string
+): Promise<void> => {
+  logger.debug('Unsubscribing external user to newsletter', {
+    newsletterId,
+    userEmail
+  })
   try {
-    const externalUserId = await getExternalSubscriberUser(newsletterId, userEmail)
+    const externalUserId = await getExternalSubscriberUser(
+      newsletterId,
+      userEmail
+    )
     if (externalUserId === undefined) {
       const input: DeleteItemCommandInput = {
         TableName: NEWSLETTER_TABLE,
@@ -82,18 +102,27 @@ const unsubscribeExternalUser = async (newsletterId: string, userEmail: string):
       metrics.addMetric('ExternalUserUnsubscribed', MetricUnits.Count, 1)
     }
   } catch (error) {
-    logger.error('Error unsubscribing external user from newsletter', { error })
+    logger.error('Error unsubscribing external user from newsletter', {
+      error
+    })
     tracer.addErrorAsMetadata(error as Error)
     throw new Error('Error unsubscribing external user from newsletter')
   }
 }
 
-const getExternalSubscriberUser = async (newsletterId: string, userEmail: string): Promise<string | undefined> => {
-  logger.debug('Getting external subscriber user', { newsletterId, userEmail })
+const getExternalSubscriberUser = async (
+  newsletterId: string,
+  userEmail: string
+): Promise<string | undefined> => {
+  logger.debug('Getting external subscriber user', {
+    newsletterId,
+    userEmail
+  })
   try {
     const input: QueryCommandInput = {
       TableName: NEWSLETTER_TABLE,
-      KeyConditionExpression: '#newsletterId = :newsletterId AND begins_with(#sk, :sk)',
+      KeyConditionExpression:
+        '#newsletterId = :newsletterId AND begins_with(#sk, :sk)',
       FilterExpression: '#userEmail = :userEmail',
       ExpressionAttributeNames: {
         '#newsletterId': 'newsletterId',
@@ -108,7 +137,10 @@ const getExternalSubscriberUser = async (newsletterId: string, userEmail: string
     }
     const command = new QueryCommand(input)
     const response = await dynamodb.send(command)
-    if (response.Items?.length === 1 && response.Items[0].compoundSortKey.S !== undefined) {
+    if (
+      response.Items?.length === 1 &&
+      response.Items[0].compoundSortKey.S !== undefined
+    ) {
       return response.Items[0].compoundSortKey.S.split('#')[1]
     }
   } catch (error) {

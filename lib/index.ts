@@ -1,5 +1,8 @@
 import { Stack, type StackProps } from 'aws-cdk-lib'
-import { NewsSubscriptionIngestion, newsSubscriptionTableLSI } from './subscription-ingestion'
+import {
+  NewsSubscriptionIngestion,
+  newsSubscriptionTableLSI
+} from './subscription-ingestion'
 import { NewsletterGenerator } from './newsletter-generator'
 import { Authentication } from './authentication'
 import { API } from './api'
@@ -24,13 +27,20 @@ export class GenAINewsletter extends Stack {
 
     const authentication = new Authentication(this, 'AuthenticationStack')
 
-    const newsSubscriptionIngestion = new NewsSubscriptionIngestion(this, 'NewsletterIngestionStack')
+    const newsSubscriptionIngestion = new NewsSubscriptionIngestion(
+      this,
+      'NewsletterIngestionStack'
+    )
 
-    const newsletterGenerator = new NewsletterGenerator(this, 'NewsletterGenerator', {
-      newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
-      newsSubscriptionTableLSI,
-      userPoolId: authentication.userPoolId
-    })
+    const newsletterGenerator = new NewsletterGenerator(
+      this,
+      'NewsletterGenerator',
+      {
+        newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
+        newsSubscriptionTableLSI,
+        userPoolId: authentication.userPoolId
+      }
+    )
 
     const api = new API(this, 'API', {
       userPoolId: authentication.userPoolId,
@@ -41,7 +51,8 @@ export class GenAINewsletter extends Stack {
         createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
         userUnsubscriberFunction: newsletterGenerator.userUnsubscriberFunction,
-        feedSubscriberFunction: newsSubscriptionIngestion.feedSubscriberFunction,
+        feedSubscriberFunction:
+          newsSubscriptionIngestion.feedSubscriberFunction,
         getNewsletterFunction: newsletterGenerator.getNewsletterFunction
       }
     })

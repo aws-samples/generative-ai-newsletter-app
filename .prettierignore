@@ -1,0 +1,10 @@
+dist/**/*
+build/**/*
+.eslintignore
+.eslintrc.json
+.gitignore
+.gitlab-ci.yml
+.gitlab/*
+.npmignore
+lib/shared/api/graphql/*.ts
+lib/shared/api/API.ts

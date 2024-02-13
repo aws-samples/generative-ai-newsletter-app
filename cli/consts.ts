@@ -17,7 +17,15 @@ export const bigHeader = (text: string): string => {
   const blankLine = '#' + ' '.repeat(maxLineLength - 2) + '#'
   const generateSpacedLine = (subtext: string, legnth: number): string => {
     return (
-      '#' + ' '.repeat(((legnth - subtext.length) / 2) - ((legnth - subtext.length) % 2)) + subtext + ' '.repeat(((legnth - subtext.length) / 2) - ((legnth - subtext.length) % 2)) + '#'
+      '#' +
+      ' '.repeat(
+        (legnth - subtext.length) / 2 - ((legnth - subtext.length) % 2)
+      ) +
+      subtext +
+      ' '.repeat(
+        (legnth - subtext.length) / 2 - ((legnth - subtext.length) % 2)
+      ) +
+      '#'
     )
   }
   lines.push(endLine)
@@ -44,7 +52,10 @@ export const bigHeader = (text: string): string => {
  * @param text
  * @param formatting
  */
-export const formatText = (text: string, formatting: FormattingOptions): string => {
+export const formatText = (
+  text: string,
+  formatting: FormattingOptions
+): string => {
   let outputText = ''
   const styles: ansi.Style[] = []
   if (formatting.bold === true) {

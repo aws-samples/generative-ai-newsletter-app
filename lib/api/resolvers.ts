@@ -1,4 +1,11 @@
-import { type GraphqlApi, Code, AppsyncFunction, FunctionRuntime, Resolver, LambdaDataSource } from 'aws-cdk-lib/aws-appsync'
+import {
+  type GraphqlApi,
+  Code,
+  AppsyncFunction,
+  FunctionRuntime,
+  Resolver,
+  LambdaDataSource
+} from 'aws-cdk-lib/aws-appsync'
 import { Construct } from 'constructs'
 import path = require('path')
 import { type ApiProps } from '.'
@@ -14,12 +21,20 @@ export class ApiResolvers extends Construct {
     super(scope, id)
     const { api, newsSubscriptionTable, newsletterTable } = props
 
-    const newsletterTableSource = api.addDynamoDbDataSource('NewsletterTableSource', newsletterTable)
+    const newsletterTableSource = api.addDynamoDbDataSource(
+      'NewsletterTableSource',
+      newsletterTable
+    )
     newsletterTable.grantReadData(newsletterTableSource)
-    const newsSubscriptionTableSource = api.addDynamoDbDataSource('NewsSubscriptionTableSource', newsSubscriptionTable)
+    const newsSubscriptionTableSource = api.addDynamoDbDataSource(
+      'NewsSubscriptionTableSource',
+      newsSubscriptionTable
+    )
 
     const resolversPath = path.join(__dirname, 'resolver-functions')
-    const getResolverBundlingOptions = (resolverName: string): BundlingOptions => {
+    const getResolverBundlingOptions = (
+      resolverName: string
+    ): BundlingOptions => {
       return {
         outputType: BundlingOutput.SINGLE_FILE,
         command: [
@@ -32,7 +47,9 @@ export class ApiResolvers extends Construct {
             `mv -f ${resolversPath}/${resolverName}/index.js /asset-output/`
           ].join(' && ')
         ],
-        image: DockerImage.fromRegistry('public.ecr.aws/sam/build-nodejs20.x:latest'),
+        image: DockerImage.fromRegistry(
+          'public.ecr.aws/sam/build-nodejs20.x:latest'
+        ),
         local: {
           tryBundle (outputDir: string) {
             try {
@@ -42,9 +59,18 @@ export class ApiResolvers extends Construct {
                   ...process.env
                 }
               }
-              execSync(`npm --silent --prefix "${resolversPath}" install`, options)
-              execSync(`npm --silent --prefix "${resolversPath}" run build -- --outdir=./${resolverName}/ ./${resolverName}/index.ts`, options)
-              execSync(`mv -f ${resolversPath}/${resolverName}/index.js ${outputDir}`, options)
+              execSync(
+                `npm --silent --prefix "${resolversPath}" install`,
+                options
+              )
+              execSync(
+                `npm --silent --prefix "${resolversPath}" run build -- --outdir=./${resolverName}/ ./${resolverName}/index.ts`,
+                options
+              )
+              execSync(
+                `mv -f ${resolversPath}/${resolverName}/index.js ${outputDir}`,
+                options
+              )
             } catch (e) {
               console.error(e)
               return false
@@ -55,13 +81,19 @@ export class ApiResolvers extends Construct {
       }
     }
 
-    const getNewslettersResolverFunction = new AppsyncFunction(this, 'GetNewslettersResolverFunction', {
-      name: 'getNewsletters',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletters') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getNewslettersResolverFunction = new AppsyncFunction(
+      this,
+      'GetNewslettersResolverFunction',
+      {
+        name: 'getNewsletters',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getNewsletters')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetNewslettersResolver', {
       api,
@@ -80,13 +112,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getNewslettersResolverFunction]
     })
 
-    const getNewsletterEmailsResolverFunction = new AppsyncFunction(this, 'GetNewsletterEmailsResolverFunction', {
-      name: 'getNewsletterEmails',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterEmails') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getNewsletterEmailsResolverFunction = new AppsyncFunction(
+      this,
+      'GetNewsletterEmailsResolverFunction',
+      {
+        name: 'getNewsletterEmails',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getNewsletterEmails')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetNewsletterEmailsResolver', {
       api,
@@ -105,13 +143,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getNewsletterEmailsResolverFunction]
     })
 
-    const getNewsletterEmailResolverFunction = new AppsyncFunction(this, 'GetNewsletterEmailResolverFunction', {
-      name: 'getNewsletterEmail',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterEmail') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getNewsletterEmailResolverFunction = new AppsyncFunction(
+      this,
+      'GetNewsletterEmailResolverFunction',
+      {
+        name: 'getNewsletterEmail',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getNewsletterEmail')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetNewsletterEmailResolver', {
       api,
@@ -129,13 +173,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getNewsletterEmailResolverFunction]
     })
 
-    const getNewsletterLambdaSource = new LambdaDataSource(this, 'GetNewsletterLambdaSource', {
-      api,
-      lambdaFunction: props.functions.getNewsletterFunction,
-      name: 'getNewsletterLambdaSource'
-    })
+    const getNewsletterLambdaSource = new LambdaDataSource(
+      this,
+      'GetNewsletterLambdaSource',
+      {
+        api,
+        lambdaFunction: props.functions.getNewsletterFunction,
+        name: 'getNewsletterLambdaSource'
+      }
+    )
 
-    props.functions.getNewsletterFunction.grantInvoke(getNewsletterLambdaSource.grantPrincipal)
+    props.functions.getNewsletterFunction.grantInvoke(
+      getNewsletterLambdaSource.grantPrincipal
+    )
 
     new Resolver(this, 'GetNewsletterResolver', {
       api,
@@ -160,13 +210,19 @@ export class ApiResolvers extends Construct {
       `)
     })
 
-    const updateNewsletterResolverFunction = new AppsyncFunction(this, 'UpdateNewsletterResolverFunction', {
-      name: 'updateNewsletter',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('updateNewsletter') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const updateNewsletterResolverFunction = new AppsyncFunction(
+      this,
+      'UpdateNewsletterResolverFunction',
+      {
+        name: 'updateNewsletter',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('updateNewsletter')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'UpdateNewsletterResolver', {
       api,
@@ -187,13 +243,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [updateNewsletterResolverFunction]
     })
 
-    const getDataFeedSubscriptionsResolverFunction = new AppsyncFunction(this, 'GetDataFeedSubscriptionsResolverFunction', {
-      name: 'getDataFeedSubscriptions',
-      api,
-      dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedSubscriptions') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getDataFeedSubscriptionsResolverFunction = new AppsyncFunction(
+      this,
+      'GetDataFeedSubscriptionsResolverFunction',
+      {
+        name: 'getDataFeedSubscriptions',
+        api,
+        dataSource: newsSubscriptionTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getDataFeedSubscriptions')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetDataFeedSubscriptionsResolver', {
       api,
@@ -212,13 +274,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getDataFeedSubscriptionsResolverFunction]
     })
 
-    const getDataFeedSubscriptionResolverFunction = new AppsyncFunction(this, 'GetDataFeedSubscriptionResolverFunction', {
-      name: 'getDataFeedSubscription',
-      api,
-      dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedSubscription') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getDataFeedSubscriptionResolverFunction = new AppsyncFunction(
+      this,
+      'GetDataFeedSubscriptionResolverFunction',
+      {
+        name: 'getDataFeedSubscription',
+        api,
+        dataSource: newsSubscriptionTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getDataFeedSubscription')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetDataFeedSubscriptionResolver', {
       api,
@@ -237,13 +305,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getDataFeedSubscriptionResolverFunction]
     })
 
-    const updateDataFeedResolverFunction = new AppsyncFunction(this, 'UpdateDataFeedResolverFunction', {
-      name: 'updateDataFeed',
-      api,
-      dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('updateDataFeed') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const updateDataFeedResolverFunction = new AppsyncFunction(
+      this,
+      'UpdateDataFeedResolverFunction',
+      {
+        name: 'updateDataFeed',
+        api,
+        dataSource: newsSubscriptionTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('updateDataFeed')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     // TODO: Rename this.... spelling....
     new Resolver(this, 'UpdateDataFeedResolver', {
@@ -265,13 +339,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [updateDataFeedResolverFunction]
     })
 
-    const getDataFeedArticlesResolverFunction = new AppsyncFunction(this, 'GetDataFeedArticlesResolverFunction', {
-      name: 'getDataFeedArticles',
-      api,
-      dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getDataFeedArticles') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getDataFeedArticlesResolverFunction = new AppsyncFunction(
+      this,
+      'GetDataFeedArticlesResolverFunction',
+      {
+        name: 'getDataFeedArticles',
+        api,
+        dataSource: newsSubscriptionTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getDataFeedArticles')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetDataFeedArticlesResolver', {
       api,
@@ -290,13 +370,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [getDataFeedArticlesResolverFunction]
     })
 
-    const flagDataFeedArticleFunction = new AppsyncFunction(this, 'FlagDataFeedArticleFunction', {
-      name: 'flagDataFeedArticle',
-      api,
-      dataSource: newsSubscriptionTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('flagDataFeedArticle') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const flagDataFeedArticleFunction = new AppsyncFunction(
+      this,
+      'FlagDataFeedArticleFunction',
+      {
+        name: 'flagDataFeedArticle',
+        api,
+        dataSource: newsSubscriptionTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('flagDataFeedArticle')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'FlagDataFeedArticleResolver', {
       api,
@@ -314,13 +400,19 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [flagDataFeedArticleFunction]
     })
 
-    const dataFeedSubscriberLambdaSource = new LambdaDataSource(this, 'DataFeedSubscriberLambdaSource', {
-      api,
-      lambdaFunction: props.functions.feedSubscriberFunction,
-      name: 'DataFeedSubscriberLambdaSource'
-    })
+    const dataFeedSubscriberLambdaSource = new LambdaDataSource(
+      this,
+      'DataFeedSubscriberLambdaSource',
+      {
+        api,
+        lambdaFunction: props.functions.feedSubscriberFunction,
+        name: 'DataFeedSubscriberLambdaSource'
+      }
+    )
 
-    props.functions.feedSubscriberFunction.grantInvoke(dataFeedSubscriberLambdaSource)
+    props.functions.feedSubscriberFunction.grantInvoke(
+      dataFeedSubscriberLambdaSource
+    )
 
     new Resolver(this, 'DataFeedSubscriberResolver', {
       api,
@@ -346,12 +438,18 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    const newsletterCreatorLambdaSource = new LambdaDataSource(this, 'NewsletterCreatorLambdaSource', {
-      api,
-      lambdaFunction: props.functions.createNewsletterFunction,
-      name: 'NewsletterCreatorLambdaSource'
-    })
-    props.functions.createNewsletterFunction.grantInvoke(newsletterCreatorLambdaSource.grantPrincipal)
+    const newsletterCreatorLambdaSource = new LambdaDataSource(
+      this,
+      'NewsletterCreatorLambdaSource',
+      {
+        api,
+        lambdaFunction: props.functions.createNewsletterFunction,
+        name: 'NewsletterCreatorLambdaSource'
+      }
+    )
+    props.functions.createNewsletterFunction.grantInvoke(
+      newsletterCreatorLambdaSource.grantPrincipal
+    )
 
     new Resolver(this, 'CreateNewsletterResolver', {
       api,
@@ -385,13 +483,19 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    const userSubscriberLambdaSource = new LambdaDataSource(this, 'UserSubscriberLambdaSource', {
-      api,
-      lambdaFunction: props.functions.userSubscriberFunction,
-      name: 'UserSubscriberLambdaSource'
-    })
+    const userSubscriberLambdaSource = new LambdaDataSource(
+      this,
+      'UserSubscriberLambdaSource',
+      {
+        api,
+        lambdaFunction: props.functions.userSubscriberFunction,
+        name: 'UserSubscriberLambdaSource'
+      }
+    )
 
-    props.functions.userSubscriberFunction.grantInvoke(userSubscriberLambdaSource.grantPrincipal)
+    props.functions.userSubscriberFunction.grantInvoke(
+      userSubscriberLambdaSource.grantPrincipal
+    )
 
     new Resolver(this, 'UserSubscriberResolver', {
       api,
@@ -419,13 +523,19 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    const userUnsubscriberLambdaSource = new LambdaDataSource(this, 'UserUnsubscriberLambdaSource', {
-      api,
-      lambdaFunction: props.functions.userUnsubscriberFunction,
-      name: 'UserUnsubscriberLambdaSource'
-    })
+    const userUnsubscriberLambdaSource = new LambdaDataSource(
+      this,
+      'UserUnsubscriberLambdaSource',
+      {
+        api,
+        lambdaFunction: props.functions.userUnsubscriberFunction,
+        name: 'UserUnsubscriberLambdaSource'
+      }
+    )
 
-    props.functions.userUnsubscriberFunction.grantInvoke(userUnsubscriberLambdaSource.grantPrincipal)
+    props.functions.userUnsubscriberFunction.grantInvoke(
+      userUnsubscriberLambdaSource.grantPrincipal
+    )
 
     new Resolver(this, 'UserUnsubscriberResolver', {
       api,
@@ -453,39 +563,57 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0
     })
 
-    const getUserNewsletterSubscriptionStatusFunction = new AppsyncFunction(this, 'GetUserNewsletterSubscriptionStatusFunction', {
-      name: 'getUserNewsletterSubscriptionStatus',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getUserNewsletterSubscriptionStatus') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getUserNewsletterSubscriptionStatusFunction = new AppsyncFunction(
+      this,
+      'GetUserNewsletterSubscriptionStatusFunction',
+      {
+        name: 'getUserNewsletterSubscriptionStatus',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions(
+            'getUserNewsletterSubscriptionStatus'
+          )
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetUserNewsletterSubscriptionStatusResolver', {
       api,
       typeName: 'Query',
       fieldName: 'getUserNewsletterSubscriptionStatus',
-      code: Code.fromInline(`
+      code: Code.fromInline(
+        `
       export function request(ctx) {
-        ctx.args.newsletterTable = '` + newsletterTable.tableName + `'
+        ctx.args.newsletterTable = '` +
+          newsletterTable.tableName +
+          `'
         return {}
       }
 
       export function response(ctx) {
           return ctx.prev.result;
       }
-      `),
+      `
+      ),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getUserNewsletterSubscriptionStatusFunction]
     })
 
-    const getUserNewsletterSubscriptionsFunction = new AppsyncFunction(this, 'GetUserNewsletterSubscriptionsFunction', {
-      name: 'getUserNewsletterSubscriptions',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getUserNewsletterSubscriptions') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getUserNewsletterSubscriptionsFunction = new AppsyncFunction(
+      this,
+      'GetUserNewsletterSubscriptionsFunction',
+      {
+        name: 'getUserNewsletterSubscriptions',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getUserNewsletterSubscriptions')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'GetUserNewsletterSubscriptionsResolver', {
       api,
@@ -501,16 +629,25 @@ export class ApiResolvers extends Construct {
         }
       `),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getUserNewsletterSubscriptionsFunction, getNewslettersResolverFunction]
+      pipelineConfig: [
+        getUserNewsletterSubscriptionsFunction,
+        getNewslettersResolverFunction
+      ]
     })
 
-    const getNewsletterSubscriberStatsFunction = new AppsyncFunction(this, 'getNewsletterSubscriberStatsFunction', {
-      name: 'getNewsletterSubscriberStats',
-      api,
-      dataSource: newsletterTableSource,
-      code: Code.fromAsset(resolversPath, { bundling: getResolverBundlingOptions('getNewsletterSubscriberStats') }),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+    const getNewsletterSubscriberStatsFunction = new AppsyncFunction(
+      this,
+      'getNewsletterSubscriberStatsFunction',
+      {
+        name: 'getNewsletterSubscriberStats',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(resolversPath, {
+          bundling: getResolverBundlingOptions('getNewsletterSubscriberStats')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
 
     new Resolver(this, 'getNewsletterSubscriberStatsResolver', {
       api,

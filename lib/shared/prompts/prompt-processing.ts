@@ -34,13 +34,20 @@ export class TaggedElement {
     if (this._response !== null) {
       return this.openTag + this._response + this.closeTag
     } else {
-      throw new Error('Error getting wrapped element. The response value hasn\'t been set yet')
+      throw new Error(
+        "Error getting wrapped element. The response value hasn't been set yet"
+      )
     }
   }
 
   public extractResponseValue (response: string): string | null {
-    const formattedInput = response.replace(/(\r\n|\n|\r)/gm, '').replace(/\\n/g, '')
-    const regex = new RegExp(`(?<=${this.openTag})(.*?)(?=${this.closeTag})`, 'g')
+    const formattedInput = response
+      .replace(/(\r\n|\n|\r)/gm, '')
+      .replace(/\\n/g, '')
+    const regex = new RegExp(
+      `(?<=${this.openTag})(.*?)(?=${this.closeTag})`,
+      'g'
+    )
     const match = formattedInput.match(regex)
     this._response = match !== null ? match[0] : null
     return this._response
@@ -73,7 +80,11 @@ export class MultiSizeFormattedResponse {
   shortSummary: TaggedElement
   longSummary: TaggedElement
   error: TaggedElement
-  constructor (values?: { keywords?: string, shortSummary?: string, longSummary?: string }) {
+  constructor (values?: {
+    keywords?: string
+    shortSummary?: string
+    longSummary?: string
+  }) {
     this.keywords = new TaggedElement('keywords')
     this.shortSummary = new TaggedElement('shortSummary')
     this.longSummary = new TaggedElement('longSummary')

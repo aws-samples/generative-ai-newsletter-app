@@ -1,3 +1,11 @@
+## **0.4.0**&emsp;<sub><sup>2024-03-08 (dc67805c1b331e3a80bab91dc28b31621a1b01fe...245d9bdcf9da381f11b2e660beb509405757d40f)</sup></sub>
+
+### Features
+
+- \(security\): "Integrated Amazon Verified Permissions to manage user access permissions via GraphQL API \(appsync\)" (245d9bdcf9da381f11b2e660beb509405757d40f)
+
+<br>
+
 ## **0.3.1**&emsp;<sub><sup>2024-02-13 (b0ae277d89d3da79717c07eecb75184ffe293c30...fd31626d95bc93bb95f7edd38d2fcf58569e4779)</sup></sub>
 
 *no relevant changes*

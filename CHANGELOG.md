@@ -1,3 +1,13 @@
+## **0.4.1**&emsp;<sub><sup>2024-03-08 (46e7719e1246c19b58932515e2af821af783a3de...46e7719e1246c19b58932515e2af821af783a3de)</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`graphql-api`
+
+- fixed getAccountIdForUser resolver declaration case \- was breaking build (46e7719e1246c19b58932515e2af821af783a3de)
+
+<br>
+
 ## **0.4.0**&emsp;<sub><sup>2024-03-08 (dc67805c1b331e3a80bab91dc28b31621a1b01fe...245d9bdcf9da381f11b2e660beb509405757d40f)</sup></sub>
 
 ### Features

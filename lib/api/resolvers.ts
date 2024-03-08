@@ -504,7 +504,7 @@ export class ApiResolvers extends Construct {
       }
     )
 
-    const getAccountIdforUser = new AppsyncFunction(
+    const getAccountIdForUser = new AppsyncFunction(
       this,
       'GetAccountIdforUserFunction',
       {
@@ -513,7 +513,7 @@ export class ApiResolvers extends Construct {
         dataSource: accountTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
         code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getAccountIdforUser', 'pipeline')
+          bundling: getFunctionBundlingOptions('getAccountIdForUser', 'pipeline')
         })
       }
     )
@@ -528,7 +528,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction]
     })
 
     new Resolver(this, 'ListNewslettersResolver', {
@@ -539,7 +539,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listNewsletters', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
+      pipelineConfig: [getAccountIdForUser, listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
     })
 
     new Resolver(this, 'ListPublicationsResolver', {
@@ -550,7 +550,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listPublications', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, listPublicationsFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, listPublicationsFunction]
     })
 
     new Resolver(this, 'getPublicationResolverFunction', {
@@ -561,7 +561,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getPublication', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getPublication, isAuthorizedToReadFunction]
+      pipelineConfig: [getAccountIdForUser, getPublication, isAuthorizedToReadFunction]
     })
 
     new Resolver(this, 'UpdateNewsletterResolver', {
@@ -572,7 +572,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('updateNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction, updateNewsletterResolverFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction, updateNewsletterResolverFunction]
     })
 
     new Resolver(this, 'ListDataFeedsResolver', {
@@ -583,7 +583,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listDataFeeds', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
+      pipelineConfig: [getAccountIdForUser, listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
     })
 
     new Resolver(this, 'GetDataFeedResolver', {
@@ -594,7 +594,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getDataFeed', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction]
+      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction]
     })
 
     // TODO - Review authorizations around this.
@@ -606,7 +606,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('updateDataFeed', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction, updateDataFeedFunction]
+      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction, updateDataFeedFunction]
     })
 
     new Resolver(this, 'ListArticlesResolver', {
@@ -617,7 +617,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listArticles', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction, listArticlesFunction]
+      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction, listArticlesFunction]
     })
 
     new Resolver(this, 'FlagArticleResolver', {
@@ -642,7 +642,7 @@ export class ApiResolvers extends Construct {
       code: Code.fromAsset(functionsPath, {
         bundling: getFunctionBundlingOptions('createDataFeed', 'resolver')
       }),
-      pipelineConfig: [getAccountIdforUser, isAuthorizedToCreateFunction, createDataFeedFunction],
+      pipelineConfig: [getAccountIdForUser, isAuthorizedToCreateFunction, createDataFeedFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -664,7 +664,7 @@ export class ApiResolvers extends Construct {
       code: Code.fromAsset(functionsPath, {
         bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'resolver')
       }),
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction, subscribeToNewsletterFunction],
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction, subscribeToNewsletterFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -676,7 +676,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, unsubscribeFromNewsletter]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, unsubscribeFromNewsletter]
     })
 
     new Resolver(this, 'GetSubscriptionStatusResolver', {
@@ -687,7 +687,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getUserSubscriptionStatus', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, getUserSubscriptionStatusFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, getUserSubscriptionStatusFunction]
     })
 
     new Resolver(this, 'ListUserSubscriptionsResolver', {
@@ -699,7 +699,7 @@ export class ApiResolvers extends Construct {
       }),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
-        getAccountIdforUser,
+        getAccountIdForUser,
         listUserSubscriptionsFunction,
         listNewslettersById,
         filterListByAuthorization
@@ -714,7 +714,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, getNewsletterSubscriberStatsFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, getNewsletterSubscriberStatsFunction]
     })
 
     new Resolver(this, 'canManageNewsletterResolver', {
@@ -725,7 +725,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('canManageNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction]
+      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction]
     })
 
     new Resolver(this, 'canManageDataFeedResolver', {
@@ -736,7 +736,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('canManageDataFeed', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToUpdateFunction]
+      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToUpdateFunction]
     })
   }
 }

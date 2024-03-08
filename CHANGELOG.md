@@ -1,3 +1,25 @@
+## **0.5.0**&emsp;<sub><sup>2024-03-08 (d78abfd8db9d69eb15042226a6c9910b9dfabbea...b52749ad5400be50807d9d9a077e033c40f874bd)</sup></sub>
+
+### Features
+
+##### &ensp;`genai`
+
+- upgraded article ingestor & newsletter summary to Claude v3\-sonnet (29f4246566abdc307d25b42860325548354e3adb)
+
+### Bug Fixes
+
+- updated Step Functions to replace 'parameters' with 'itemSelector' (53ea224c7ce6b47a55550f7fb584b72b5afd0332)
+
+##### &ensp;`email-generator`
+
+- fixed email\-generator lambda missing APP\_HOST\_NAME (a151f896e4ce1aabd4b5a12971ef0f2ff1cbf93f)
+
+##### &ensp;`ui`
+
+- fixed missing preview on newsletter creation (b52749ad5400be50807d9d9a077e033c40f874bd)
+
+<br>
+
 ## **0.4.1**&emsp;<sub><sup>2024-03-08 (46e7719e1246c19b58932515e2af821af783a3de...46e7719e1246c19b58932515e2af821af783a3de)</sup></sub>
 
 ### Bug Fixes

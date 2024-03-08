@@ -156,7 +156,7 @@ export class NewsletterGenerator extends Construct {
         EMAIL_BUCKET: emailBucket.bucketName,
         NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION:
           newsletterCampaignCreatorFunction.functionName,
-        APP_HOST_NAME: this.node.tryGetContext('appHostName')
+        APP_HOST_NAME: this.node.tryGetContext('hostName')
       }
     })
     props.dataFeedTable.grantReadData(emailGeneratorFunction)

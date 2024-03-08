@@ -13,19 +13,20 @@ import {
 } from '@cloudscape-design/components'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
-import { DataFeedSubscription } from '@shared/api/API'
+import { DataFeed, ListDataFeedsInput } from 'genai-newsletter-shared/api/API'
 import { ApiClient } from '../../common/api'
 import { DataFeedsTableColumnDisplay } from '../newsletters/definitions'
 import { useNavigate } from 'react-router-dom'
 import useOnFollow from '../../common/hooks/use-on-follow'
 
-export default function DataFeedsTable() {
+export default function DataFeedsTable(input?: ListDataFeedsInput) {
   const appContext = useContext(AppContext)
+  const { includeOwned = true, includeShared = false, includeDiscoverable = false } = input ?? {}
   const navigate = useNavigate()
   const onFollow = useOnFollow()
-  const [dataFeeds, setDataFeeds] = useState<DataFeedSubscription[]>([])
+  const [dataFeeds, setDataFeeds] = useState<DataFeed[]>([])
   const [selectedDataFeed, setSelectedDataFeed] =
-    useState<DataFeedSubscription>()
+    useState<DataFeed>()
   const [loadingDataFeeds, setLoadingDataFeeds] = useState<boolean>(true)
 
   const getDataFeeds = useCallback(async () => {
@@ -34,19 +35,19 @@ export default function DataFeedsTable() {
     }
     const apiClient = new ApiClient(appContext)
     try {
-      const result = await apiClient.dataFeeds.listDataFeeds()
+      const result = await apiClient.dataFeeds.listDataFeeds({includeOwned,includeShared,includeDiscoverable})
       if (result.data !== undefined && result.errors === undefined) {
         setDataFeeds(
-          result.data.getDataFeedSubscriptions
-            .subscriptions as DataFeedSubscription[]
+          result.data.listDataFeeds
+            .dataFeeds as DataFeed[]
         )
+        setLoadingDataFeeds(false)
       }
     } catch (e) {
       console.log(e)
-    } finally {
-      setLoadingDataFeeds(false)
     }
-  }, [appContext])
+    setLoadingDataFeeds(false)
+  }, [appContext, includeDiscoverable, includeOwned, includeShared])
 
   const handleUpdateDropdownClick = (
     event: CustomEvent<ButtonDropdownProps.ItemClickDetails>
@@ -57,7 +58,7 @@ export default function DataFeedsTable() {
         if (!selectedDataFeed) {
           return
         }
-        navigate(`/feeds/${selectedDataFeed?.subscriptionId}/edit`)
+        navigate(`/feeds/${selectedDataFeed?.dataFeedId}/edit`)
         break
       default:
         break
@@ -87,15 +88,15 @@ export default function DataFeedsTable() {
 
   const dataFeedsTableColumnDefiniton = [
     {
-      id: 'subscriptionId',
-      cell: (item: DataFeedSubscription) => item.subscriptionId,
-      header: 'Subscription ID',
+      id: 'dataFeedId',
+      cell: (item: DataFeed) => item.dataFeedId,
+      header: 'Data Feed ID',
       isHeaderRow: false
     },
     {
       id: 'title',
-      cell: (item: DataFeedSubscription) => (
-        <Link onFollow={onFollow} href={`/feeds/${item.subscriptionId}`}>
+      cell: (item: DataFeed) => (
+        <Link onFollow={onFollow} href={`/feeds/${item.dataFeedId}`} key={"FEED-LINK-"+item.dataFeedId}>
           {item.title}
         </Link>
       ),
@@ -104,19 +105,19 @@ export default function DataFeedsTable() {
     },
     {
       id: 'url',
-      cell: (item: DataFeedSubscription) => item.url,
+      cell: (item: DataFeed) => item.url,
       header: 'Feed URL',
       isHeaderRow: true
     },
     {
       id: 'feedType',
-      cell: (item: DataFeedSubscription) => item.feedType,
+      cell: (item: DataFeed) => item.feedType,
       header: 'Feed Type',
       isHeaderRow: true
     },
     {
       id: 'enabled',
-      cell: (item: DataFeedSubscription) => (
+      cell: (item: DataFeed) => (
         <Badge color={item.enabled ? 'green' : 'grey'}>
           {item.enabled ? 'ENABLED' : 'DISABLED'}
         </Badge>
@@ -126,7 +127,7 @@ export default function DataFeedsTable() {
     },
     {
       id: 'createdAt',
-      cell: (item: DataFeedSubscription) =>
+      cell: (item: DataFeed) =>
         item.createdAt ? new Date(item.createdAt).toUTCString() : '',
       header: 'Created At',
       isHeaderRow: true
@@ -134,8 +135,8 @@ export default function DataFeedsTable() {
   ]
 
   useEffect(() => {
+    setLoadingDataFeeds(true)
     getDataFeeds()
-    setLoadingDataFeeds(false)
   }, [getDataFeeds])
 
   return (

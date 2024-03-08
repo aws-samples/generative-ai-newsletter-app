@@ -1,24 +1,34 @@
-import { Stack, type StackProps } from 'aws-cdk-lib'
+import { Stack } from 'aws-cdk-lib'
 import {
   NewsSubscriptionIngestion,
-  newsSubscriptionTableLSI
-} from './subscription-ingestion'
+  dataFeedTableLSI
+} from './data-feed-ingestion'
 import { NewsletterGenerator } from './newsletter-generator'
 import { Authentication } from './authentication'
 import { API } from './api'
 import { UserInterface } from './user-interface'
 import { type Construct } from 'constructs'
-import { type DeployConfig } from '@shared/common/deploy-config'
 
-interface GenAINewsletterStackProps extends StackProps {
-  config: DeployConfig
-}
+import { Authorization } from './authorization'
+import getConfig from './config'
+import { type IUserPool, type IUserPoolClient } from 'aws-cdk-lib/aws-cognito'
+import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
+import { type IGraphqlApi } from 'aws-cdk-lib/aws-appsync'
 
 export class GenAINewsletter extends Stack {
-  constructor (scope: Construct, id: string, props: GenAINewsletterStackProps) {
-    super(scope, id, props)
+  public readonly userPool: IUserPool
+  public readonly userPoolClient: IUserPoolClient
+  public readonly identityPool: IIdentityPool
+  public readonly apiUrl: string
+  public readonly graphqlApi: IGraphqlApi
+  constructor (scope: Construct, id: string) {
+    super(scope, id)
 
-    const { config } = props
+    const config = getConfig()
+    const { auth } = config
+    if (auth !== undefined) {
+      this.node.setContext('auth', auth)
+    }
 
     this.node.setContext('pinpointEmail', config.pinpointEmail)
     this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled)
@@ -27,7 +37,13 @@ export class GenAINewsletter extends Stack {
 
     const authentication = new Authentication(this, 'AuthenticationStack')
 
-    const newsSubscriptionIngestion = new NewsSubscriptionIngestion(
+    const authorization = new Authorization(this, 'AuthorizationConstruct', {
+      userPoolId: authentication.userPoolId,
+      userPoolArn: authentication.userPoolArn,
+      userPoolClientId: authentication.userPoolClientId
+    })
+
+    const dataFeedIngestion = new NewsSubscriptionIngestion(
       this,
       'NewsletterIngestionStack'
     )
@@ -36,36 +52,43 @@ export class GenAINewsletter extends Stack {
       this,
       'NewsletterGenerator',
       {
-        newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
-        newsSubscriptionTableLSI,
-        userPoolId: authentication.userPoolId
+        dataFeedTable: dataFeedIngestion.dataFeedTable,
+        dataFeedTableLSI,
+        accountTable: authentication.accountTable,
+        accountTableUserIndex: authentication.accountTableUserIndex,
+        userPool: authentication.userPool
       }
     )
 
     const api = new API(this, 'API', {
       userPoolId: authentication.userPoolId,
-      newsSubscriptionTable: newsSubscriptionIngestion.newsSubscriptionTable,
+      dataFeedTable: dataFeedIngestion.dataFeedTable,
+      accountTable: authentication.accountTable,
+      accountTableUserIndex: authentication.accountTableUserIndex,
       newsletterTable: newsletterGenerator.newsletterTable,
-      emailBucket: newsletterGenerator.emailBucket,
+      newsletterTableItemTypeGSI: newsletterGenerator.newsletterTableItemTypeGSI,
+      avpPolicyStore: authorization.policyStore,
       functions: {
+        readActionAuthCheckFunction: authorization.readActionAuthCheckFunction,
+        createActionAuthCheckFunction: authorization.createActionAuthCheckFunction,
+        listAuthFilterFunction: authorization.listAuthFilterFunction,
+        updateActionAuthCheckFunction: authorization.updateActionAuthCheckFunction,
         createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
         userUnsubscriberFunction: newsletterGenerator.userUnsubscriberFunction,
         feedSubscriberFunction:
-          newsSubscriptionIngestion.feedSubscriberFunction,
+          dataFeedIngestion.feedSubscriberFunction,
         getNewsletterFunction: newsletterGenerator.getNewsletterFunction
       }
     })
 
-    new UserInterface(this, 'UserInterface', {
-      userPool: authentication.userPool,
+    new UserInterface(this, 'UI', {
+      emailBucketArn: newsletterGenerator.emailBucketArn,
+      userPoolId: authentication.userPoolId,
       userPoolClientId: authentication.userPoolClientId,
-      authenticatedUserRole: authentication.authenticatedUserRole,
-      identityPool: authentication.identityPool,
-      emailBucket: newsletterGenerator.emailBucket,
-      // graphqlApi: apiStack.graphqlApi,
       graphqlApiUrl: api.graphqlApiUrl,
-      graphqlApiKey: api.graphqlApiKey
+      identityPoolId: authentication.identityPoolId
     })
+    // userInterfaceStack.addDependency(api., 'UI Requires Endpoints Defined in API')
   }
 }

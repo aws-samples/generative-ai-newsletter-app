@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "@aws-appsync/utils": "^1.6.0",
-    "esbuild": "^0.20.0"
-  },
-  "scripts": {
-    "build": "esbuild --bundle --sourcemap=inline --sources-content=false --target=esnext --platform=node --format=esm --external:@aws-appsync/utils"
-  }
-}

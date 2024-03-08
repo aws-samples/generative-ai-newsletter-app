@@ -14,20 +14,22 @@ import {
 import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import NewsletterEmail from '@shared/react-email-generator/emails/newsletter'
+// Note: Requires local path rather than shared path to bundle deps correctly
+import NewsletterEmail from '../shared/email-generator/emails/newsletter'
+
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
-import { NewsletterSummaryBuilder } from '@shared/prompts/newsletter-summary-prompt'
+import { NewsletterSummaryBuilder } from 'genai-newsletter-shared/prompts'
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
   type InvokeModelCommandInput
 } from '@aws-sdk/client-bedrock-runtime'
-import { type ArticleData } from '@shared/prompts/types'
-import { MultiSizeFormattedResponse } from '@shared/prompts/prompt-processing'
-import { ArticleSummaryType } from '@shared/api/API'
-import { NewsletterStyle } from '@shared/common/newsletter-style'
+import { type ArticleData } from 'genai-newsletter-shared/prompts/types'
+import { MultiSizeFormattedResponse } from 'genai-newsletter-shared/prompts/prompt-processing'
+import { ArticleSummaryType, type Newsletter } from 'genai-newsletter-shared/api/API'
+import { type NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -42,8 +44,8 @@ const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
 
 const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
 
-const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
-const NEWS_SUBSCRIPTION_TABLE_LSI = process.env.NEWS_SUBSCRIPTION_TABLE_LSI
+const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
+const DATA_FEED_TABLE_LSI = process.env.DATA_FEED_TABLE_LSI
 const NEWSLETTER_TABLE = process.env.NEWSLETTER_TABLE
 const EMAIL_BUCKET = process.env.EMAIL_BUCKET
 const NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION =
@@ -65,60 +67,47 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
     newsletterId
   })
   logger.debug('Base App Hostname = ' + APP_HOST_NAME)
-  tracer.putMetadata('subscriptionIds', newsletterId)
-  const {
-    subscriptionIds,
-    numberOfDaysToInclude,
-    newsletterIntroPrompt,
-    title,
-    articleSummaryType,
-    newsletterStyle
-  } = await getNewsletterDetails(newsletterId)
-
-  tracer.putMetadata('numberOfDaysToInclude', numberOfDaysToInclude)
-  const articles = await getArticlesForSubscriptions(
-    subscriptionIds,
-    numberOfDaysToInclude
-  )
-  if (articles.length === 0) {
-    logger.debug('No articles found')
-    return
+  const newsletter = await getNewsletterDetails(newsletterId)
+  const accountId = newsletter.accountId
+  tracer.putMetadata('numberOfDaysToInclude', newsletter.numberOfDaysToInclude)
+  if (newsletter.dataFeedIds !== undefined && newsletter.dataFeedIds !== null && newsletter.dataFeedIds.length > 0) {
+    const articles = await getArticlesForDataFeeds(
+      newsletter.dataFeedIds,
+      newsletter.numberOfDaysToInclude
+    )
+    if (articles.length === 0) {
+      logger.debug('No articles found')
+    } else {
+      const date = new Date()
+      const emailId = uuidv4()
+      const newsletterSummary = await generateNewsletterSummary(
+        articles,
+        newsletter.newsletterIntroPrompt ?? undefined
+      )
+      const emailContents = await generateEmail(
+        articles,
+        newsletterSummary,
+        newsletter.title,
+        newsletter.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY,
+        newsletter.newsletterStyle !== null ? newsletter.newsletterStyle as unknown as NewsletterStyle : undefined
+      )
+      const emailKey = await storeEmailInS3(emailContents, date, emailId)
+      await recordEmailDetails(newsletterId, emailId, date, emailKey, accountId)
+      await sendNewsletter(newsletterId, emailId, emailKey)
+      logger.debug('Email generator complete')
+    }
   }
-  const date = new Date()
-  const emailId = uuidv4()
-  const newsletterSummary = await generateNewsletterSummary(
-    articles,
-    newsletterIntroPrompt
-  )
-  const emailContents = await generateEmail(
-    articles,
-    newsletterSummary,
-    title,
-    articleSummaryType,
-    newsletterStyle
-  )
-  const emailKey = await storeEmailInS3(emailContents, date, emailId)
-  await recordEmailDetails(newsletterId, emailId, date, emailKey)
-  await sendNewsletter(newsletterId, emailId, emailKey)
-  logger.debug('Email generator complete')
 }
 
 const getNewsletterDetails = async (
   newsletterId: string
-): Promise<{
-  subscriptionIds: string[]
-  numberOfDaysToInclude: number
-  newsletterIntroPrompt: string
-  title: string
-  articleSummaryType: ArticleSummaryType
-  newsletterStyle: NewsletterStyle
-}> => {
+): Promise<Newsletter> => {
   console.debug('Getting newsletter details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'newsletter' }
+      sk: { S: 'newsletter' }
     }
   }
   const command = new GetItemCommand(input)
@@ -128,30 +117,12 @@ const getNewsletterDetails = async (
     console.debug('No newsletter found')
     throw new Error('No newsletter found')
   }
-  const newsletterItem = unmarshall(response.Item)
-  const {
-    subscriptionIds,
-    numberOfDaysToInclude,
-    newsletterIntroPrompt,
-    title,
-    articleSummaryType,
-    newsletterStyle = new NewsletterStyle()
-  } = newsletterItem
-  return {
-    subscriptionIds,
-    numberOfDaysToInclude,
-    newsletterIntroPrompt,
-    title,
-    articleSummaryType:
-      articleSummaryType !== undefined
-        ? articleSummaryType
-        : ArticleSummaryType.SHORT_SUMMARY,
-    newsletterStyle
-  }
+  const newsletterItem = unmarshall(response.Item) as Newsletter
+  return { ...newsletterItem, __typename: 'Newsletter' }
 }
 
-const getArticlesForSubscriptions = async (
-  subscriptionIds: string[],
+const getArticlesForDataFeeds = async (
+  dataFeedIds: string[],
   numberOfDaysToInclude: number
 ): Promise<ArticleData[]> => {
   logger.debug('Getting articles for subscriptions')
@@ -160,20 +131,20 @@ const getArticlesForSubscriptions = async (
     Date.now() - numberOfDaysToInclude * 24 * 60 * 60 * 1000
   ).toISOString()
   console.debug('Articles included starting after date ' + calculatedDate)
-  for (const subscriptionId of subscriptionIds) {
+  for (const dataFeedId of dataFeedIds) {
     const input: QueryCommandInput = {
-      TableName: NEWS_SUBSCRIPTION_TABLE,
-      IndexName: NEWS_SUBSCRIPTION_TABLE_LSI,
+      TableName: DATA_FEED_TABLE,
+      IndexName: DATA_FEED_TABLE_LSI,
       KeyConditionExpression:
-        '#subscriptionId = :subscriptionId and #createdAt > :startDate',
+        '#dataFeedId = :dataFeedId and #createdAt > :startDate',
       FilterExpression: 'begins_with(#type,:type)',
       ExpressionAttributeNames: {
-        '#subscriptionId': 'subscriptionId',
+        '#dataFeedId': 'dataFeedId',
         '#createdAt': 'createdAt',
-        '#type': 'compoundSortKey'
+        '#type': 'sk'
       },
       ExpressionAttributeValues: {
-        ':subscriptionId': { S: subscriptionId },
+        ':dataFeedId': { S: dataFeedId },
         ':startDate': { S: calculatedDate },
         ':type': { S: 'article' }
       }
@@ -205,7 +176,7 @@ const getArticlesForSubscriptions = async (
               url: item.url.S,
               content,
               createdAt: item.createdAt.S,
-              flagLink: `/feeds/${subscriptionId}?flagArticle=true&articleId=${item.compoundSortKey.S?.substring(8)}`
+              flagLink: `/feeds/${dataFeedId}?flagArticle=true&articleId=${item.sk.S?.substring(8)}`
             })
           } else {
             logger.warn(
@@ -227,7 +198,7 @@ const getArticlesForSubscriptions = async (
 
 const generateNewsletterSummary = async (
   articles: ArticleData[],
-  newsletterIntroPrompt: string
+  newsletterIntroPrompt?: string
 ): Promise<MultiSizeFormattedResponse> => {
   console.debug('Generating newsletter summary')
   tracer.putAnnotation('Newsletter has summary prompt', true)
@@ -268,7 +239,7 @@ const generateEmail = async (
   newsletterSummary: MultiSizeFormattedResponse,
   title: string,
   articleSummaryType: ArticleSummaryType,
-  newsletterStyle: NewsletterStyle
+  newsletterStyle?: NewsletterStyle
 ): Promise<GeneratedEmailContents> => {
   console.debug('Starting email generation')
   const html = render(
@@ -370,21 +341,25 @@ const recordEmailDetails = async (
   newsletterId: string,
   emailId: string,
   date: Date,
-  emailKey: string
+  emailKey: string,
+  accountId: string
 ): Promise<void> => {
   console.debug('Recording email details')
   const input: PutItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
     Item: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: {
-        S: 'email#' + emailId
+      sk: {
+        S: 'publication#' + emailId
       },
       createdAt: {
         S: date.toISOString()
       },
       emailKey: {
         S: emailKey
+      },
+      accountId: {
+        S: accountId
       }
     }
   }

@@ -6,7 +6,7 @@ import {
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { NewsletterStyle } from '@shared/common/newsletter-style'
+import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
 import { MuiColorInput } from 'mui-color-input'
 import { useEffect, useState } from 'react'
 
@@ -21,20 +21,20 @@ export default function NewsletterDesignerForm(
   const { style, setStyle } = props
   const defaultNewsletterStyle = new NewsletterStyle()
   const [bodyBackgroundColor, setBodyBackgroundColor] = useState(
-    style.body.backgroundColor ?? defaultNewsletterStyle.body.backgroundColor
+    style.body?.backgroundColor ?? defaultNewsletterStyle.body.backgroundColor
   )
   const [bodyFontFamily, setBodyFontFamily] = useState(
-    style.body.fontFamily ?? defaultNewsletterStyle.body.fontFamily
+    style.body?.fontFamily ?? defaultNewsletterStyle.body.fontFamily
   )
   const [bodyTextColor, setBodyTextColor] = useState(
-    style.body.color ?? defaultNewsletterStyle.body.backgroundColor
+    style.body?.color ?? defaultNewsletterStyle.body.backgroundColor
   )
   const [contentBackgroundColor, setContentBackgroundColor] = useState(
-    style.content.backgroundColor ??
+    style.content?.backgroundColor ??
       defaultNewsletterStyle.content.backgroundColor
   )
   const [contentFontSize, setContentFontSize] = useState(
-    style.content.fontSize ?? defaultNewsletterStyle.content.fontSize
+    style.content?.fontSize ?? defaultNewsletterStyle.content.fontSize
   )
   const [introHeaderFontSize, setIntroHeaderFontSize] = useState(
     style.introHeader?.fontSize ?? defaultNewsletterStyle.introHeader.fontSize

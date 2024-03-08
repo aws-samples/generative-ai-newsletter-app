@@ -14,6 +14,7 @@ export interface DeployConfig {
   auth?: {
     cognito: {
       userPoolId: string
+      userPoolArn: string
       userPoolClientId: string
       userPoolDomain: string
       identityPoolId: string

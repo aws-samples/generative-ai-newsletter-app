@@ -42,8 +42,7 @@ export default function MyNewsletters() {
           <Container>
             <NewslettersTable
               title="My Newsletters"
-              getCurrentUserOwned={true}
-              getDiscoverable={false}
+              includeOwned
             />
           </Container>
         </BaseContentLayout>

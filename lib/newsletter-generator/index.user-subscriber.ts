@@ -19,7 +19,7 @@ import {
   type ListUsersCommandInput,
   ListUsersCommand
 } from '@aws-sdk/client-cognito-identity-provider'
-import { SubscriberType } from '../shared/common/newsletter-generator'
+import { SubscriberType } from 'genai-newsletter-shared/common'
 
 const SERVICE_NAME = 'user-subscriber'
 
@@ -43,12 +43,14 @@ interface UserSubscriberInput {
 
 interface CognitoUserSubscriberInput extends UserSubscriberInput {
   cognitoUserId: string
+  accountId: string
   externalUserId: never
   userEmail: never
 }
 
 interface ExternalUserSubscriberInput extends UserSubscriberInput {
   cognitoUserId: never
+  accountId: never
   userEmail: string
   externalUserId?: string
 }
@@ -62,7 +64,7 @@ const lambdaHandler = async (
   if (event.cognitoUserId !== undefined) {
     const userEmail = await getCognitoUserEmail(event.cognitoUserId)
     const subscriberType = SubscriberType.COGNITO_SUBSCRIBER
-    await subscribeCognitoUser(event.newsletterId, event.cognitoUserId)
+    await subscribeCognitoUser(event.newsletterId, event.cognitoUserId, event.accountId)
     await addPinpointEndpoint(event.cognitoUserId, userEmail, subscriberType)
   } else if (event.userEmail !== undefined) {
     const subscriberType = SubscriberType.EXTERNAL_SUBSCRIBER
@@ -78,15 +80,17 @@ const lambdaHandler = async (
 
 const subscribeCognitoUser = async (
   newsletterId: string,
-  cognitoUserId: string
+  cognitoUserId: string,
+  accountId: string
 ): Promise<void> => {
-  logger.debug('Subscribing Cognito User', { newsletterId, cognitoUserId })
+  logger.debug('Subscribing Cognito User', { newsletterId, accountId, cognitoUserId })
   try {
     const input: PutItemCommandInput = {
       TableName: NEWSLETTER_TABLE,
       Item: marshall({
         newsletterId,
-        compoundSortKey: 'subscriber#' + cognitoUserId
+        sk: 'subscriber#' + cognitoUserId,
+        accountId
       })
     }
     const command = new PutItemCommand(input)
@@ -118,7 +122,7 @@ const subscribeExternalUser = async (
       TableName: NEWSLETTER_TABLE,
       Item: marshall({
         newsletterId,
-        compoundSortKey: 'subscriber-external#' + externalUserId,
+        sk: 'subscriber-external#' + externalUserId,
         userEmail
       })
     }

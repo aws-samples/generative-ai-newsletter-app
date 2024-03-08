@@ -2,23 +2,21 @@ import {
   FormField,
   Input,
   Select,
-  SelectProps,
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { ArticleSummaryType } from '@shared/api/API'
+import { ArticleSummaryType } from 'genai-newsletter-shared/api/API'
+import { ArticleSummaryTypeLabel } from '../../../common/types'
 
 interface NewsletterDetailsFormProps {
   title: string
   setTitle: (title: string) => void
-  discoverable: boolean
-  setDiscoverable: (discoverable: boolean) => void
-  shared: boolean
-  setShared: (shared: boolean) => void
+  isPrivate: boolean
+  setIsPrivate: (isPrivate: boolean) => void
   numberOfDaysToInclude: number
   setNumberOfDaysToInclude: (numberOfDaysToInclude: number) => void
-  articleSummaryType: SelectProps.Option
-  setArticleSummaryType: (detail: SelectProps.Option) => void
+  articleSummaryType: ArticleSummaryType
+  setArticleSummaryType: (articleSummaryType: ArticleSummaryType) => void
   titleError: string
   numberOfDaysToIncludeError: string
 }
@@ -29,10 +27,8 @@ export default function NewsletterDetailsForm(
   const {
     title,
     setTitle,
-    discoverable,
-    setDiscoverable,
-    shared,
-    setShared,
+    isPrivate,
+    setIsPrivate,
     numberOfDaysToInclude,
     setNumberOfDaysToInclude,
     articleSummaryType: contentSummaryConfiguration,
@@ -46,22 +42,14 @@ export default function NewsletterDetailsForm(
         <Input value={title} onChange={(e) => setTitle(e.detail.value)} />
       </FormField>
       <FormField
-        label="Discoverable"
-        description="Should the Newsletter appear in search results for other users?"
+        label="Private"
+        description="Private newsletters are not discoverable. Turning off private makes the newsletter discoverable."
       >
         <Toggle
-          checked={discoverable}
-          onChange={(e) => setDiscoverable(e.detail.checked)}
+          checked={isPrivate}
+          onChange={(e) => setIsPrivate(e.detail.checked)}
         >
-          Discoverable
-        </Toggle>
-      </FormField>
-      <FormField
-        label="Shared"
-        description="Can users with the Newsletter URL access the Newsletter?"
-      >
-        <Toggle checked={shared} onChange={(e) => setShared(e.detail.checked)}>
-          Shared
+          Private Newsletter
         </Toggle>
       </FormField>
       <FormField
@@ -80,21 +68,24 @@ export default function NewsletterDetailsForm(
                          a single sentence summary or a multi-paragraph summary for each item included in the newsletter?"
       >
         <Select
-          selectedOption={contentSummaryConfiguration}
+          selectedOption={{
+            label: ArticleSummaryTypeLabel(contentSummaryConfiguration),
+            value: contentSummaryConfiguration
+          }}
           onChange={({ detail }) => {
-            setContentSummaryConfiguration(detail.selectedOption)
+            setContentSummaryConfiguration(detail.selectedOption.value as ArticleSummaryType ?? ArticleSummaryType.KEYWORDS)
           }}
           options={[
             {
-              label: 'Keywords',
+              label: ArticleSummaryTypeLabel(ArticleSummaryType.KEYWORDS),
               value: ArticleSummaryType.KEYWORDS
             },
             {
-              label: 'Short Summary',
+              label: ArticleSummaryTypeLabel(ArticleSummaryType.SHORT_SUMMARY),
               value: ArticleSummaryType.SHORT_SUMMARY
             },
             {
-              label: 'Long Summary',
+              label: ArticleSummaryTypeLabel(ArticleSummaryType.LONG_SUMMARY),
               value: ArticleSummaryType.LONG_SUMMARY
             }
           ]}

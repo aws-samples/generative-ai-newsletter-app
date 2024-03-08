@@ -1,0 +1,18 @@
+{
+	"include": [
+		"./*"
+	],
+	"extends": [
+		"../../../tsconfig.json"
+	],
+	"exclude": [
+		"dist",
+		"build",
+		"node_modules"
+	],
+	"compilerOptions": {
+		"typeRoots": ["./node_modules/@types"],
+		"strict": true,
+		"jsx": "react-jsx"
+	}
+}

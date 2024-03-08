@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    // "module": "ESNext",
+    // "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+
+    "rootDir": "../../../",
+    "baseUrl": "../../../"
+  },
+
+  "include": ["vite.config.ts", "**/*"],
+  "extends": ["../../../tsconfig.json"],
+  "exclude": ["./dist"]
+}

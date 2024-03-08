@@ -19,32 +19,24 @@ interface ApiResolversProps extends ApiProps {
 export class ApiResolvers extends Construct {
   constructor (scope: Construct, id: string, props: ApiResolversProps) {
     super(scope, id)
-    const { api, newsSubscriptionTable, newsletterTable } = props
+    const { api, dataFeedTable, newsletterTable, accountTable } = props
 
-    const newsletterTableSource = api.addDynamoDbDataSource(
-      'NewsletterTableSource',
-      newsletterTable
-    )
-    newsletterTable.grantReadData(newsletterTableSource)
-    const newsSubscriptionTableSource = api.addDynamoDbDataSource(
-      'NewsSubscriptionTableSource',
-      newsSubscriptionTable
-    )
-
-    const resolversPath = path.join(__dirname, 'resolver-functions')
-    const getResolverBundlingOptions = (
-      resolverName: string
+    const functionsPath = path.join(__dirname, 'functions')
+    const getFunctionBundlingOptions = (
+      functionName: string,
+      functionType: 'resolver' | 'pipeline'
     ): BundlingOptions => {
+      const pathToFunction = path.join(functionsPath, functionType, functionName)
       return {
         outputType: BundlingOutput.SINGLE_FILE,
         command: [
           'sh',
           '-c',
           [
-            `npm --silent --prefix "${resolversPath}" install`,
-            `npm --silent --prefix "${resolversPath}" run build -- -outdir=./${resolverName}/ ./${resolverName}/index.ts`,
+            `npm --silent --prefix "${functionsPath}" install`,
+            `npm --silent --prefix "${functionsPath}" run build -- -outdir=${pathToFunction} ${pathToFunction}/index.ts`,
             'ls -la',
-            `mv -f ${resolversPath}/${resolverName}/index.js /asset-output/`
+            `mv -f ${pathToFunction}/index.js /asset-output/`
           ].join(' && ')
         ],
         image: DockerImage.fromRegistry(
@@ -60,15 +52,15 @@ export class ApiResolvers extends Construct {
                 }
               }
               execSync(
-                `npm --silent --prefix "${resolversPath}" install`,
+                `npm --silent --prefix "${functionsPath}" install`,
                 options
               )
               execSync(
-                `npm --silent --prefix "${resolversPath}" run build -- --outdir=./${resolverName}/ ./${resolverName}/index.ts`,
+                `npm --silent --prefix "${functionsPath}" run build -- --outdir=${pathToFunction} ${pathToFunction}/index.ts`,
                 options
               )
               execSync(
-                `mv -f ${resolversPath}/${resolverName}/index.js ${outputDir}`,
+                `mv -f ${pathToFunction}/index.js ${outputDir}`,
                 options
               )
             } catch (e) {
@@ -81,407 +73,67 @@ export class ApiResolvers extends Construct {
       }
     }
 
-    const getNewslettersResolverFunction = new AppsyncFunction(
-      this,
-      'GetNewslettersResolverFunction',
-      {
-        name: 'getNewsletters',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getNewsletters')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
+    /** DATA SOURCES FOR AppSync */
+    const newsletterTableSource = api.addDynamoDbDataSource(
+      'NewsletterTableSource',
+      newsletterTable
+    )
+    newsletterTable.grantReadData(newsletterTableSource)
+    const dataFeedTableSource = api.addDynamoDbDataSource(
+      'DataFeedTableSource',
+      dataFeedTable
     )
 
-    new Resolver(this, 'GetNewslettersResolver', {
+    const accountTableSource = api.addDynamoDbDataSource(
+      'AccountTableSource',
+      accountTable
+    )
+    accountTable.grantReadData(accountTableSource)
+
+    const isAuthorizedToReadLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedReadDataSource', {
       api,
-      typeName: 'Query',
-      fieldName: 'getNewsletters',
-      code: Code.fromInline(`
-          export function request(ctx) {
-            return {};
-            }
-    
-            export function response(ctx) {
-            return ctx.prev.result;
-            }
-            `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewslettersResolverFunction]
+      lambdaFunction: props.functions.readActionAuthCheckFunction
     })
+    props.functions.readActionAuthCheckFunction.grantInvoke(isAuthorizedToReadLambdaDataSource)
 
-    const getNewsletterEmailsResolverFunction = new AppsyncFunction(
-      this,
-      'GetNewsletterEmailsResolverFunction',
-      {
-        name: 'getNewsletterEmails',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getNewsletterEmails')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetNewsletterEmailsResolver', {
+    const isAuthorizedToCreateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedCreateDataSource', {
       api,
-      typeName: 'Query',
-      fieldName: 'getNewsletterEmails',
-      code: Code.fromInline(`
-          export function request(ctx) {
-            return {};
-            }
-    
-            export function response(ctx) {
-            return ctx.prev.result;
-            }
-            `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsletterEmailsResolverFunction]
+      lambdaFunction: props.functions.createActionAuthCheckFunction
     })
+    props.functions.createActionAuthCheckFunction.grantInvoke(isAuthorizedToCreateLambdaDataSource)
 
-    const getNewsletterEmailResolverFunction = new AppsyncFunction(
-      this,
-      'GetNewsletterEmailResolverFunction',
-      {
-        name: 'getNewsletterEmail',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getNewsletterEmail')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetNewsletterEmailResolver', {
+    const listAuthFilterLambdaDataSource = new LambdaDataSource(this, 'listAuthFilterDataSource', {
       api,
-      typeName: 'Query',
-      fieldName: 'getNewsletterEmail',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {};
-      }
-
-      export function response(ctx) {
-          return ctx.prev.result;
-      }`),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsletterEmailResolverFunction]
+      lambdaFunction: props.functions.listAuthFilterFunction
     })
+    props.functions.listAuthFilterFunction.grantInvoke(listAuthFilterLambdaDataSource)
 
-    const getNewsletterLambdaSource = new LambdaDataSource(
-      this,
-      'GetNewsletterLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.getNewsletterFunction,
-        name: 'getNewsletterLambdaSource'
-      }
-    )
-
-    props.functions.getNewsletterFunction.grantInvoke(
-      getNewsletterLambdaSource.grantPrincipal
-    )
-
-    new Resolver(this, 'GetNewsletterResolver', {
+    const isAuthorizedToUpdateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedUpdateDataSource', {
       api,
-      typeName: 'Query',
-      fieldName: 'getNewsletter',
-      dataSource: getNewsletterLambdaSource,
-      runtime: FunctionRuntime.JS_1_0_0,
-      code: Code.fromInline(`
-      export function request(ctx) {
-        const { newsletterId } = ctx.args.input
-        return {
-          operation: 'Invoke',
-          payload: {
-            newsletterId: newsletterId,
-          }
-        }
-      }
-
-      export function response(ctx) {
-        return ctx.result;
-      }
-      `)
+      lambdaFunction: props.functions.updateActionAuthCheckFunction
     })
-
-    const updateNewsletterResolverFunction = new AppsyncFunction(
-      this,
-      'UpdateNewsletterResolverFunction',
-      {
-        name: 'updateNewsletter',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('updateNewsletter')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'UpdateNewsletterResolver', {
-      api,
-      typeName: 'Mutation',
-      fieldName: 'updateNewsletter',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {
-            input: ctx.args.input,
-            newsletterId: ctx.args.newsletterId
-        }
-      }
-    
-      export function response(ctx) {
-        return true;
-      }`),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [updateNewsletterResolverFunction]
-    })
-
-    const getDataFeedSubscriptionsResolverFunction = new AppsyncFunction(
-      this,
-      'GetDataFeedSubscriptionsResolverFunction',
-      {
-        name: 'getDataFeedSubscriptions',
-        api,
-        dataSource: newsSubscriptionTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getDataFeedSubscriptions')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetDataFeedSubscriptionsResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'getDataFeedSubscriptions',
-      code: Code.fromInline(`
-        export function request(ctx) {
-        return {};
-        }
-
-        export function response(ctx) {
-        return ctx.prev.result;
-        }
-        `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedSubscriptionsResolverFunction]
-    })
-
-    const getDataFeedSubscriptionResolverFunction = new AppsyncFunction(
-      this,
-      'GetDataFeedSubscriptionResolverFunction',
-      {
-        name: 'getDataFeedSubscription',
-        api,
-        dataSource: newsSubscriptionTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getDataFeedSubscription')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetDataFeedSubscriptionResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'getDataFeedSubscription',
-      code: Code.fromInline(`
-        export function request(ctx) {
-        return {};
-        }
-
-        export function response(ctx) {
-        return ctx.prev.result;
-        }
-        `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedSubscriptionResolverFunction]
-    })
-
-    const updateDataFeedResolverFunction = new AppsyncFunction(
-      this,
-      'UpdateDataFeedResolverFunction',
-      {
-        name: 'updateDataFeed',
-        api,
-        dataSource: newsSubscriptionTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('updateDataFeed')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    // TODO: Rename this.... spelling....
-    new Resolver(this, 'UpdateDataFeedResolver', {
-      api,
-      typeName: 'Mutation',
-      fieldName: 'updateDataFeed',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {
-            input: ctx.args.input,
-            subscriptionId: ctx.args.subscriptionId
-        }
-      }
-    
-      export function response(ctx) {
-        return true;
-      }`),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [updateDataFeedResolverFunction]
-    })
-
-    const getDataFeedArticlesResolverFunction = new AppsyncFunction(
-      this,
-      'GetDataFeedArticlesResolverFunction',
-      {
-        name: 'getDataFeedArticles',
-        api,
-        dataSource: newsSubscriptionTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getDataFeedArticles')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetDataFeedArticlesResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'getDataFeedArticles',
-      code: Code.fromInline(`
-        export function request(ctx) {
-        return {};
-        }
-
-      export function response(ctx) {
-      return ctx.prev.result;
-      }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedArticlesResolverFunction]
-    })
-
-    const flagDataFeedArticleFunction = new AppsyncFunction(
-      this,
-      'FlagDataFeedArticleFunction',
-      {
-        name: 'flagDataFeedArticle',
-        api,
-        dataSource: newsSubscriptionTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('flagDataFeedArticle')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'FlagDataFeedArticleResolver', {
-      api,
-      typeName: 'Mutation',
-      fieldName: 'flagDataFeedArticle',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {}
-      }
-    
-      export function response(ctx) {
-        return true;
-      }`),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [flagDataFeedArticleFunction]
-    })
+    props.functions.updateActionAuthCheckFunction.grantInvoke(isAuthorizedToUpdateLambdaDataSource)
 
     const dataFeedSubscriberLambdaSource = new LambdaDataSource(
       this,
       'DataFeedSubscriberLambdaSource',
       {
         api,
-        lambdaFunction: props.functions.feedSubscriberFunction,
-        name: 'DataFeedSubscriberLambdaSource'
+        lambdaFunction: props.functions.feedSubscriberFunction
       }
     )
-
-    props.functions.feedSubscriberFunction.grantInvoke(
-      dataFeedSubscriberLambdaSource
-    )
-
-    new Resolver(this, 'DataFeedSubscriberResolver', {
-      api,
-      dataSource: dataFeedSubscriberLambdaSource,
-      typeName: 'Mutation',
-      fieldName: 'createDataFeedSubscription',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        const { sub } = ctx.identity
-        return {
-          operation: 'Invoke',
-          payload: {
-            owner: sub,
-            input: ctx.args.input
-          }
-        }
-      }
-
-      export function response(ctx) {
-        return ctx.result;
-      }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
 
     const newsletterCreatorLambdaSource = new LambdaDataSource(
       this,
       'NewsletterCreatorLambdaSource',
       {
         api,
-        lambdaFunction: props.functions.createNewsletterFunction,
-        name: 'NewsletterCreatorLambdaSource'
+        lambdaFunction: props.functions.createNewsletterFunction
       }
     )
     props.functions.createNewsletterFunction.grantInvoke(
       newsletterCreatorLambdaSource.grantPrincipal
     )
-
-    new Resolver(this, 'CreateNewsletterResolver', {
-      api,
-      dataSource: newsletterCreatorLambdaSource,
-      typeName: 'Mutation',
-      fieldName: 'createNewsletter',
-      code: Code.fromInline(`
-      import { util } from '@aws-appsync/utils';
-      export function request(ctx) {
-        const { title, numberOfDaysToInclude, discoverable, subscriptionIds, shared } = ctx.args.input
-        const { sub } = ctx.identity
-        return {
-          operation: 'Invoke',
-          payload: {
-            input: {
-              title:title, 
-              numberOfDaysToInclude:numberOfDaysToInclude, 
-              discoverable:discoverable, 
-              subscriptionIds:subscriptionIds, 
-              shared:shared
-            },
-            owner: sub            
-          }
-        }
-      }
-
-      export function response(ctx) {
-        return ctx.result;
-      }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
 
     const userSubscriberLambdaSource = new LambdaDataSource(
       this,
@@ -497,32 +149,6 @@ export class ApiResolvers extends Construct {
       userSubscriberLambdaSource.grantPrincipal
     )
 
-    new Resolver(this, 'UserSubscriberResolver', {
-      api,
-      dataSource: userSubscriberLambdaSource,
-      typeName: 'Mutation',
-      fieldName: 'subscribeToNewsletter',
-      code: Code.fromInline(`
-      import { util } from '@aws-appsync/utils';
-      export function request(ctx) {
-        const { sub } = ctx.identity
-        const { newsletterId } = ctx.args.input
-        return {
-          operation: 'Invoke',
-          payload: {
-            cognitoUserId: sub,
-            newsletterId: newsletterId
-          }
-        }
-      }
-
-      export function response(ctx) {
-        return ctx.result;
-      }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
-
     const userUnsubscriberLambdaSource = new LambdaDataSource(
       this,
       'UserUnsubscriberLambdaSource',
@@ -537,103 +163,304 @@ export class ApiResolvers extends Construct {
       userUnsubscriberLambdaSource.grantPrincipal
     )
 
-    new Resolver(this, 'UserUnsubscriberResolver', {
-      api,
-      dataSource: userUnsubscriberLambdaSource,
-      typeName: 'Mutation',
-      fieldName: 'unsubscribeFromNewsletter',
-      code: Code.fromInline(`
-      import { util } from '@aws-appsync/utils';
-      export function request(ctx) {
-        const { sub } = ctx.identity
-        const { newsletterId } = ctx.args.input
-        return {
-          operation: 'Invoke',
-          payload: {
-            cognitoUserId: sub,
-            newsletterId: newsletterId
-          }
-        }
-      }
+    /** AppSync Resolver Pipeline Functions */
 
-      export function response(ctx) {
-        return ctx.result;
-      }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
-
-    const getUserNewsletterSubscriptionStatusFunction = new AppsyncFunction(
-      this,
-      'GetUserNewsletterSubscriptionStatusFunction',
+    const isAuthorizedToReadFunction = new AppsyncFunction(this,
+      'IsAuthorizedFunction',
       {
-        name: 'getUserNewsletterSubscriptionStatus',
+        name: 'isAuthorizedToRead',
+        api,
+        dataSource: isAuthorizedToReadLambdaDataSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('isAuthorizedToRead', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const isAuthorizedToCreateFunction = new AppsyncFunction(this,
+      'IsAuthorizedToCreate', {
+        name: 'isAuthorizedToCreate',
+        api,
+        dataSource: isAuthorizedToCreateLambdaDataSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('isAuthorizedToCreate', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      })
+
+    const filterListByAuthorization = new AppsyncFunction(this,
+      'FilterListByAuthorization', {
+        name: 'filterListByAuthorization',
+        api,
+        dataSource: listAuthFilterLambdaDataSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('filterListByAuthorization', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      })
+
+    const isAuthorizedToUpdateFunction = new AppsyncFunction(this,
+      'IsAuthorizedToUpdate', {
+        name: 'isAuthorizedToUpdate',
+        api,
+        dataSource: isAuthorizedToUpdateLambdaDataSource,
+        runtime: FunctionRuntime.JS_1_0_0,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('isAuthorizedToUpdate', 'pipeline')
+        })
+      })
+
+    const getNewsletterFunction = new AppsyncFunction(
+      this,
+      'GetNewsletterResolverFunction',
+      {
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions(
-            'getUserNewsletterSubscriptionStatus'
+        name: 'getNewsletter',
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('getNewsletter', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listNewslettersOwned = new AppsyncFunction(
+      this,
+      'ListNewslettersOwnedResolverFunction',
+      {
+        name: 'listNewslettersOwned',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listNewslettersOwned', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listNewslettersDiscoverable = new AppsyncFunction(
+      this,
+      'ListNewslettersDiscoverableResolverFunction',
+      {
+        name: 'listNewslettersDiscoverable',
+        api,
+        dataSource: newsletterTableSource,
+        runtime: FunctionRuntime.JS_1_0_0,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listNewslettersDiscoverable', 'pipeline')
+        })
+      }
+    )
+
+    const listNewslettersShared = new AppsyncFunction(
+      this,
+      'ListNewslettersSharedResolverFunction',
+      {
+        name: 'listNewslettersShared',
+        api,
+        dataSource: newsletterTableSource,
+        runtime: FunctionRuntime.JS_1_0_0,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listNewslettersShared', 'pipeline')
+        })
+      }
+    )
+
+    const listNewslettersById = new AppsyncFunction(
+      this,
+      'ListNewslettersById',
+      {
+        name: 'listNewslettersById',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listNewslettersById', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listPublicationsFunction = new AppsyncFunction(
+      this,
+      'ListPublicationsFunction',
+      {
+        name: 'listPublications',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listPublications', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+    const getPublication = new AppsyncFunction(
+      this,
+      'GetPublicationResolverFunction',
+      {
+        name: 'getPublication',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('getPublication', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const updateNewsletterResolverFunction = new AppsyncFunction(
+      this,
+      'UpdateNewsletterResolverFunction',
+      {
+        name: 'updateNewsletter',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('updateNewsletter', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+    const subscribeToNewsletterFunction = new AppsyncFunction(
+      this,
+      'SubscribeToNewsletterResolverFunction',
+      {
+        name: 'subscribeToNewsletter',
+        api,
+        dataSource: userSubscriberLambdaSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const unsubscribeFromNewsletter = new AppsyncFunction(
+      this,
+      'UnsubscribeFromNewsletterResolverFunction',
+      {
+        name: 'unsubscribeFromNewsletter',
+        api,
+        dataSource: userUnsubscriberLambdaSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listDataFeedsOwnedFunction = new AppsyncFunction(
+      this,
+      'ListDataFeedsOwnedFunction',
+      {
+        name: 'listDataFeedsOwned',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listDataFeedsOwned', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listDataFeedsSharedFunction = new AppsyncFunction(
+      this,
+      'ListDataFeedsSharedFunction',
+      {
+        name: 'listDataFeedsShared',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listDataFeedsShared', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listDataFeedsDiscoverable = new AppsyncFunction(
+      this,
+      'ListDataFeedsDiscoverableFunction',
+      {
+        name: 'listDataFeedsDiscoverable',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listDataFeedsDiscoverable', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const createDataFeedFunction = new AppsyncFunction(
+      this,
+      'CreateDataFeedFunction',
+      {
+        name: 'createDataFeed',
+        api,
+        dataSource: dataFeedSubscriberLambdaSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('createDataFeed', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+    const getDataFeedFunction = new AppsyncFunction(
+      this,
+      'GetDataFeedResolverFunction',
+      {
+        name: 'getDataFeed',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('getDataFeed', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const updateDataFeedFunction = new AppsyncFunction(
+      this,
+      'UpdateDataFeedResolverFunction',
+      {
+        name: 'updateDataFeed',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('updateDataFeed', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listArticlesFunction = new AppsyncFunction(
+      this,
+      'ListArticlesResolverFunction',
+      {
+        name: 'listArticles',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listArticles', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const getUserSubscriptionStatusFunction = new AppsyncFunction(
+      this,
+      'GetUserSubscriptionStatusFunction',
+      {
+        name: 'getUserSubscriptionStatus',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions(
+            'getUserSubscriptionStatus', 'pipeline'
           )
         }),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
-
-    new Resolver(this, 'GetUserNewsletterSubscriptionStatusResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'getUserNewsletterSubscriptionStatus',
-      code: Code.fromInline(
-        `
-      export function request(ctx) {
-        ctx.args.newsletterTable = '` +
-          newsletterTable.tableName +
-          `'
-        return {}
-      }
-
-      export function response(ctx) {
-          return ctx.prev.result;
-      }
-      `
-      ),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getUserNewsletterSubscriptionStatusFunction]
-    })
-
-    const getUserNewsletterSubscriptionsFunction = new AppsyncFunction(
-      this,
-      'GetUserNewsletterSubscriptionsFunction',
-      {
-        name: 'getUserNewsletterSubscriptions',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getUserNewsletterSubscriptions')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
-
-    new Resolver(this, 'GetUserNewsletterSubscriptionsResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'getUserNewsletterSubscriptions',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {};
-        }
-
-        export function response(ctx) {
-        return ctx.prev.result;
-        }
-      `),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getUserNewsletterSubscriptionsFunction,
-        getNewslettersResolverFunction
-      ]
-    })
 
     const getNewsletterSubscriberStatsFunction = new AppsyncFunction(
       this,
@@ -642,28 +469,274 @@ export class ApiResolvers extends Construct {
         name: 'getNewsletterSubscriberStats',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(resolversPath, {
-          bundling: getResolverBundlingOptions('getNewsletterSubscriberStats')
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'pipeline')
         }),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
 
+    const flagArticleFunction = new AppsyncFunction(
+      this,
+      'FlagArticleFunction',
+      {
+        name: 'flagArticle',
+        api,
+        dataSource: dataFeedTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('flagArticle', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const listUserSubscriptionsFunction = new AppsyncFunction(
+      this,
+      'ListUserSubscriptionsFunction',
+      {
+        name: 'listUserSubscriptions',
+        api,
+        dataSource: newsletterTableSource,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('listUserSubscriptions', 'pipeline')
+        }),
+        runtime: FunctionRuntime.JS_1_0_0
+      }
+    )
+
+    const getAccountIdforUser = new AppsyncFunction(
+      this,
+      'GetAccountIdforUserFunction',
+      {
+        name: 'getAccountIdforUser',
+        api,
+        dataSource: accountTableSource,
+        runtime: FunctionRuntime.JS_1_0_0,
+        code: Code.fromAsset(functionsPath, {
+          bundling: getFunctionBundlingOptions('getAccountIdforUser', 'pipeline')
+        })
+      }
+    )
+
+    /** AppSync GraphQL API Resolvers */
+
+    new Resolver(this, 'GetNewsletterResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('getNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction]
+    })
+
+    new Resolver(this, 'ListNewslettersResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'listNewsletters',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('listNewsletters', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
+    })
+
+    new Resolver(this, 'ListPublicationsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'listPublications',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('listPublications', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, listPublicationsFunction]
+    })
+
+    new Resolver(this, 'getPublicationResolverFunction', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getPublication',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('getPublication', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getPublication, isAuthorizedToReadFunction]
+    })
+
+    new Resolver(this, 'UpdateNewsletterResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'updateNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('updateNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction, updateNewsletterResolverFunction]
+    })
+
+    new Resolver(this, 'ListDataFeedsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'listDataFeeds',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('listDataFeeds', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
+    })
+
+    new Resolver(this, 'GetDataFeedResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getDataFeed',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('getDataFeed', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction]
+    })
+
+    // TODO - Review authorizations around this.
+    new Resolver(this, 'UpdateDataFeedResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'updateDataFeed',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('updateDataFeed', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction, updateDataFeedFunction]
+    })
+
+    new Resolver(this, 'ListArticlesResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'listArticles',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('listArticles', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToReadFunction, listArticlesFunction]
+    })
+
+    new Resolver(this, 'FlagArticleResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'flagArticle',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('flagArticle', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [flagArticleFunction]
+    })
+
+    props.functions.feedSubscriberFunction.grantInvoke(
+      dataFeedSubscriberLambdaSource
+    )
+
+    new Resolver(this, 'DataFeedSubscriberResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'createDataFeed',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('createDataFeed', 'resolver')
+      }),
+      pipelineConfig: [getAccountIdforUser, isAuthorizedToCreateFunction, createDataFeedFunction],
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'CreateNewsletterResolver', {
+      api,
+      dataSource: newsletterCreatorLambdaSource,
+      typeName: 'Mutation',
+      fieldName: 'createNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('createNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'UserSubscriberResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'subscribeToNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'resolver')
+      }),
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction, subscribeToNewsletterFunction],
+      runtime: FunctionRuntime.JS_1_0_0
+    })
+
+    new Resolver(this, 'UserUnsubscriberResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'unsubscribeFromNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, unsubscribeFromNewsletter]
+    })
+
+    new Resolver(this, 'GetSubscriptionStatusResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'getUserSubscriptionStatus',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('getUserSubscriptionStatus', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, getUserSubscriptionStatusFunction]
+    })
+
+    new Resolver(this, 'ListUserSubscriptionsResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'listUserSubscriptions',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('listUserSubscriptions', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [
+        getAccountIdforUser,
+        listUserSubscriptionsFunction,
+        listNewslettersById,
+        filterListByAuthorization
+      ]
+    })
+
     new Resolver(this, 'getNewsletterSubscriberStatsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'getNewsletterSubscriberStats',
-      code: Code.fromInline(`
-      export function request(ctx) {
-        return {};
-        }
-
-        export function response(ctx) {
-        return ctx.prev.result;
-        }
-      `),
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'resolver')
+      }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsletterSubscriberStatsFunction]
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToReadFunction, getNewsletterSubscriberStatsFunction]
+    })
+
+    new Resolver(this, 'canManageNewsletterResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'canManageNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('canManageNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getNewsletterFunction, isAuthorizedToUpdateFunction]
+    })
+
+    new Resolver(this, 'canManageDataFeedResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'canManageDataFeed',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('canManageDataFeed', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getAccountIdforUser, getDataFeedFunction, isAuthorizedToUpdateFunction]
     })
   }
 }

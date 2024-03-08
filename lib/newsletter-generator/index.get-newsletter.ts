@@ -6,8 +6,8 @@ import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
 import {
   type Newsletter,
   type GetNewsletterInput,
-  type DataFeedSubscription
-} from '@shared/api/API'
+  type DataFeed
+} from '../shared/api/API'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 const SERVICE_NAME = 'get-newsletter'
@@ -19,7 +19,7 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
 const NEWSLETTER_DATA_TABLE = process.env.NEWSLETTER_DATA_TABLE
-const NEWS_SUBSCRIPTION_TABLE = process.env.NEWS_SUBSCRIPTION_TABLE
+const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
 
 const lambdaHandler = async (
   event: GetNewsletterInput
@@ -34,13 +34,14 @@ const lambdaHandler = async (
         return null
       } else {
         metrics.addMetric('NewsletterFound', MetricUnits.Count, 1)
+        const dataFeedIds = newsletter?.dataFeedIds
         if (
-          newsletter?.subscriptionIds !== undefined &&
-          newsletter.subscriptionIds !== null &&
-          newsletter.subscriptionIds.length > 0
+          dataFeedIds !== undefined &&
+          dataFeedIds !== null &&
+          dataFeedIds.length > 0
         ) {
-          newsletter.subscriptions = await getNewsletterSubscriptionsData(
-            newsletter.subscriptionIds
+          newsletter.dataFeeds = await getNewsletterDataFeedData(
+            dataFeedIds
           )
         }
         return newsletter
@@ -61,42 +62,42 @@ const getNewsletterData = async (
   const result = await dynamodb.send(
     new GetItemCommand({
       TableName: NEWSLETTER_DATA_TABLE,
-      Key: marshall({ newsletterId, compoundSortKey: 'newsletter' })
+      Key: marshall({ newsletterId, sk: 'newsletter' })
     })
   )
   return result.Item != null ? (unmarshall(result.Item) as Newsletter) : null
 }
 
-const getNewsletterSubscriptionsData = async (
-  subscriptionIds: string[]
-): Promise<DataFeedSubscription[]> => {
-  logger.debug('Getting newsletter subscriptions', { subscriptionIds })
+const getNewsletterDataFeedData = async (
+  dataFeedIds: string[]
+): Promise<DataFeed[]> => {
+  logger.debug('Getting newsletter feeds', { dataFeedIds })
   metrics.addMetric(
     'SubscriptionsForNewsletterLookups',
     MetricUnits.Count,
-    subscriptionIds.length
+    dataFeedIds.length
   )
   try {
-    const subscriptions: DataFeedSubscription[] = []
-    for (const subscriptionId of subscriptionIds) {
+    const dataFeeds: DataFeed[] = []
+    for (const dataFeedId of dataFeedIds) {
       const result = await dynamodb.send(
         new GetItemCommand({
-          TableName: NEWS_SUBSCRIPTION_TABLE,
+          TableName: DATA_FEED_TABLE,
           Key: marshall({
-            subscriptionId,
-            compoundSortKey: 'subscription'
+            dataFeedId,
+            sk: 'dataFeed'
           })
         })
       )
       if (result.Item != null) {
-        subscriptions.push(unmarshall(result.Item) as DataFeedSubscription)
+        dataFeeds.push(unmarshall(result.Item) as DataFeed)
       }
     }
-    return subscriptions
+    return dataFeeds
   } catch (error) {
-    logger.error('Error getting newsletter subscriptions', { error })
+    logger.error('Error getting newsletter data feeds', { error })
     metrics.addMetric(
-      'ErrorGettingNewsletterSubscriptions',
+      'ErrorGettingNewsletterDataFeeds',
       MetricUnits.Count,
       1
     )

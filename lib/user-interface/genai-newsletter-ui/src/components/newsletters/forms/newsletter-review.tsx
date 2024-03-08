@@ -7,15 +7,15 @@ import {
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { ArticleSummaryType, DataFeedSubscription } from '@shared/api/API'
+import { ArticleSummaryType, DataFeed } from 'genai-newsletter-shared/api/API'
 import { useNavigate, useParams } from 'react-router-dom'
 
 interface NewsletterReviewForm {
+  canManageNewsletter?: boolean
   title: string
-  discoverable: boolean
-  shared: boolean
+  isPrivate: boolean
   numberOfDaysToInclude: number
-  selectedSubscriptions: DataFeedSubscription[]
+  selectedDataFeeds: DataFeed[]
   formTitle?: string
   formDescription?: string
   formMode?: 'wizard' | 'detail'
@@ -32,16 +32,16 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
   const { newsletterId } = useParams()
   const {
     title,
-    discoverable,
-    shared,
+    isPrivate,
     numberOfDaysToInclude,
-    selectedSubscriptions,
+    selectedDataFeeds,
     formTitle,
     formDescription,
     formMode = 'wizard',
     newsletterIntroPrompt,
     articleSummaryType,
-    templatePreview
+    templatePreview,
+    canManageNewsletter = false
   } = props
 
   return (
@@ -49,7 +49,7 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
       <Header
         description={formDescription}
         actions={
-          formMode === 'detail' ? (
+          (formMode === 'detail' && canManageNewsletter) ? (
             <SpaceBetween size="s" direction="horizontal" alignItems="end">
               <Button
                 iconName="edit"
@@ -88,11 +88,8 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
         {formTitle}
       </Header>
       <FormField label="Newsletter Title">{title}</FormField>
-      <FormField label="Discoverable">
-        <Toggle checked={discoverable ?? false} disabled={true} />
-      </FormField>
-      <FormField label="Shared">
-        <Toggle checked={shared ?? false} disabled={true} />
+      <FormField label="Private" description="A private newsletter isn't discoverable. Turning off private will make the newsletter discoverable by others.">
+        <Toggle checked={isPrivate ?? true} disabled={true} />
       </FormField>
       <FormField
         label="Number of Days to Include"
@@ -112,26 +109,28 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
               : 'Keywords'}
         </Badge>
       </FormField>
-      <FormField
-        label="Subscriptions"
-        description="The feeds that provide the content for the newsletter"
-      >
-        <ul>
-          {selectedSubscriptions.map((subscription) => (
-            <li key={`selected-subscription-${subscription.subscriptionId}`}>
-              <Link
-                href={`/feeds/${subscription.subscriptionId}`}
-                target="_blank"
-              >
-                {subscription.title}
-              </Link>
-            </li>
-          ))}
-          {selectedSubscriptions.length === 0 && (
-            <li>No subscriptions selected</li>
-          )}
-        </ul>
-      </FormField>
+      {canManageNewsletter ?
+        <FormField
+          label="Data Feeds"
+          description="The feeds that provide the content for the newsletter"
+        >
+          <ul>
+            {selectedDataFeeds.map((dataFeed) => (
+              <li key={`selected-datafeed-${dataFeed.dataFeedId}`}>
+                <Link
+                  href={`/feeds/${dataFeed.dataFeedId}`}
+                  target="_blank"
+                >
+                  {dataFeed.title}
+                </Link>
+              </li>
+            ))}
+            {selectedDataFeeds.length === 0 && (
+              <li>No data feeds selected</li>
+            )}
+          </ul>
+        </FormField>
+        : null}
       <FormField
         label="Newsletter Intro Summary Prompt"
         description="This prompt helps influence how the Newsletter summary will be written."

@@ -8,47 +8,53 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createDataFeedSubscription = /* GraphQL */ `mutation CreateDataFeedSubscription($input: CreateDataFeedSubscriptionInput!) {
-  createDataFeedSubscription(input: $input) {
-    subscriptionId
+export const createDataFeed = /* GraphQL */ `mutation CreateDataFeed($input: CreateDataFeedInput!) {
+  createDataFeed(input: $input) {
+    dataFeedId
+    accountId
     url
     feedType
     createdAt
     enabled
     articles {
-      subscriptionId
+      dataFeedId
       articleId
+      accountId
       url
       createdAt
       title
+      providedDescription
+      providedCategories
+      publishDate
       summarizationPrompt
       flaggedContent
       articleSummary
       keywords
       shortSummary
       longSummary
-      owner
       __typename
     }
     title
     description
     summarizationPrompt
-    owner
+    isPrivate
     __typename
   }
 }
 ` as GeneratedMutation<
-  APITypes.CreateDataFeedSubscriptionMutationVariables,
-  APITypes.CreateDataFeedSubscriptionMutation
+  APITypes.CreateDataFeedMutationVariables,
+  APITypes.CreateDataFeedMutation
 >;
-export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input: CreateNewsletter!) {
+export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input: CreateNewsletterInput!) {
   createNewsletter(input: $input) {
     newsletterId
+    accountId
     title
     numberOfDaysToInclude
-    subscriptionIds
-    subscriptions {
-      subscriptionId
+    dataFeedIds
+    dataFeeds {
+      dataFeedId
+      accountId
       url
       feedType
       createdAt
@@ -56,14 +62,12 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       title
       description
       summarizationPrompt
-      owner
+      isPrivate
       __typename
     }
-    discoverable
-    shared
+    isPrivate
     scheduleId
     createdAt
-    owner
     newsletterIntroPrompt
     articleSummaryType
     newsletterStyle
@@ -88,30 +92,24 @@ export const unsubscribeFromNewsletter = /* GraphQL */ `mutation UnsubscribeFrom
   APITypes.UnsubscribeFromNewsletterMutationVariables,
   APITypes.UnsubscribeFromNewsletterMutation
 >;
-export const updateNewsletter = /* GraphQL */ `mutation UpdateNewsletter(
-  $input: UpdateNewsletterInput!
-  $newsletterId: String!
-) {
-  updateNewsletter(input: $input, newsletterId: $newsletterId)
+export const updateNewsletter = /* GraphQL */ `mutation UpdateNewsletter($input: UpdateNewsletterInput!) {
+  updateNewsletter(input: $input)
 }
 ` as GeneratedMutation<
   APITypes.UpdateNewsletterMutationVariables,
   APITypes.UpdateNewsletterMutation
 >;
-export const updateDataFeed = /* GraphQL */ `mutation UpdateDataFeed(
-  $input: UpdateDataFeedSubscriptionInput!
-  $subscriptionId: String!
-) {
-  updateDataFeed(input: $input, subscriptionId: $subscriptionId)
+export const updateDataFeed = /* GraphQL */ `mutation UpdateDataFeed($input: UpdateDataFeedInput!) {
+  updateDataFeed(input: $input)
 }
 ` as GeneratedMutation<
   APITypes.UpdateDataFeedMutationVariables,
   APITypes.UpdateDataFeedMutation
 >;
-export const flagDataFeedArticle = /* GraphQL */ `mutation FlagDataFeedArticle($input: FlagDataFeedArticleInput!) {
-  flagDataFeedArticle(input: $input)
+export const flagArticle = /* GraphQL */ `mutation FlagArticle($input: FlagArticleInput!) {
+  flagArticle(input: $input)
 }
 ` as GeneratedMutation<
-  APITypes.FlagDataFeedArticleMutationVariables,
-  APITypes.FlagDataFeedArticleMutation
+  APITypes.FlagArticleMutationVariables,
+  APITypes.FlagArticleMutation
 >;

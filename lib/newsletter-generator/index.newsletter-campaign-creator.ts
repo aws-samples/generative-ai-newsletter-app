@@ -66,7 +66,7 @@ const getEmailKey = async (
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'email#' + emailId }
+      sk: { S: 'publication#' + emailId }
     }
   }
   const command = new GetItemCommand(input)
@@ -88,7 +88,7 @@ const getNewsletterDetails = async (
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'newsletter' }
+      sk: { S: 'newsletter' }
     }
   }
   const command = new GetItemCommand(input)
@@ -190,7 +190,7 @@ const saveCampaignId = async (
     TableName: NEWSLETTER_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: 'email#' + emailId }
+      sk: { S: 'publication#' + emailId }
     },
     UpdateExpression: 'SET #campaignId = :campaignId',
     ExpressionAttributeNames: {

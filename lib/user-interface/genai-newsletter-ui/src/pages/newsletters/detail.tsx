@@ -4,9 +4,9 @@ import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {
   ArticleSummaryType,
-  DataFeedSubscription,
+  DataFeed,
   Newsletter
-} from '@shared/api/API'
+} from 'genai-newsletter-shared/api/API'
 import BaseAppLayout from '../../components/base-app-layout'
 import {
   BreadcrumbGroup,
@@ -17,21 +17,24 @@ import {
 } from '@cloudscape-design/components'
 import useOnFollow from '../../common/hooks/use-on-follow'
 import NewsletterReviewForm from '../../components/newsletters/forms/newsletter-review'
-import NewsletterEmailsTable from '../../components/newsletters/newsletter-emails-table'
+import PublicationsTable from '../../components/newsletters/publications-table'
 import UserSubscriberData from '../../components/newsletters/user-subscriber-data'
 import BaseContentLayout from '../../components/base-content-layout'
 import NewsletterPreview from '../../components/newsletters/preview'
-import { NewsletterStyle } from '@shared/common/newsletter-style'
+import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
 
 export default function NewsletterDetail() {
   const { newsletterId } = useParams()
   const onFollow = useOnFollow()
   const appContext = useContext(AppContext)
+  const [canManageNewsletter, setCanManageNewsletter] = useState<boolean>(false)
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
   const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(
     new NewsletterStyle()
   )
   const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)
+
+
 
   const getNewsletter = useCallback(async () => {
     if (!appContext) {
@@ -41,7 +44,7 @@ export default function NewsletterDetail() {
       return
     }
     const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.getNewsletter(newsletterId)
+    const result = await apiClient.newsletters.getNewsletter({ newsletterId })
     if (result.errors) {
       console.error(result.errors)
     } else {
@@ -54,8 +57,41 @@ export default function NewsletterDetail() {
           JSON.parse(result.data.getNewsletter.newsletterStyle)
         )
       }
+      let canManageNewsletterX = false
+      try {
+        const result = await apiClient.newsletters.canManageNewsletter({ newsletterId })
+        if (result.errors) {
+          canManageNewsletterX = false
+          setCanManageNewsletter(canManageNewsletterX)
+        } else {
+          canManageNewsletterX = result.data.canManageNewsletter
+          setCanManageNewsletter(canManageNewsletterX)
+        }
+      } catch (e) {
+        canManageNewsletterX = false
+        setCanManageNewsletter(canManageNewsletterX)
+      }
+      const feeds: DataFeed[] = []
+      if (canManageNewsletterX && result.data?.getNewsletter?.dataFeedIds !== null && result.data.getNewsletter.dataFeedIds !== undefined && result.data.getNewsletter.dataFeedIds.length > 0) {
+        for (const dataFeedId of result.data.getNewsletter.dataFeedIds) {
+          const dataFeedResult = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
+          if (dataFeedResult.errors) {
+            console.error(dataFeedResult.errors)
+          }
+          const feed = dataFeedResult.data.getDataFeed
+          if (feed !== undefined && feed !== null) {
+            feeds.push(feed)
+          }
+
+        }
+        const fullNewsletter: Newsletter = {
+          ...result.data.getNewsletter,
+          dataFeeds: feeds
+        }
+        setNewsletter(fullNewsletter)
+      }
     }
-  }, [appContext, newsletterId])
+  }, [appContext, setCanManageNewsletter, newsletterId])
 
   useEffect(() => {
     getNewsletter()
@@ -99,26 +135,26 @@ export default function NewsletterDetail() {
         <BaseContentLayout>
           <SpaceBetween direction="vertical" size="m">
             <Container>
-              {newsletter != undefined && newsletter.subscriptions !== null ? (
+              {newsletter != undefined ? (
                 <NewsletterReviewForm
-                  discoverable={newsletter?.discoverable ?? false}
+                  canManageNewsletter={canManageNewsletter}
+                  isPrivate={newsletter.isPrivate ?? true}
                   numberOfDaysToInclude={newsletter.numberOfDaysToInclude}
-                  selectedSubscriptions={
-                    newsletter.subscriptions as DataFeedSubscription[]
+                  selectedDataFeeds={
+                    newsletter.dataFeeds !== null ? newsletter.dataFeeds as DataFeed[] : []
                   }
-                  shared={newsletter.shared ?? false}
                   title={newsletter.title}
                   formMode="detail"
                   newsletterIntroPrompt={
                     newsletter.newsletterIntroPrompt !== null &&
-                    newsletter.newsletterIntroPrompt !== undefined &&
-                    newsletter.newsletterIntroPrompt.length > 0
+                      newsletter.newsletterIntroPrompt !== undefined &&
+                      newsletter.newsletterIntroPrompt.length > 0
                       ? newsletter.newsletterIntroPrompt
                       : undefined
                   }
                   articleSummaryType={
                     newsletter.articleSummaryType !== undefined &&
-                    newsletter.articleSummaryType !== null
+                      newsletter.articleSummaryType !== null
                       ? newsletter.articleSummaryType
                       : ArticleSummaryType.SHORT_SUMMARY
                   }
@@ -137,7 +173,7 @@ export default function NewsletterDetail() {
               <UserSubscriberData />
             </Container>
             <Container>
-              <NewsletterEmailsTable />
+              <PublicationsTable />
             </Container>
           </SpaceBetween>
         </BaseContentLayout>

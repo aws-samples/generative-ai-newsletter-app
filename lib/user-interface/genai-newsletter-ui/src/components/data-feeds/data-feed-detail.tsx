@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { DataFeedSubscription } from '@shared/api/API'
+import { DataFeed } from 'genai-newsletter-shared/api/API'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {
@@ -12,36 +12,41 @@ import {
   Spinner,
   Toggle
 } from '@cloudscape-design/components'
-import { UserContext } from '../../common/user-context'
 
 export default function DataFeedDetail() {
-  const { subscriptionId } = useParams()
+  const { dataFeedId } = useParams()
   const navigate = useNavigate()
-  const userContext = useContext(UserContext)
   const appContext = useContext(AppContext)
-  const [feed, setFeed] = useState<DataFeedSubscription | null>(null)
+  const [setDataFeedId, setDataFeed] = useState<DataFeed | null>(null)
+  const [canManageDataFeed, setCanManageDataFeed] = useState<boolean>(false)
   const [loading, setLoading] = useState(true)
 
   const getDataFeed = useCallback(async () => {
     if (!appContext) {
       return
     }
-    if (!subscriptionId) {
+    if (!dataFeedId) {
       return
     }
     const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.getDataFeed({ subscriptionId })
+    const result = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
     if (result.errors) {
       console.error(result.errors)
       return
     }
-    setFeed(result.data.getDataFeedSubscription as DataFeedSubscription)
+    setDataFeed(result.data.getDataFeed as DataFeed)
+    try {
+      const canManageDataFeed = await apiClient.dataFeeds.canManageDataFeed({ dataFeedId })
+      setCanManageDataFeed(canManageDataFeed.data.canManageDataFeed)
+    } catch (e) {
+      setCanManageDataFeed(false)
+    }
     setLoading(false)
-  }, [appContext, subscriptionId])
+  }, [appContext, dataFeedId])
 
   useEffect(() => {
     getDataFeed()
-  }, [getDataFeed, subscriptionId])
+  }, [getDataFeed, dataFeedId])
 
   return (
     <Container
@@ -51,9 +56,9 @@ export default function DataFeedDetail() {
             <SpaceBetween direction="horizontal" size="s">
               <Button
                 variant="primary"
-                disabled={feed?.owner !== userContext?.userId}
+                disabled={canManageDataFeed}
                 onClick={() => {
-                  navigate(`/feeds/${subscriptionId}/edit`)
+                  navigate(`/feeds/${dataFeedId}/edit`)
                 }}
               >
                 Edit Data Feed
@@ -70,21 +75,29 @@ export default function DataFeedDetail() {
         </SpaceBetween>
       ) : (
         <SpaceBetween direction="vertical" size="s">
-          <h2>{feed?.title}</h2>
+          <h2>{setDataFeedId?.title}</h2>
           <span>
-            <i>{feed?.description}</i>
+            <i>{setDataFeedId?.description}</i>
           </span>
-          <FormField label="Feed URL">{feed?.url}</FormField>
-          <FormField label="SubscriptionId">{feed?.subscriptionId}</FormField>
+          <FormField label="Feed URL">{setDataFeedId?.url}</FormField>
+          <FormField label="DataFeedId">{setDataFeedId?.dataFeedId}</FormField>
           <FormField label="Enabled">
-            <Toggle checked={feed?.enabled ?? false} disabled>
-              Data Feed {feed?.enabled ? 'Enabled' : 'Disabled'}
+            <Toggle checked={setDataFeedId?.enabled ?? false} disabled>
+              Data Feed {setDataFeedId?.enabled ? 'Enabled' : 'Disabled'}
             </Toggle>
+            <FormField label="Private Data Feed"
+              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters.">
+              <Toggle
+                checked={setDataFeedId?.isPrivate ?? true}
+                disabled
+              >Data Feed Private
+              </Toggle>
+            </FormField>
           </FormField>
-          <FormField label="Feed Type">{feed?.feedType}</FormField>
-          <FormField label="Date Created">{feed?.createdAt}</FormField>
+          <FormField label="Feed Type">{setDataFeedId?.feedType}</FormField>
+          <FormField label="Date Created">{setDataFeedId?.createdAt}</FormField>
           <FormField label="Article Summarization Prompt">
-            {feed?.summarizationPrompt}
+            {setDataFeedId?.summarizationPrompt}
           </FormField>
         </SpaceBetween>
       )}

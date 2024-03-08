@@ -42,9 +42,7 @@ export default function MyNewsletterSubscriptions() {
           <Container>
             <NewslettersTable
               title="My Subscribed Newsletters"
-              getCurrentUserOwned={false}
-              getCurrentUserSubscribed={true}
-              getDiscoverable={false}
+              includeSubscriptions
             />
           </Container>
         </BaseContentLayout>

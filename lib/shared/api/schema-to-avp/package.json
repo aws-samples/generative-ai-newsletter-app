@@ -1,0 +1,9 @@
+{
+  "name": "genai-newsletter-schema-to-avp",
+  "private": "true",
+  "scripts": {
+    "build": "npm run codegen && tsc",
+    "codegen": "graphql-code-generator --config ./codegen.ts"
+  },
+  "main": "index"
+}

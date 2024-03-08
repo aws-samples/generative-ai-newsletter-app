@@ -18,22 +18,12 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    resolve: {
-      alias: {
-        '@shared': path.resolve(__dirname, '../../shared')
-      }
-    },
-    build: {
-      rollupOptions: {
-        external: ['@shared']
-      }
-    },
     base: '/',
     plugins: [
       isDev && {
         name: 'aws-exports',
         writeBundle() {
-          const outputPath = path.resolve('public/aws-exports.json')
+          const outputPath = path.resolve('public/amplifyconfiguration.json')
 
           fs.writeFileSync(
             outputPath,

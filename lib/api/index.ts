@@ -8,18 +8,25 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Construct } from 'constructs'
 import path = require('path')
 import { ApiResolvers } from './resolvers'
-import { type Table } from 'aws-cdk-lib/aws-dynamodb'
-import { UserPool } from 'aws-cdk-lib/aws-cognito'
+import { type ITable, type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import { Stack } from 'aws-cdk-lib'
+import { type CfnPolicyStore } from 'aws-cdk-lib/aws-verifiedpermissions'
+import { UserPool } from 'aws-cdk-lib/aws-cognito'
 
 export interface ApiProps {
   userPoolId: string
-  newsSubscriptionTable: Table
+  dataFeedTable: Table
   newsletterTable: Table
-  emailBucket: Bucket
+  newsletterTableItemTypeGSI: string
+  accountTable: ITable
+  accountTableUserIndex: string
+  avpPolicyStore: CfnPolicyStore
   functions: {
+    readActionAuthCheckFunction: NodejsFunction
+    createActionAuthCheckFunction: NodejsFunction
+    listAuthFilterFunction: NodejsFunction
+    updateActionAuthCheckFunction: NodejsFunction
     createNewsletterFunction: NodejsFunction
     userSubscriberFunction: NodejsFunction
     userUnsubscriberFunction: NodejsFunction
@@ -30,28 +37,28 @@ export interface ApiProps {
 
 export class API extends Construct {
   public readonly graphqlApiUrl: string
-  public readonly graphqlApiKey: string | undefined
   constructor (scope: Construct, id: string, props: ApiProps) {
     super(scope, id)
-
     const graphqlApi = new GraphqlApi(this, 'API', {
       name: Stack.of(this).stackName + 'GraphQLAPI',
       definition: Definition.fromFile(
-        path.join(__dirname, '../shared/api', 'schema.graphql')
+        path.join(__dirname, '..', 'shared', 'api', 'schema.graphql')
       ),
       authorizationConfig: {
         additionalAuthorizationModes: [
           {
             authorizationType: AuthorizationType.USER_POOL,
             userPoolConfig: {
-              userPool: UserPool.fromUserPoolId(
-                this,
-                'AuthUserPool',
-                props.userPoolId
-              )
+              userPool: UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId)
             }
           }
         ]
+      },
+      environmentVariables: {
+        DATA_FEED_TABLE: props.dataFeedTable.tableName,
+        NEWSLETTER_TABLE: props.newsletterTable.tableName,
+        NEWSLETTER_TABLE_ITEM_TYPE_GSI: props.newsletterTableItemTypeGSI,
+        ACCOUNT_TABLE: props.accountTable.tableName
       },
       logConfig: {
         retention: RetentionDays.ONE_MONTH,
@@ -64,8 +71,6 @@ export class API extends Construct {
       api: graphqlApi,
       ...props
     })
-
     this.graphqlApiUrl = graphqlApi.graphqlUrl
-    this.graphqlApiKey = graphqlApi.apiKey
   }
 }

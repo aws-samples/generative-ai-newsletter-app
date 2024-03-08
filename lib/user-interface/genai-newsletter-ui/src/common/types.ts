@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction } from 'react'
 import { AuthConfig, APIConfig } from '@aws-amplify/core'
-import { UIConfig } from '@shared/common/deploy-config'
+import { UIConfig } from 'genai-newsletter-shared/common'
+import { Client } from 'aws-amplify/api'
+import { ArticleSummaryType } from 'genai-newsletter-shared/api'
 
 export interface AppConfig {
   Auth: AuthConfig
@@ -9,6 +11,7 @@ export interface AppConfig {
     emailBucket: string
   }
   ui?: UIConfig
+  apiClient?: Client
 }
 
 export interface UserData {
@@ -16,13 +19,24 @@ export interface UserData {
   userGroups?: string[]
   userGivenName?: string
   userFamilyName?: string
+  accountId: string
   setUserId: Dispatch<SetStateAction<string>>
   setUserGroups: Dispatch<SetStateAction<string[]>>
   setUserGivenName: Dispatch<SetStateAction<string>>
   setUserFamilyName: Dispatch<SetStateAction<string>>
+  setAccountId: Dispatch<SetStateAction<string>>
 }
 
 export interface NavigationPanelState {
   collapsed?: boolean
   collapsedSections?: Record<number, boolean>
+}
+
+export const ArticleSummaryTypeLabel = (articleSummaryType: ArticleSummaryType): string => {
+  switch(articleSummaryType){
+    case ArticleSummaryType.SHORT_SUMMARY: return "Short Summary";
+    case ArticleSummaryType.LONG_SUMMARY: return "Long Summary";
+    case ArticleSummaryType.KEYWORDS: return "Keywords"
+    default: return "Keywords"
+  }
 }

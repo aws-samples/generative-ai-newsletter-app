@@ -1,25 +1,84 @@
-import { RemovalPolicy } from 'aws-cdk-lib'
-import { type IIdentityPool, IdentityPool, UserPoolAuthenticationProvider } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { type IUserPool, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito'
+import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
+import {
+  type IIdentityPool,
+  IdentityPool,
+  UserPoolAuthenticationProvider
+} from '@aws-cdk/aws-cognito-identitypool-alpha'
+import {
+  type IUserPool,
+  UserPool,
+  UserPoolClient,
+  StringAttribute,
+  type IUserPoolClient
+} from 'aws-cdk-lib/aws-cognito'
 import { Construct } from 'constructs'
-import { Role, type IRole } from 'aws-cdk-lib/aws-iam'
+import { Role, type IRole, PolicyStatement, Effect, Policy } from 'aws-cdk-lib/aws-iam'
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
+import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 
 interface AuthenticationProps {
   userPoolId?: string
+  userPoolArn?: string
   userPoolClientId?: string
 }
 
 export class Authentication extends Construct {
-  public readonly userPoolId: string
-  public readonly userPoolClientId: string
   public readonly userPool: IUserPool
-  public readonly identityPool: IIdentityPool
-  public readonly authenticatedUserRole: IRole
+  private readonly identityPool: IIdentityPool
+  private readonly authenticatedUserRole: IRole
+  private readonly userPoolClient: IUserPoolClient
+  public readonly userPoolId: string
+  public readonly userPoolArn: string
+  public readonly identityPoolId: string
+  public readonly authenticatedUserRoleArn: string
+  public readonly userPoolClientId: string
+  public readonly accountTable: Table
+  public readonly accountTableUserIndex = 'userId-index'
   constructor (scope: Construct, id: string, props?: AuthenticationProps) {
     super(scope, id)
     const auth = this.node.tryGetContext('authConfig')
-    if (props?.userPoolId === undefined && auth === undefined) {
-      const selfSignUpEnabled = this.node.tryGetContext('selfSignUpEnabled') ?? false
+
+    const accountTable = new Table(this, 'AccountTable', {
+      tableName: Stack.of(this).stackName + '-AccountTable',
+      removalPolicy: RemovalPolicy.DESTROY,
+      partitionKey: {
+        name: 'accountId',
+        type: AttributeType.STRING
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST
+    })
+    accountTable.addGlobalSecondaryIndex({
+      indexName: this.accountTableUserIndex,
+      partitionKey: {
+        name: 'userId',
+        type: AttributeType.STRING
+      }
+    })
+    this.accountTable = accountTable
+    const preTokenGenerationHookFunction = new NodejsFunction(this, 'pre-token-generation-hook', {
+      description:
+        'Post Authentication, Pre-Token Generation Hook that creates a user\'s accountId',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      logRetention: RetentionDays.ONE_WEEK,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      memorySize: 128,
+      timeout: Duration.seconds(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        ACCOUNT_TABLE: accountTable.tableName
+      }
+    })
+    accountTable.grantWriteData(preTokenGenerationHookFunction)
+    if (auth === undefined || auth === null) {
+      const selfSignUpEnabled =
+        this.node.tryGetContext('selfSignUpEnabled') ?? false
       const userPool = new UserPool(this, 'UserPool', {
         removalPolicy: RemovalPolicy.DESTROY,
         selfSignUpEnabled,
@@ -38,9 +97,14 @@ export class Authentication extends Construct {
             required: true,
             mutable: true
           }
+        },
+        customAttributes: {
+          Account: new StringAttribute()
+        },
+        lambdaTriggers: {
+          postAuthentication: preTokenGenerationHookFunction
         }
       })
-      this.userPoolId = userPool.userPoolId
       const userPoolClient = userPool.addClient('UserPoolClient', {
         generateSecret: false,
         authFlows: {
@@ -49,22 +113,43 @@ export class Authentication extends Construct {
           userSrp: true
         }
       })
+      userPoolClient.node.addDependency(userPool)
 
       const identityPool = new IdentityPool(this, 'IdentityPool', {
         authenticationProviders: {
           userPools: [
             new UserPoolAuthenticationProvider({
-              userPool, userPoolClient
+              userPool,
+              userPoolClient
             })
           ]
         }
       })
       this.userPool = userPool
-      this.userPoolClientId = userPoolClient.userPoolClientId
       this.identityPool = identityPool
+      this.userPoolClient = userPoolClient
+      this.authenticatedUserRole = identityPool.authenticatedRole
+
+      preTokenGenerationHookFunction.role?.attachInlinePolicy(new Policy(this, 'PostAuthHookUserAttribtues', {
+        statements: [
+          new PolicyStatement({
+            actions: ['cognito-idp:AdminUpdateUserAttributes'],
+            resources: [userPool.userPoolArn],
+            effect: Effect.ALLOW
+          })
+        ]
+      })
+      )
     } else {
-      const userPool = UserPool.fromUserPoolId(this, 'UserPool', props?.userPoolId ?? auth.cognito.userPoolId as string)
-      if ((props?.userPoolClientId === undefined) && auth.cognito.userPoolClientId === undefined) {
+      const userPool = UserPool.fromUserPoolId(
+        this,
+        'UserPool',
+        props?.userPoolId ?? (auth.cognito.userPoolId as string)
+      )
+      if (
+        props?.userPoolClientId === undefined &&
+        auth.cognito.userPoolClientId === undefined
+      ) {
         const userPoolClient = userPool.addClient('UserPoolClient', {
           generateSecret: false,
           authFlows: {
@@ -78,26 +163,46 @@ export class Authentication extends Construct {
           authenticationProviders: {
             userPools: [
               new UserPoolAuthenticationProvider({
-                userPool, userPoolClient
+                userPool,
+                userPoolClient
               })
             ]
           }
         })
-        this.userPoolClientId = userPoolClient.userPoolClientId
+        this.userPoolClient = userPoolClient
         this.identityPool = identityPool
       } else {
-        this.userPoolClientId = props?.userPoolClientId ?? auth.cognito.userPoolClientId
-        if (auth.cognito.identityPoolId !== undefined && auth.cognito.authenticatedUserArn !== undefined) {
-          this.identityPool = IdentityPool.fromIdentityPoolId(this, 'IdentityPool', auth.cognito.identityPoolId as string)
-          this.authenticatedUserRole = Role.fromRoleArn(this, 'AuthenticatedUserRole', auth.cognito.authenticatedUserArn as string, {
-            mutable: true
-          })
+        const userPoolClientId =
+          props?.userPoolClientId ?? auth.cognito.userPoolClientId
+        this.userPoolClient = UserPoolClient.fromUserPoolClientId(
+          this,
+          'UserPoolClient',
+          userPoolClientId as string
+        )
+        if (
+          auth.cognito.identityPoolId !== undefined &&
+          auth.cognito.authenticatedUserArn !== undefined
+        ) {
+          this.identityPool = IdentityPool.fromIdentityPoolId(
+            this,
+            'IdentityPool',
+            auth.cognito.identityPoolId as string
+          )
+          this.authenticatedUserRole = Role.fromRoleArn(
+            this,
+            'AuthenticatedUserRole',
+            auth.cognito.authenticatedUserArn as string,
+            {
+              mutable: true
+            }
+          )
         } else {
           const identityPool = new IdentityPool(this, 'IdentityPool', {
             authenticationProviders: {
               userPools: [
                 new UserPoolAuthenticationProvider({
-                  userPool, userPoolClient: UserPoolClient.fromUserPoolClientId(this, 'UserPoolClient', this.userPoolClientId)
+                  userPool,
+                  userPoolClient: this.userPoolClient
                 })
               ]
             }
@@ -106,11 +211,17 @@ export class Authentication extends Construct {
           this.authenticatedUserRole = identityPool.authenticatedRole as Role
         }
       }
-      this.userPoolId = userPool.userPoolId
+      preTokenGenerationHookFunction.addToRolePolicy(new PolicyStatement({
+        actions: ['cognito-idp:AdminUpdateUserAttributes'],
+        resources: [userPool.userPoolArn],
+        effect: Effect.ALLOW
+      }))
       this.userPool = userPool
-      if (this.authenticatedUserRole === undefined) {
-        throw new Error('DAMN')
-      }
     }
+    this.userPoolId = this.userPool.userPoolId
+    this.userPoolArn = this.userPool.userPoolArn
+    this.identityPoolId = this.identityPool.identityPoolId
+    this.authenticatedUserRoleArn = this.authenticatedUserRole.roleArn
+    this.userPoolClientId = this.userPoolClient.userPoolClientId
   }
 }

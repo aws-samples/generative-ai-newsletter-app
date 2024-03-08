@@ -8,7 +8,7 @@ import BaseAppLayout from '../../components/base-app-layout'
 import useOnFollow from '../../common/hooks/use-on-follow'
 import DataFeedDetail from '../../components/data-feeds/data-feed-detail'
 import { useNavigate, useParams } from 'react-router-dom'
-import DataFeedArticleTable from '../../components/data-feeds/data-feed-article-table'
+import DataFeedArticleTable from '../../components/data-feeds/article-table'
 import BaseContentLayout from '../../components/base-content-layout'
 
 export default function DataFeedDetails() {

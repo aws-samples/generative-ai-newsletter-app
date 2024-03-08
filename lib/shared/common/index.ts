@@ -1,3 +1,3 @@
 export * from './deploy-config'
-export * from './newsletter-generator'
-export * from './newsletter-ingestion'
+export * from './types'
+export * from './newsletter-style'

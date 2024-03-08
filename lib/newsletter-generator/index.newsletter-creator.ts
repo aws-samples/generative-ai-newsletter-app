@@ -4,7 +4,9 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import {
   DynamoDBClient,
   PutItemCommand,
-  type PutItemCommandInput
+  type QueryCommandInput,
+  type PutItemCommandInput,
+  QueryCommand
 } from '@aws-sdk/client-dynamodb'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
@@ -14,7 +16,7 @@ import {
   SchedulerClient,
   CreateScheduleCommand
 } from '@aws-sdk/client-scheduler'
-import { type CreateNewsletter, type Newsletter } from '@shared/api/API'
+import { type CreateNewsletterInput, type Newsletter } from '../shared/api/API'
 
 const SERVICE_NAME = 'newsletter-creator'
 
@@ -31,46 +33,65 @@ const NEWSLETTER_SCHEDULE_GROUP_NAME =
 const EMAIL_GENERATOR_FUNCTION_ARN = process.env.EMAIL_GENERATOR_FUNCTION_ARN
 const EMAIL_GENERATOR_SCHEDULER_ROLE_ARN =
   process.env.EMAIL_GENERATOR_SCHEDULER_ROLE_ARN
+const ACCOUNT_TABLE = process.env.ACCOUNT_TABLE
+const ACCOUNT_TABLE_USER_INDEX = process.env.ACCOUNT_TABLE_USER_INDEX
 
 interface NewsletterCreatorEvent {
-  input: CreateNewsletter
-  owner: string
+  createdBy: {
+    accountId?: string
+    userId?: string
+  }
+  input: CreateNewsletterInput
 }
 
 const lambdaHandler = async (
   event: NewsletterCreatorEvent
 ): Promise<Newsletter> => {
   logger.debug('Starting newsletter creator', { event })
-  const {
-    title,
-    numberOfDaysToInclude,
-    subscriptionIds,
-    newsletterIntroPrompt,
-    newsletterStyle
-  } = event.input
-  const { owner } = event
-  const shared: boolean = event.input.shared ?? false
-  const discoverable: boolean = event.input.discoverable ?? false
+  const input = event.input
+  const inputAccountId = event.createdBy.accountId
+  const userId = event.createdBy.userId
+  let accountId = inputAccountId
+  if ((accountId === undefined || accountId === null) && userId !== undefined) {
+    accountId = await getAccountIdForUserId(userId)
+  }
+  if (accountId === undefined) {
+    throw new Error('Account ID not found. Can\'t create newsletter.')
+  }
   const newsletterId = uuidv4()
-  const scheduleExpression = `rate(${numberOfDaysToInclude} ${numberOfDaysToInclude === 1 ? 'day' : 'days'})`
+  const scheduleExpression = `rate(${input.numberOfDaysToInclude} ${input.numberOfDaysToInclude === 1 ? 'day' : 'days'})`
   const scheduleId = await createNewsletterSchedule(
     newsletterId,
     scheduleExpression
   )
   const newsletter = await storeNewsletterData(
     newsletterId,
-    title,
-    subscriptionIds,
-    numberOfDaysToInclude,
+    accountId,
     scheduleId,
-    shared,
-    discoverable,
-    owner,
-    newsletterIntroPrompt ?? undefined,
-    newsletterStyle ?? undefined
+    input
   )
-  logger.debug('Newsletter created', { newsletterId })
+  logger.debug('Newsletter created', { newsletterId, newsletter })
   return newsletter
+}
+
+const getAccountIdForUserId = async (userId: string): Promise<string> => {
+  const input: QueryCommandInput = {
+    TableName: ACCOUNT_TABLE,
+    KeyConditionExpression: '#userId = :userId',
+    ExpressionAttributeNames: {
+      '#userId': 'userId'
+    },
+    ExpressionAttributeValues: {
+      ':userId': { S: userId }
+    },
+    IndexName: ACCOUNT_TABLE_USER_INDEX
+  }
+  const command = new QueryCommand(input)
+  const response = await dynamodb.send(command)
+  if (response.Items === undefined || response.Items.length === 0 || response.Items[0].accountId.S === undefined) {
+    throw new Error('User not found')
+  }
+  return response.Items[0].accountId.S
 }
 
 const createNewsletterSchedule = async (
@@ -102,48 +123,35 @@ const createNewsletterSchedule = async (
 
 const storeNewsletterData = async (
   newsletterId: string,
-  title: string,
-  subscriptionIds: string[],
-  numberOfDaysToInclude: number,
+  accountId: string,
   scheduleId: string,
-  shared: boolean,
-  discoverable: boolean,
-  owner: string,
-  newsletterIntroPrompt?: string,
-  newsletterStyle?: string
+  input: CreateNewsletterInput
 ): Promise<Newsletter> => {
   logger.debug('Storing newsletter data', {
     newsletterId,
-    compoundSortKey: 'newsletter#' + newsletterId,
-    title,
-    subscriptionIds,
-    numberOfDaysToInclude,
-    scheduleId,
-    shared,
-    discoverable,
-    owner,
-    newsletterIntroPrompt,
-    newsletterStyle
+    sk: 'newsletter#' + newsletterId,
+    input
   })
   const createdAt = new Date().toISOString()
-  const input: PutItemCommandInput = {
+  const { title, dataFeedIds, numberOfDaysToInclude, newsletterIntroPrompt, newsletterStyle } = input
+  const isPrivate: boolean = input.isPrivate ?? true
+  const commandInput: PutItemCommandInput = {
     TableName: NEWSLETTER_DATA_TABLE,
     Item: marshall({
       newsletterId,
-      compoundSortKey: 'newsletter',
+      sk: 'newsletter',
       title,
-      subscriptionIds,
+      dataFeedIds,
       numberOfDaysToInclude,
       scheduleId,
-      shared,
-      discoverable,
+      isPrivate,
       createdAt,
-      owner,
+      accountId,
       newsletterIntroPrompt,
       newsletterStyle: JSON.stringify(newsletterStyle)
     })
   }
-  const command = new PutItemCommand(input)
+  const command = new PutItemCommand(commandInput)
   const response = await dynamodb.send(command)
   if (response.$metadata.httpStatusCode === 200) {
     metrics.addMetric('NewsletterCreated', MetricUnits.Count, 1)
@@ -155,13 +163,12 @@ const storeNewsletterData = async (
   return {
     newsletterId,
     title,
-    subscriptionIds,
+    dataFeedIds,
     numberOfDaysToInclude,
     scheduleId,
-    shared,
-    discoverable,
+    isPrivate,
     createdAt,
-    owner,
+    accountId,
     newsletterIntroPrompt,
     newsletterStyle,
     __typename: 'Newsletter'

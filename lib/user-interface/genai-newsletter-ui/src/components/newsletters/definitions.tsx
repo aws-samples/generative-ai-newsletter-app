@@ -7,31 +7,31 @@ import {
   Popover,
   SpaceBetween
 } from '@cloudscape-design/components'
-import { DataFeedArticle, DataFeedSubscription } from '@shared/api/API'
+import { Article, DataFeed } from 'genai-newsletter-shared/api/API'
 
 export const NewsletterWizardDataFeedsTableColumnDefinition = () => {
   return [
     {
-      id: 'subscriptionId',
-      cell: (item: DataFeedSubscription) => item.subscriptionId,
-      header: 'Subscription ID',
+      id: 'dataFeedId',
+      cell: (item: DataFeed) => item.dataFeedId,
+      header: 'Data Feed ID',
       isHeaderRow: false
     },
     {
       id: 'title',
-      cell: (item: DataFeedSubscription) => item.title,
+      cell: (item: DataFeed) => item.title,
       header: 'Title',
       isHeaderRow: true
     },
     {
       id: 'url',
-      cell: (item: DataFeedSubscription) => item.url,
+      cell: (item: DataFeed) => item.url,
       header: 'Feed URL',
       isHeaderRow: true
     },
     {
       id: 'feedType',
-      cell: (item: DataFeedSubscription) => item.feedType,
+      cell: (item: DataFeed) => item.feedType,
       header: 'Feed Type',
       isHeaderRow: true
     }
@@ -40,7 +40,7 @@ export const NewsletterWizardDataFeedsTableColumnDefinition = () => {
 
 export const NewsletterWizardNewsFeedsTableColumnDisplay = () => {
   return [
-    { id: 'subscriptionId', visible: false },
+    { id: 'dataFeedId', visible: false },
     { id: 'title', visible: true },
     { id: 'url', visible: true },
     { id: 'feedType', visible: true }
@@ -49,7 +49,7 @@ export const NewsletterWizardNewsFeedsTableColumnDisplay = () => {
 
 export const DataFeedsTableColumnDisplay = () => {
   return [
-    { id: 'subscriptionId', visible: false },
+    { id: 'dataFeedId', visible: false },
     { id: 'title', visible: true },
     { id: 'url', visible: true },
     { id: 'feedType', visible: true },
@@ -58,7 +58,7 @@ export const DataFeedsTableColumnDisplay = () => {
   ]
 }
 
-export const DataFeedArticlesTableColumnDefiniton = (
+export const ArticlesTableColumnDefiniton = (
   flaggedContentHandler: (
     articleId: string,
     flaggedContent: boolean
@@ -67,19 +67,19 @@ export const DataFeedArticlesTableColumnDefiniton = (
   return [
     {
       id: 'articleId',
-      cell: (item: DataFeedArticle) => item.articleId,
+      cell: (item: Article) => item.articleId,
       header: 'Article ID',
       isHeaderRow: false
     },
     {
       id: 'title',
-      cell: (item: DataFeedArticle) => item.title,
+      cell: (item: Article) => item.title,
       header: 'Article Title',
       isHeaderRow: true
     },
     {
       id: 'url',
-      cell: (item: DataFeedArticle) => (
+      cell: (item: Article) => (
         <Link variant="primary" external href={item.url}>
           {item.url}
         </Link>
@@ -89,7 +89,7 @@ export const DataFeedArticlesTableColumnDefiniton = (
     },
     {
       id: 'summary',
-      cell: (item: DataFeedArticle) =>
+      cell: (item: Article) =>
         item.shortSummary !== null ? (
           <Popover content={<Box>{item.longSummary}</Box>}>
             {item.shortSummary}
@@ -97,8 +97,8 @@ export const DataFeedArticlesTableColumnDefiniton = (
         ) : (
           <Popover content={<Box>{item.articleSummary}</Box>}>
             {item.articleSummary !== undefined &&
-            item.articleSummary &&
-            item.articleSummary.length > 75
+              item.articleSummary &&
+              item.articleSummary.length > 75
               ? item.articleSummary?.substring(0, 75) + '...'
               : item.articleSummary}
           </Popover>
@@ -108,9 +108,9 @@ export const DataFeedArticlesTableColumnDefiniton = (
     },
     {
       id: 'keywords',
-      cell: (item: DataFeedArticle) => (
+      cell: (item: Article) => (
         <SpaceBetween size="xs" direction="horizontal">
-          {item.keywords?.split(',').map((keyword) => {
+          {item.keywords?.split(',').map((keyword: string) => {
             return <Badge color="blue">{keyword}</Badge>
           })}
         </SpaceBetween>
@@ -120,14 +120,14 @@ export const DataFeedArticlesTableColumnDefiniton = (
     },
     {
       id: 'createdAt',
-      cell: (item: DataFeedArticle) =>
+      cell: (item: Article) =>
         item.createdAt ? new Date(item.createdAt).toUTCString() : '',
       header: 'Created At',
       isHeaderRow: true
     },
     {
       id: 'flagged',
-      cell: (item: DataFeedArticle) => (
+      cell: (item: Article) => (
         <Button
           variant="link"
           onClick={() => {

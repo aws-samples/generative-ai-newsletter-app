@@ -4,7 +4,6 @@ import {
   StatusIndicator,
   Alert,
   AlertProps,
-  SelectProps,
   SpaceBetween,
   Header,
   Button
@@ -18,14 +17,14 @@ import {
   Dispatch
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArticleSummaryType, DataFeedSubscription } from '@shared/api/API'
+import { ArticleSummaryType, DataFeed } from 'genai-newsletter-shared/api/API'
 import { ApiClient } from '../../../common/api'
 import { AppContext } from '../../../common/app-context'
 import NewsletterDataFeedsSelectionForm from './data-feeds-selection-table'
 import NewsletterDetailsForm from './newsletter-details'
 import NewsletterReviewForm from './newsletter-review'
 import NewsletterIntroPrompt from './newsletter-intro-prompt'
-import { NewsletterStyle } from '@shared/common/newsletter-style'
+import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
 import NewsletterDesignerForm from './newsletter-designer'
 
 interface NewsletterWizardProps {
@@ -49,18 +48,14 @@ export default function NewsletterWizard({
   )
   const navigate = useNavigate()
   const [title, setTitle] = useState<string>('')
-  const [discoverable, setDiscoverable] = useState<boolean>(false)
-  const [shared, setShared] = useState<boolean>(false)
+  const [isPrivate, setIsPrivate] = useState<boolean>(true)
   const [numberOfDaysToInclude, setNumberOfDaysToInclude] = useState<number>(7)
-  const [selectedSubscriptions, setSelectedSubscriptions] = useState<
-    DataFeedSubscription[]
+  const [selectedDataFeeds, setSelectedDataFeeds] = useState<
+    DataFeed[]
   >([])
   const [activeWizardStep, setActiveWizardStep] = useState<number>(0)
-  const [articleSummaryType, setArticleSummaryType] =
-    useState<SelectProps.Option>({
-      label: 'Short Summary',
-      value: ArticleSummaryType.SHORT_SUMMARY as string
-    })
+  const [articleSummaryType, setArticleSummaryType] = useState<ArticleSummaryType>(
+    ArticleSummaryType.SHORT_SUMMARY)
   const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
   const [titleError, setTitleError] = useState<string>('')
   const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] =
@@ -99,12 +94,11 @@ export default function NewsletterWizard({
     const apiClient = new ApiClient(appContext)
     const result = await apiClient.newsletters.createNewsletter({
       title,
-      discoverable,
-      shared,
+      isPrivate,
       numberOfDaysToInclude,
-      subscriptionIds: selectedSubscriptions.map((s) => s.subscriptionId),
+      dataFeedIds: selectedDataFeeds.map((s) => s.dataFeedId),
       newsletterIntroPrompt,
-      articleSummaryType: articleSummaryType.value as ArticleSummaryType,
+      articleSummaryType,
       newsletterStyle: JSON.stringify(newsletterStyle)
     })
     if (result.errors) {
@@ -119,12 +113,11 @@ export default function NewsletterWizard({
   }, [
     appContext,
     title,
-    discoverable,
-    shared,
+    isPrivate,
     numberOfDaysToInclude,
-    selectedSubscriptions,
+    selectedDataFeeds,
     newsletterIntroPrompt,
-    articleSummaryType.value,
+    articleSummaryType,
     newsletterStyle,
     navigate
   ])
@@ -139,7 +132,7 @@ export default function NewsletterWizard({
       return
     }
     const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.getNewsletter(newsletterId)
+    const result = await apiClient.newsletters.getNewsletter({ newsletterId })
     if (result.errors) {
       console.error(result.errors)
       setWizardAlertHeader('There was an error loading your Newsletter.')
@@ -148,37 +141,21 @@ export default function NewsletterWizard({
       setLoading(false)
     } else {
       setTitle(result.data.getNewsletter?.title ?? '')
-      setDiscoverable(result.data.getNewsletter?.discoverable ?? false)
-      setShared(result.data.getNewsletter?.shared ?? false)
+      setIsPrivate(result.data.getNewsletter.isPrivate ?? true)
       setNumberOfDaysToInclude(
         result.data.getNewsletter?.numberOfDaysToInclude ?? 7
       )
-      setSelectedSubscriptions(
-        (result.data.getNewsletter?.subscriptions as DataFeedSubscription[]) ??
-          []
-      )
-      if (
-        result.data.getNewsletter.articleSummaryType ===
-        ArticleSummaryType.KEYWORDS
-      ) {
-        setArticleSummaryType({
-          label: 'Keywords',
-          value: ArticleSummaryType.KEYWORDS as string
-        })
-      } else if (
-        result.data.getNewsletter.articleSummaryType ===
-        ArticleSummaryType.LONG_SUMMARY
-      ) {
-        setArticleSummaryType({
-          label: 'Long Summary',
-          value: ArticleSummaryType.LONG_SUMMARY as string
-        })
-      } else {
-        setArticleSummaryType({
-          label: 'Short Summary',
-          value: ArticleSummaryType.SHORT_SUMMARY as string
-        })
+      const dataFeedIds = result.data?.getNewsletter?.dataFeedIds ?? []
+      const selectedDataFeedItems: DataFeed[] = []
+      for (const dataFeedId of dataFeedIds) {
+        const dataFeedResult = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
+        if (dataFeedResult.data.getDataFeed !== undefined && dataFeedResult.data.getDataFeed !== null) {
+          selectedDataFeedItems.push(dataFeedResult.data.getDataFeed)
+        }
       }
+      setSelectedDataFeeds(selectedDataFeedItems)
+      setArticleSummaryType(
+        result.data.getNewsletter?.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY)
       setNewsletterIntroPrompt(
         result.data.getNewsletter?.newsletterIntroPrompt ?? ''
       )
@@ -208,15 +185,14 @@ export default function NewsletterWizard({
       }
       const apiClient = new ApiClient(appContext)
       const result = await apiClient.newsletters.updateNewsletter(
-        newsletterId,
         {
+          newsletterId,
           title,
-          discoverable,
-          shared,
+          isPrivate,
           numberOfDaysToInclude,
-          subscriptionIds: selectedSubscriptions.map((s) => s.subscriptionId),
+          dataFeedIds: selectedDataFeeds.map((s) => s.dataFeedId),
           newsletterIntroPrompt,
-          articleSummaryType: articleSummaryType.value as ArticleSummaryType,
+          articleSummaryType,
           newsletterStyle: JSON.stringify(newsletterStyle)
         }
       )
@@ -230,19 +206,7 @@ export default function NewsletterWizard({
         navigate(`/newsletters/${newsletterId}`)
       }
     }
-  }, [
-    appContext,
-    articleSummaryType.value,
-    discoverable,
-    navigate,
-    newsletterId,
-    newsletterIntroPrompt,
-    newsletterStyle,
-    numberOfDaysToInclude,
-    selectedSubscriptions,
-    shared,
-    title
-  ])
+  }, [newsletterId, appContext, title, isPrivate, numberOfDaysToInclude, selectedDataFeeds, newsletterIntroPrompt, articleSummaryType, newsletterStyle, navigate])
 
   const cancelWizard = useCallback(async () => {
     navigate(newsletterId ? `/newsletters/${newsletterId}` : '/newsletters')
@@ -304,8 +268,8 @@ export default function NewsletterWizard({
       activeStepIndex={activeWizardStep}
       onSubmit={
         newsletterId !== undefined &&
-        newsletterId !== null &&
-        newsletterId.length > 0
+          newsletterId !== null &&
+          newsletterId.length > 0
           ? updateNewsletter
           : submitCreateNewsletter
       }
@@ -333,10 +297,8 @@ export default function NewsletterWizard({
                 <NewsletterDetailsForm
                   title={title}
                   setTitle={setTitle}
-                  discoverable={discoverable}
-                  setDiscoverable={setDiscoverable}
-                  shared={shared}
-                  setShared={setShared}
+                  setIsPrivate={setIsPrivate}
+                  isPrivate={isPrivate}
                   numberOfDaysToInclude={numberOfDaysToInclude}
                   setNumberOfDaysToInclude={setNumberOfDaysToInclude}
                   titleError={titleError}
@@ -362,13 +324,16 @@ export default function NewsletterWizard({
                 <></>
               )}
               <NewsletterDataFeedsSelectionForm
-                selectedSubscriptions={selectedSubscriptions}
-                setSelectedSubscriptions={setSelectedSubscriptions}
+                includeDiscoverable
+                includeOwned
+                includeShared
+                selectedDataFeeds={selectedDataFeeds}
+                setSelectedDataFeeds={setSelectedDataFeeds}
               />
             </Container>
           ),
           isOptional:
-            newsletterId !== undefined && selectedSubscriptions.length > 0
+            newsletterId !== undefined
         },
         {
           title: 'Define your Newsletter Intro',
@@ -488,15 +453,14 @@ export default function NewsletterWizard({
                 )}
                 <NewsletterReviewForm
                   title={title}
-                  discoverable={discoverable}
-                  shared={shared}
+                  isPrivate={isPrivate}
                   numberOfDaysToInclude={numberOfDaysToInclude}
-                  selectedSubscriptions={selectedSubscriptions}
+                  selectedDataFeeds={selectedDataFeeds}
                   formTitle="Review and Finalize Details"
                   formDescription="Review and finalize the details of your newsletter before saving."
                   newsletterIntroPrompt={newsletterIntroPrompt}
                   articleSummaryType={
-                    articleSummaryType.value as ArticleSummaryType
+                    articleSummaryType
                   }
                 />
               </Container>

@@ -61,7 +61,7 @@ const unsubscribeCognitoUser = async (
       TableName: NEWSLETTER_TABLE,
       Key: marshall({
         newsletterId,
-        compoundSortKey: 'subscriber#' + cognitoUserId
+        sk: 'subscriber#' + cognitoUserId
       })
     }
     const command = new DeleteItemCommand(input)

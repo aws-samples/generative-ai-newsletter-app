@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { type DeployConfig } from '@shared/common/deploy-config'
+import { type DeployConfig } from '../lib/shared/common/deploy-config'
 import { bigHeader } from './consts'
 const configFile = './bin/config.json'
 

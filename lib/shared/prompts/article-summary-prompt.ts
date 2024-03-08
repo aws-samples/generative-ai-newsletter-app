@@ -2,7 +2,7 @@ import {
   TaggedElement,
   type PromptElementContext,
   MultiSizeFormattedResponse
-} from '../prompts/prompt-processing'
+} from './prompt-processing'
 
 export class ArticleSummaryBuilder {
   private readonly articleSummarizationPrompt: string | null

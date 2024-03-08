@@ -16,33 +16,24 @@ import { BlockPublicAccess, Bucket, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
-import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
-import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { type IRole } from 'aws-cdk-lib/aws-iam'
-import { type UIConfig } from '@shared/common/deploy-config'
+import { type UIConfig } from '../shared/common/deploy-config'
 
 interface UserInterfaceProps {
+
+  emailBucketArn: string
+  userPoolId: string
   userPoolClientId: string
-  userPool: IUserPool
-  identityPool: IIdentityPool
-  authenticatedUserRole: IRole
+  identityPoolId: string
   graphqlApiUrl: string
-  graphqlApiKey: string | undefined
-  emailBucket: Bucket
+
 }
 
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
-    const {
-      emailBucket,
-      userPoolClientId,
-      userPool,
-      identityPool,
-      graphqlApiUrl
-    } = props
-    const { identityPoolId } = identityPool
-    const { userPoolId } = userPool
     super(scope, id)
+    const {
+      emailBucketArn
+    } = props
 
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
     const buildPath = path.join(appPath, 'dist')
@@ -59,7 +50,7 @@ export class UserInterface extends Construct {
     websiteBucket.grantRead(websiteOAI)
 
     const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
-    emailBucket.grantRead(newslettersOAI)
+    const emailBucket = Bucket.fromBucketArn(this, 'EmailBucket', emailBucketArn)
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(
       this,
@@ -97,13 +88,13 @@ export class UserInterface extends Construct {
           {
             errorCode: 404,
             errorCachingMinTtl: 0,
-            responseCode: 404,
+            responseCode: 200,
             responsePagePath: '/index.html'
           }
         ]
       }
     )
-
+    emailBucket.grantRead(newslettersOAI)
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
     })
@@ -111,16 +102,16 @@ export class UserInterface extends Construct {
     const exports = {
       Auth: {
         Cognito: {
-          userPoolId,
-          userPoolClientId,
-          identityPoolId,
+          userPoolId: props.userPoolId,
+          userPoolClientId: props.userPoolClientId,
+          identityPoolId: props.identityPoolId,
           loginWith: {}
         }
       },
       ui: this.node.tryGetContext('ui') as UIConfig,
       API: {
         GraphQL: {
-          endpoint: graphqlApiUrl,
+          endpoint: props.graphqlApiUrl,
           region: Aws.REGION,
           defaultAuthMode: 'userPool'
         }

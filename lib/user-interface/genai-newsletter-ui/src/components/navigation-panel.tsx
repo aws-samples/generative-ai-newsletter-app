@@ -106,7 +106,6 @@ export default function NavigationPanel() {
         }))
       })
     }
-    console.log(sideNavigation)
     setItems(sideNavigation)
   }, [appContext])
 

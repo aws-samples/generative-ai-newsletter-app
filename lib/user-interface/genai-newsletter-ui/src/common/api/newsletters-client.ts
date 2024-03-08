@@ -3,38 +3,42 @@ import { GraphQLResult } from '@aws-amplify/api'
 
 import {
   getNewsletter,
-  getNewsletterEmails,
+  listPublications,
   getNewsletterSubscriberStats,
-  getNewsletters,
-  getUserNewsletterSubscriptionStatus,
-  getUserNewsletterSubscriptions
-} from '@shared/api/graphql/queries'
+  listNewsletters,
+  getUserSubscriptionStatus,
+  listUserSubscriptions,
+  canManageNewsletter
+} from 'genai-newsletter-shared/api/graphql/queries'
 import {
-  CreateNewsletter,
+  CreateNewsletterInput,
   CreateNewsletterMutation,
-  GetNewsletterEmailsInput,
-  GetNewsletterEmailsQuery,
+  ListPublicationsInput,
   GetNewsletterQuery,
-  GetNewslettersInput,
-  GetNewslettersQuery,
-  GetUserNewsletterSubscriptionStatusQuery,
   UpdateNewsletterInput,
   UpdateNewsletterMutation,
-  UserNewsletterSubscriptionStatusInput,
   GetNewsletterSubscriberStatsInput,
   GetNewsletterSubscriberStatsQuery,
   SubscribeToNewsletterInput,
   SubscribeToNewsletterMutation,
   UnsubscribeFromNewsletterInput,
   UnsubscribeFromNewsletterMutation,
-  GetUserNewsletterSubscriptionsQuery
-} from '@shared/api/API'
+  ListNewslettersQuery,
+  ListPublicationsQuery,
+  GetUserSubscriptionStatusQuery,
+  ListUserSubscriptionsQuery,
+  GetUserSubscriptionStatusInput,
+  ListNewslettersInput,
+  GetNewsletterInput,
+  CanManageNewsletterInput,
+  CanManageNewsletterQuery
+} from 'genai-newsletter-shared/api'
 import {
   createNewsletter,
   subscribeToNewsletter,
   unsubscribeFromNewsletter,
   updateNewsletter
-} from '@shared/api/graphql/mutations'
+} from 'genai-newsletter-shared/api/graphql/mutations'
 
 const client = generateClient({
   authMode: 'userPool'
@@ -42,29 +46,29 @@ const client = generateClient({
 
 export class NewslettersClient {
   async listNewsletters(
-    input?: GetNewslettersInput,
+    input?: ListNewslettersInput,
     nextToken?: string,
     limit?: number
-  ): Promise<GraphQLResult<GetNewslettersQuery>> {
+  ): Promise<GraphQLResult<ListNewslettersQuery>> {
     try {
       const result = await client.graphql({
-        query: getNewsletters,
+        query: listNewsletters,
         variables: { input, nextToken, limit }
       })
-      return result as GraphQLResult<GraphQLQuery<GetNewslettersQuery>>
+      return result as GraphQLResult<GraphQLQuery<ListNewslettersQuery>>
     } catch (e) {
       console.error(e)
     }
-    return {} as GraphQLResult<GraphQLQuery<GetNewslettersQuery>>
+    return {} as GraphQLResult<GraphQLQuery<ListNewslettersQuery>>
   }
 
   async getNewsletter(
-    newsletterId: string
+    input: GetNewsletterInput
   ): Promise<GraphQLResult<GetNewsletterQuery>> {
     try {
       const result = await client.graphql({
         query: getNewsletter,
-        variables: { input: { newsletterId } }
+        variables: { input }
       })
       return result as GraphQLResult<GraphQLQuery<GetNewsletterQuery>>
     } catch (e) {
@@ -74,7 +78,7 @@ export class NewslettersClient {
   }
 
   async createNewsletter(
-    input: CreateNewsletter
+    input: CreateNewsletterInput
   ): Promise<GraphQLResult<CreateNewsletterMutation>> {
     try {
       const result = await client.graphql({
@@ -89,13 +93,12 @@ export class NewslettersClient {
   }
 
   async updateNewsletter(
-    newsletterId: string,
     input: UpdateNewsletterInput
   ): Promise<GraphQLResult<UpdateNewsletterMutation>> {
     try {
       const result = await client.graphql({
         query: updateNewsletter,
-        variables: { newsletterId, input }
+        variables: { input }
       })
       if (result.errors) {
         throw result.errors
@@ -106,47 +109,45 @@ export class NewslettersClient {
     return {} as GraphQLResult<GraphQLQuery<UpdateNewsletterMutation>>
   }
 
-  async getNewsletterEmails(
-    input: GetNewsletterEmailsInput,
+  async listPublications(
+    input: ListPublicationsInput,
     nextToken?: string | undefined,
     limit?: number
-  ): Promise<GraphQLResult<GraphQLQuery<GetNewsletterEmailsQuery>>> {
+  ): Promise<GraphQLResult<GraphQLQuery<ListPublicationsQuery>>> {
     try {
       const result = await client.graphql({
-        query: getNewsletterEmails,
+        query: listPublications,
         variables: { input, nextToken, limit }
       })
       if (result.errors) {
         throw result.errors
       }
-      return result as GraphQLResult<GraphQLQuery<GetNewsletterEmailsQuery>>
+      return result as GraphQLResult<GraphQLQuery<ListPublicationsQuery>>
     } catch (e) {
       console.error(e)
     }
-    return {} as GraphQLResult<GraphQLQuery<GetNewsletterEmailsQuery>>
+    return {} as GraphQLResult<GraphQLQuery<ListPublicationsQuery>>
   }
 
-  async getUserNewsletterSubscriptionStatus(
-    input: UserNewsletterSubscriptionStatusInput
-  ): Promise<
-    GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionStatusQuery>>
+  async getUserSubscriptionStatus(input: GetUserSubscriptionStatusInput): Promise<
+    GraphQLResult<GraphQLQuery<GetUserSubscriptionStatusQuery>>
   > {
     try {
       const result = await client.graphql({
-        query: getUserNewsletterSubscriptionStatus,
-        variables: { input }
+        query: getUserSubscriptionStatus,
+        variables: {input}
       })
       if (result.errors) {
         throw result.errors
       }
       return result as GraphQLResult<
-        GraphQLQuery<GetUserNewsletterSubscriptionStatusQuery>
+        GraphQLQuery<GetUserSubscriptionStatusQuery>
       >
     } catch (e) {
       console.error(e)
     }
     return {} as GraphQLResult<
-      GraphQLQuery<GetUserNewsletterSubscriptionStatusQuery>
+      GraphQLQuery<GetUserSubscriptionStatusQuery>
     >
   }
 
@@ -210,26 +211,44 @@ export class NewslettersClient {
     return {} as GraphQLResult<GraphQLQuery<UnsubscribeFromNewsletterMutation>>
   }
 
-  async getUserNewsletterSubscriptions(
+  async listUserSubscriptions(
     nextToken?: string,
     limit?: number
-  ): Promise<GraphQLResult<GraphQLQuery<GetUserNewsletterSubscriptionsQuery>>> {
+  ): Promise<GraphQLResult<GraphQLQuery<ListUserSubscriptionsQuery>>> {
     try {
       const result = await client.graphql({
-        query: getUserNewsletterSubscriptions,
+        query: listUserSubscriptions,
         variables: { nextToken, limit }
       })
       if (result.errors) {
         throw result.errors
       }
       return result as GraphQLResult<
-        GraphQLQuery<GetUserNewsletterSubscriptionsQuery>
+        GraphQLQuery<ListUserSubscriptionsQuery>
       >
     } catch (e) {
       console.error(e)
     }
     return {} as GraphQLResult<
-      GraphQLQuery<GetUserNewsletterSubscriptionsQuery>
+      GraphQLQuery<ListUserSubscriptionsQuery>
     >
+  }
+
+  async canManageNewsletter(
+    input: CanManageNewsletterInput
+  ): Promise<GraphQLResult<GraphQLQuery<CanManageNewsletterQuery>>> {
+    try {
+      const result = await client.graphql({
+        query: canManageNewsletter,
+        variables: { input }
+      })
+      if (result.errors) {
+        throw result.errors
+      }
+      return result as GraphQLResult<GraphQLQuery<CanManageNewsletterQuery>>
+    } catch (e) {
+      return {data:{canManageNewsletter:false}} as GraphQLResult<GraphQLQuery<CanManageNewsletterQuery>>
+    }
+    
   }
 }

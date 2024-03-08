@@ -35,7 +35,11 @@ export default function DataFeedsDashboard() {
             </Header>
           }
         >
-          <DataFeedsTable />
+          <DataFeedsTable
+            includeDiscoverable
+            includeOwned
+            includeShared
+          />
         </BaseContentLayout>
       }
     />

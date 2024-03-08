@@ -1,51 +1,49 @@
 import { GraphQLQuery, generateClient } from 'aws-amplify/api'
 import { GraphQLResult } from '@aws-amplify/api'
 import {
-  CreateDataFeedSubscriptionInput,
-  CreateDataFeedSubscriptionMutation,
-  FlagDataFeedArticleMutation,
-  GetDataFeedArticlesQuery,
-  GetDataFeedSubscriptionInput,
-  GetDataFeedSubscriptionQuery,
-  GetDataFeedSubscriptionsQuery,
+  CanManageDataFeedInput,
+  CanManageDataFeedQuery,
+  CreateDataFeedInput,
+  CreateDataFeedMutation,
+  FlagArticleInput,
+  FlagArticleMutation,
+  GetDataFeedInput,
+  GetDataFeedQuery,
+  ListArticlesInput,
+  ListArticlesQuery,
+  ListDataFeedsInput,
+  ListDataFeedsQuery,
+  UpdateDataFeedInput,
   UpdateDataFeedMutation,
-  UpdateDataFeedSubscriptionInput
-} from '@shared/api/API'
+} from 'genai-newsletter-shared/api'
+import { canManageDataFeed, getDataFeed, listArticles, listDataFeeds } from 'genai-newsletter-shared/api/graphql/queries'
 import {
-  getDataFeedArticles,
-  getDataFeedSubscription,
-  getDataFeedSubscriptions
-} from '@shared/api/graphql/queries'
-import {
-  createDataFeedSubscription,
-  flagDataFeedArticle,
+  createDataFeed,
+  flagArticle,
   updateDataFeed
-} from '@shared/api/graphql/mutations'
+} from 'genai-newsletter-shared/api/graphql/mutations'
 
 const client = generateClient({
   authMode: 'userPool'
 })
 
 export class DataFeedsClient {
-  async listDataFeeds(args?: {
-    nextToken?: string
+  async listDataFeeds(
+  input: ListDataFeedsInput,
+    nextToken?: string,
     limit?: number
-  }): Promise<GraphQLResult<GetDataFeedSubscriptionsQuery>> {
+  ): Promise<GraphQLResult<ListDataFeedsQuery>> {
     try {
-      const { nextToken, limit } = args ?? {
-        nextToken: null,
-        limit: null
-      }
       const result = await client.graphql({
-        query: getDataFeedSubscriptions,
-        variables: { nextToken, limit }
+        query: listDataFeeds,
+        variables: { input, nextToken, limit }
       })
       if (
-        result.data.getDataFeedSubscriptions.subscriptions !== undefined &&
-        result.data.getDataFeedSubscriptions.subscriptions !== null &&
-        result.data.getDataFeedSubscriptions.subscriptions.length > 1
+        result.data.listDataFeeds.dataFeeds !== undefined &&
+        result.data.listDataFeeds.dataFeeds !== null &&
+        result.data.listDataFeeds.dataFeeds.length > 1
       ) {
-        result.data.getDataFeedSubscriptions.subscriptions.sort(
+        result.data.listDataFeeds.dataFeeds.sort(
           (a: any, b: any) => {
             if (Date.parse(a.createdAt) > Date.parse(b.createdAt)) {
               return -1
@@ -56,7 +54,7 @@ export class DataFeedsClient {
         )
       }
       return result as GraphQLResult<
-        GraphQLQuery<GetDataFeedSubscriptionsQuery>
+        GraphQLQuery<ListDataFeedsQuery>
       >
     } catch (e) {
       console.error(e)
@@ -65,14 +63,14 @@ export class DataFeedsClient {
   }
 
   async getDataFeed(
-    input: GetDataFeedSubscriptionInput
-  ): Promise<GraphQLResult<GetDataFeedSubscriptionQuery>> {
+    input: GetDataFeedInput
+  ): Promise<GraphQLResult<GetDataFeedQuery>> {
     try {
       const result = await client.graphql({
-        query: getDataFeedSubscription,
+        query: getDataFeed,
         variables: { input }
       })
-      return result as GraphQLResult<GraphQLQuery<GetDataFeedSubscriptionQuery>>
+      return result as GraphQLResult<GraphQLQuery<GetDataFeedQuery>>
     } catch (e) {
       console.error(e)
       throw e
@@ -80,15 +78,15 @@ export class DataFeedsClient {
   }
 
   async createDataFeed(
-    input: CreateDataFeedSubscriptionInput
-  ): Promise<GraphQLResult<GraphQLQuery<CreateDataFeedSubscriptionMutation>>> {
+    input: CreateDataFeedInput
+  ): Promise<GraphQLResult<GraphQLQuery<CreateDataFeedMutation>>> {
     try {
       const result = await client.graphql({
-        query: createDataFeedSubscription,
+        query: createDataFeed,
         variables: { input }
       })
       return result as GraphQLResult<
-        GraphQLQuery<CreateDataFeedSubscriptionMutation>
+        GraphQLQuery<CreateDataFeedMutation>
       >
     } catch (e) {
       console.error(e)
@@ -97,13 +95,12 @@ export class DataFeedsClient {
   }
 
   async updateDataFeed(
-    input: UpdateDataFeedSubscriptionInput,
-    subscriptionId: string
+    input: UpdateDataFeedInput,
   ): Promise<GraphQLResult<UpdateDataFeedMutation>> {
     try {
       const result = await client.graphql({
         query: updateDataFeed,
-        variables: { input, subscriptionId }
+        variables: { input }
       })
       return result as GraphQLResult<GraphQLQuery<UpdateDataFeedMutation>>
     } catch (e) {
@@ -112,22 +109,22 @@ export class DataFeedsClient {
     }
   }
 
-  async getDataFeedArticles(
-    subscriptionId: string,
+  async listArticles(
+    input: ListArticlesInput,
     nextToken?: string,
     limit: number = 1000
-  ): Promise<GraphQLResult<GraphQLQuery<GetDataFeedArticlesQuery>>> {
+  ): Promise<GraphQLResult<GraphQLQuery<ListArticlesQuery>>> {
     try {
       const result = await client.graphql({
-        query: getDataFeedArticles,
-        variables: { input: { subscriptionId }, nextToken, limit }
+        query: listArticles,
+        variables: {input, nextToken, limit }
       })
       if (
-        result.data.getDataFeedArticles?.dataFeedArticles !== undefined &&
-        result.data.getDataFeedArticles.dataFeedArticles !== null &&
-        result.data.getDataFeedArticles.dataFeedArticles.length > 1
+        result.data.listArticles?.articles !== undefined &&
+        result.data.listArticles.articles !== null &&
+        result.data.listArticles.articles.length > 1
       ) {
-        result.data.getDataFeedArticles.dataFeedArticles.sort(
+        result.data.listArticles.articles.sort(
           (a: any, b: any) => {
             if (Date.parse(a.createdAt) > Date.parse(b.createdAt)) {
               return -1
@@ -137,29 +134,42 @@ export class DataFeedsClient {
           }
         )
       }
-      return result as GraphQLResult<GraphQLQuery<GetDataFeedArticlesQuery>>
+      return result as GraphQLResult<GraphQLQuery<ListDataFeedsQuery>>
     } catch (e) {
       console.error(e)
       throw e
     }
   }
 
-  async flagDataFeedArticle(
-    subscriptionId: string,
-    articleId: string,
-    flaggedContent: boolean
-  ): Promise<GraphQLResult<GraphQLQuery<FlagDataFeedArticleMutation>>> {
+  async flagArticle(
+    input: FlagArticleInput
+  ): Promise<GraphQLResult<GraphQLQuery<FlagArticleMutation>>> {
     try {
+      const { dataFeedId, articleId, flaggedContent } = input
       const result = await client.graphql({
-        query: flagDataFeedArticle,
+        query: flagArticle,
         variables: {
-          input: { subscriptionId, articleId, flaggedContent }
+          input: { dataFeedId, articleId, flaggedContent }
         }
       })
-      return result as GraphQLResult<GraphQLQuery<FlagDataFeedArticleMutation>>
+      return result as GraphQLResult<GraphQLQuery<FlagArticleMutation>>
     } catch (e) {
       console.error(e)
       throw e
+    }
+  }
+
+  async canManageDataFeed(
+    input: CanManageDataFeedInput
+  ): Promise<GraphQLResult<GraphQLQuery<CanManageDataFeedQuery>>> {
+    try {
+      const result = await client.graphql({
+        query: canManageDataFeed,
+        variables: { input }
+      })
+      return result as GraphQLResult<GraphQLQuery<CanManageDataFeedQuery>>
+    }catch(e){
+      return {data: {canManageDataFeed: false}} as GraphQLResult<GraphQLQuery<CanManageDataFeedQuery>>;
     }
   }
 }

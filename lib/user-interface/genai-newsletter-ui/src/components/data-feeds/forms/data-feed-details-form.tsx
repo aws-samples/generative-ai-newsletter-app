@@ -15,7 +15,7 @@ import { AppContext } from '../../../common/app-context'
 import { ApiClient } from '../../../common/api'
 
 export default function DataFeedDetailsForm() {
-  const { subscriptionId } = useParams()
+  const { dataFeedId } = useParams()
   const appContext = useContext(AppContext)
   const [loading, setLoading] = useState<boolean>(true)
   const navigate = useNavigate()
@@ -26,57 +26,59 @@ export default function DataFeedDetailsForm() {
   const [titleError] = useState<string>('')
   const [description, setDescription] = useState<string>('')
   const [summarizationPrompt, setSummarizationPrompt] = useState<string>('')
+  const [isPrivate, setIsPrivate] = useState<boolean>(true)
 
   const getDataFeed = useCallback(async () => {
     if (!appContext) {
       return
     }
-    if (!subscriptionId) {
+    if (!dataFeedId) {
       return
     }
     const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.getDataFeed({ subscriptionId })
+    const result = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
     if (result.errors) {
       console.log(result.errors)
       return
     }
-    setUrl(result.data.getDataFeedSubscription?.url ?? '')
-    setEnabled(result.data.getDataFeedSubscription?.enabled ?? true)
-    setTitle(result.data.getDataFeedSubscription?.title ?? '')
-    setDescription(result.data.getDataFeedSubscription?.description ?? '')
+    setUrl(result.data.getDataFeed?.url ?? '')
+    setEnabled(result.data.getDataFeed?.enabled ?? true)
+    setTitle(result.data.getDataFeed?.title ?? '')
+    setDescription(result.data.getDataFeed?.description ?? '')
     setSummarizationPrompt(
-      result.data.getDataFeedSubscription?.summarizationPrompt ?? ''
+      result.data.getDataFeed?.summarizationPrompt ?? ''
     )
+    setIsPrivate(result.data.getDataFeed?.isPrivate ?? true)
     setLoading(false)
-  }, [appContext, subscriptionId])
+  }, [appContext, dataFeedId])
 
   const updateDataFeed = useCallback(async () => {
     setLoading(true)
     if (!appContext) {
       return
     }
-    if (!subscriptionId) {
+    if (!dataFeedId) {
       return
     }
     const apiClient = new ApiClient(appContext)
     const result = await apiClient.dataFeeds.updateDataFeed(
-      { url, enabled, title, description, summarizationPrompt },
-      subscriptionId
+      { dataFeedId, url, enabled, title, description, summarizationPrompt, isPrivate },
     )
     if (result.errors) {
       console.log(result.errors)
       return
     }
-    navigate(`/feeds/${subscriptionId}`)
+    navigate(`/feeds/${dataFeedId}`)
   }, [
     appContext,
     description,
     enabled,
     navigate,
-    subscriptionId,
+    dataFeedId,
     summarizationPrompt,
     title,
-    url
+    url,
+    isPrivate
   ])
 
   const createDataFeed = useCallback(async () => {
@@ -90,30 +92,23 @@ export default function DataFeedDetailsForm() {
       enabled,
       title,
       description,
-      summarizationPrompt
+      summarizationPrompt,
+      isPrivate
     })
     if (result.errors) {
       console.log(result.errors)
       return
     }
-    navigate(`/feeds/${result.data.createDataFeedSubscription?.subscriptionId}`)
-  }, [
-    appContext,
-    description,
-    enabled,
-    navigate,
-    summarizationPrompt,
-    title,
-    url
-  ])
+    navigate(`/feeds/${result.data.createDataFeed?.dataFeedId}`)
+  }, [appContext, description, enabled, isPrivate, navigate, summarizationPrompt, title, url])
 
   useEffect(() => {
-    if (subscriptionId) {
+    if (dataFeedId) {
       getDataFeed()
     } else {
       setLoading(false)
     }
-  }, [subscriptionId, getDataFeed])
+  }, [dataFeedId, getDataFeed])
   return (
     <Container>
       {loading ? (
@@ -121,14 +116,14 @@ export default function DataFeedDetailsForm() {
           <Spinner size="big" />
           <h4>Loading...</h4>
         </SpaceBetween>
-      ) : (
+      ) :
         <Form
           actions={
             <SpaceBetween size="s" direction="horizontal">
               <Button
                 onClick={() => {
-                  if (subscriptionId) {
-                    navigate(`/feeds/${subscriptionId}`)
+                  if (dataFeedId) {
+                    navigate(`/feeds/${dataFeedId}`)
                   } else {
                     navigate(`/feeds`)
                   }
@@ -138,9 +133,9 @@ export default function DataFeedDetailsForm() {
               </Button>
               <Button
                 variant="primary"
-                onClick={subscriptionId ? updateDataFeed : createDataFeed}
+                onClick={dataFeedId ? updateDataFeed : createDataFeed}
               >
-                {subscriptionId ? 'Update' : 'Add'}
+                {dataFeedId ? 'Update' : 'Add'}
               </Button>
             </SpaceBetween>
           }
@@ -187,11 +182,21 @@ export default function DataFeedDetailsForm() {
               description="Should the Data Feed be enabled to bring in new data?"
             >
               <Toggle
+                key="DataFeedPrivateToggle"
                 checked={enabled}
                 onChange={(e) => setEnabled(e.detail.checked)}
               >
                 Enabled
               </Toggle>
+            </FormField>
+            <FormField label="Private Data Feed"
+              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters.">
+              <Toggle
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.detail.checked)}
+              >Data Feed Private
+              </Toggle>
+
             </FormField>
             <FormField
               label="Summarization Prompt"
@@ -205,7 +210,7 @@ export default function DataFeedDetailsForm() {
             </FormField>
           </SpaceBetween>
         </Form>
-      )}
+      }
     </Container>
   )
 }

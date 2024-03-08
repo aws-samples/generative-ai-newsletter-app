@@ -40,10 +40,10 @@ export default function NewslettersDashboard() {
           }
         >
           <Container>
-            <NewslettersTable
-              getCurrentUserOwned={true}
-              getDiscoverable={true}
-            />
+            <NewslettersTable 
+            includeDiscoverable
+            includeOwned
+            includeShared/>
           </Container>
         </BaseContentLayout>
       }

@@ -12,7 +12,7 @@ import {
   type EndpointBatchItem,
   type MessageConfiguration
 } from '@aws-sdk/client-pinpoint'
-import { SubscriberType } from '../shared/common/newsletter-generator'
+import { SubscriberType } from 'genai-newsletter-shared/common'
 
 const SERVICE_NAME = 'pinpoint-campaign-hook'
 
@@ -79,14 +79,14 @@ const getNewsletterForCampaign = async (
     TableName: NEWSLETTER_DATA_TABLE,
     IndexName: NEWSLETTER_DATA_TABLE_CAMPAIGN_GSI,
     KeyConditionExpression:
-      '#campaignId = :campaignId AND begins_with(#compoundSortKey,:compoundSortKey)',
+      '#campaignId = :campaignId AND begins_with(#sk,:sk)',
     ExpressionAttributeNames: {
       '#campaignId': 'campaignId',
-      '#compoundSortKey': 'compoundSortKey'
+      '#sk': 'sk'
     },
     ExpressionAttributeValues: {
       ':campaignId': { S: campaignId },
-      ':compoundSortKey': { S: 'email#' }
+      ':sk': { S: 'publication#' }
     }
   }
   const command = new QueryCommand(input)
@@ -118,7 +118,7 @@ const isUserSubcribed = async (
     userId,
     subscriberType
   })
-  const compoundSortKey =
+  const sk =
     subscriberType === SubscriberType.COGNITO_SUBSCRIBER
       ? 'subscriber#' + userId
       : 'subscriber-external#' + userId
@@ -126,7 +126,7 @@ const isUserSubcribed = async (
     TableName: NEWSLETTER_DATA_TABLE,
     Key: {
       newsletterId: { S: newsletterId },
-      compoundSortKey: { S: compoundSortKey }
+      sk: { S: sk }
     }
   }
   const command = new GetItemCommand(input)

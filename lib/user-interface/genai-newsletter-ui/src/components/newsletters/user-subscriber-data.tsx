@@ -53,14 +53,12 @@ export default function UserSubscriberData() {
     }
     const apiClient = new ApiClient(appContext)
     const result =
-      await apiClient.newsletters.getUserNewsletterSubscriptionStatus({
-        newsletterId
-      })
+      await apiClient.newsletters.getUserSubscriptionStatus({ newsletterId })
     if (result.errors) {
       return
     }
     setIsCurrentUserSubscribed(
-      result.data.getUserNewsletterSubscriptionStatus ?? false
+      result.data.getUserSubscriptionStatus ?? false
     )
     setSubscriptionStatusLoading(false)
   }, [appContext, newsletterId])

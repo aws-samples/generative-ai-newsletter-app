@@ -6,10 +6,12 @@ export const userContextDefault: UserData = {
   userGroups: [],
   userFamilyName: '',
   userGivenName: '',
+  accountId: '',
   setUserGroups: () => {},
   setUserId: () => {},
   setUserFamilyName: () => {},
-  setUserGivenName: () => {}
+  setUserGivenName: () => {},
+  setAccountId: () => {}
 }
 
 export const UserContext = createContext<UserData | null>(userContextDefault)

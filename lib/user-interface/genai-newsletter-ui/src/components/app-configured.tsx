@@ -5,6 +5,7 @@ import { AppContext } from '../common/app-context'
 import App from '../app'
 import { Alert } from '@cloudscape-design/components'
 import Authenticator from './auth/custom-authenticator'
+import { generateClient } from 'aws-amplify/api'
 
 export default function AppConfigured() {
   const [config, setConfig] = useState<AppConfig | null>(null)
@@ -17,6 +18,9 @@ export default function AppConfigured() {
         Amplify.configure({
           ...awsExports
         })
+        if (awsExports !== null) {
+          awsExports.apiClient = generateClient()
+        }
         setConfig(awsExports)
       } catch (e) {
         setError(true)

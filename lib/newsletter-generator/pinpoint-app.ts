@@ -41,17 +41,16 @@ export class PinpointApp extends Construct {
     const pinpointApp = new CfnApp(this, 'PinpointApp', {
       name: 'GenAINewsletter'
     })
-    this.pinpointAppId = pinpointApp.ref
 
     new CfnEmailChannel(this, 'PinpointEmailChannel', {
-      applicationId: this.pinpointAppId,
+      applicationId: pinpointApp.ref,
       enabled: true,
       fromAddress: senderAddress,
       identity: verifiedIdentity
     })
 
     const baseSegment = new CfnSegment(this, 'BaseSegment', {
-      applicationId: this.pinpointAppId,
+      applicationId: pinpointApp.ref,
       name: 'BaseSegment'
     })
 
@@ -75,7 +74,7 @@ export class PinpointApp extends Construct {
           POWERTOOLS_LOG_LEVEL: 'DEBUG',
           NEWSLETTER_DATA_TABLE: props.newsletterTable.tableName,
           NEWSLETTER_DATA_TABLE_CAMPAIGN_GSI: props.newsletterTableCampaignGSI,
-          PINPOINT_APP_ID: this.pinpointAppId,
+          PINPOINT_APP_ID: pinpointApp.ref,
           PINPOINT_BASE_SEGMENT_ID: baseSegmentId
         }
       }
@@ -85,7 +84,7 @@ export class PinpointApp extends Construct {
       new ServicePrincipal('pinpoint.amazonaws.com'),
       {
         ArnLike: {
-          'aws:SourceArn': `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
+          'aws:SourceArn': `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`
         }
       }
     )
@@ -107,8 +106,8 @@ export class PinpointApp extends Construct {
             effect: Effect.ALLOW,
             actions: ['mobiletargeting:*'],
             resources: [
-              `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}`,
-              `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`,
+              `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}`,
+              `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`,
               `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:reports`
             ]
           })
@@ -126,8 +125,8 @@ export class PinpointApp extends Construct {
           'mobiletargeting:GetCampaign'
         ],
         resources: [
-          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}`,
-          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}`,
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`
         ]
       })
 
@@ -140,11 +139,12 @@ export class PinpointApp extends Construct {
           'mobiletargeting:GetUserEndpoints'
         ],
         resources: [
-          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}`,
-          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${this.pinpointAppId}/*`
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}`,
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`
         ]
       })
 
+    this.pinpointAppId = pinpointApp.ref
     this.pinpointBaseSegmentId = baseSegmentId
     this.pinpointCampaignHookFunction = pinpointCampaignHookFunction
     this.pinpointProjectAdminPolicy = pinpointProjectAdminPolicy

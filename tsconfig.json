@@ -21,17 +21,16 @@
     "inlineSources": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "moduleDetection": "force",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "typeRoots": ["./node_modules/@types"],
-    "paths": {
-      "@shared/*": ["lib/shared/*"]
-    }
   },
 
   "exclude": [
+    "misc",
     "dist",
     "node_modules",
     "cdk.out",

@@ -1,9 +1,10 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useCollection } from '@cloudscape-design/collection-hooks'
-import { Newsletter, NewsletterLookupType } from '@shared/api/API'
+import { Newsletter } from 'genai-newsletter-shared/api/API'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {
+  Alert,
   Box,
   Button,
   ButtonDropdown,
@@ -16,82 +17,66 @@ import {
 } from '@cloudscape-design/components'
 import { useNavigate } from 'react-router-dom'
 import useOnFollow from '../../common/hooks/use-on-follow'
+import { UserContext } from '../../common/user-context'
 
-export interface NewsFeedTableProps {
-  getDiscoverable?: boolean
-  getCurrentUserOwned?: boolean
-  getCurrentUserSubscribed?: boolean
+export interface ListableNewslettersTableProps {
   title?: string
+  includeOwned?: boolean
+  includeShared?: boolean
+  includeDiscoverable?: boolean
+  includeSubscriptions?: never
 }
 
-export default function NewslettersTable(props?: NewsFeedTableProps) {
-  const {
-    getDiscoverable = true,
-    getCurrentUserOwned = false,
-    getCurrentUserSubscribed = false
-  } = props ?? {
-    getDiscoverable: false,
-    getCurrentUserOwned: false,
-    getCurrentUserSubscribed: false
-  }
+export interface UserSubscriptionNewslettersTableProps {
+  title?: string
+  includeOwned?: never
+  includeShared?: never
+  includeDiscoverable?: never
+  includeSubscriptions?: boolean
+}
+
+export default function NewslettersTable(props: ListableNewslettersTableProps | UserSubscriptionNewslettersTableProps) {
   const appContext = useContext(AppContext)
+  const userContext = useContext(UserContext)
   const navigate = useNavigate()
   const onFollow = useOnFollow()
-  const [newsFeeds, setNewsFeeds] = useState<Newsletter[]>([])
+  const { includeOwned, includeDiscoverable, includeShared, includeSubscriptions } = props
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([])
   const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter>()
   const [loadingNewsletters, setLoadingNewsletters] = useState<boolean>(true)
+  const [subscribedCount, setSubscribedCount] = useState<number>(0)
+  const [subscribedAlertDismissed, setSubscribedAlertDismissed] = useState<boolean>(false)
+  const [editDisabled, setEditDisabled] = useState<boolean>(false)
 
   const getNewsletters = useCallback(async () => {
     if (!appContext) {
       return
     }
     const apiClient = new ApiClient(appContext)
-    const results: Newsletter[] = []
     try {
-      if (getDiscoverable) {
-        const result = await apiClient.newsletters.listNewsletters({
-          lookupType: NewsletterLookupType.DISCOVERABLE
-        })
-        if (result.data !== undefined && result.errors === undefined) {
-          results.push(
-            ...(result.data.getNewsletters.newsletters as Newsletter[])
-          )
-        }
-      }
-      if (getCurrentUserOwned) {
-        const result = await apiClient.newsletters.listNewsletters({
-          lookupType: NewsletterLookupType.CURRENT_USER_OWNED
-        })
-        if (result.data !== undefined && result.errors === undefined) {
-          results.push(
-            ...(result.data.getNewsletters.newsletters as Newsletter[])
-          )
-        }
-      }
-      if (getCurrentUserSubscribed) {
+      setSubscribedCount(0)
+      if (includeSubscriptions === true) {
         const result =
-          await apiClient.newsletters.getUserNewsletterSubscriptions()
+          await apiClient.newsletters.listUserSubscriptions()
         if (result.data !== undefined && result.errors === undefined) {
-          results.push(
-            ...(result.data.getUserNewsletterSubscriptions
-              ?.newsletters as Newsletter[])
-          )
+          setNewsletters(result.data.listUserSubscriptions.newsletters as Newsletter[])
+          setSubscribedCount(result.data.listUserSubscriptions.subscribedCount)
+        }
+      } else {
+        const result =
+          await apiClient.newsletters.listNewsletters({ includeDiscoverable, includeOwned, includeShared })
+        if (result.data !== undefined && result.errors === undefined) {
+          setNewsletters(result.data.listNewsletters.newsletters)
         }
       }
-      const filteredResults = Array.from(
-        new Set(results.map((x) => x.newsletterId))
-      ).map((x) => results.find((y) => y.newsletterId === x))
-      setNewsFeeds([...(filteredResults as Newsletter[])])
+
+
+
     } catch (e) {
       console.error(e)
     }
     setLoadingNewsletters(false)
-  }, [
-    appContext,
-    getCurrentUserOwned,
-    getCurrentUserSubscribed,
-    getDiscoverable
-  ])
+  }, [appContext, includeDiscoverable, includeOwned, includeShared, includeSubscriptions])
 
   const handleUpdateDropdownItemClick = (
     event: CustomEvent<ButtonDropdownProps.ItemClickDetails>
@@ -111,6 +96,12 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
 
   const newslettersTableColumnDefinitons = [
     {
+      id: 'accountId',
+      header: 'Account ID',
+      cell: (item: Newsletter) => item.accountId,
+      isHeaderRow: true
+    },
+    {
       id: 'name',
       header: 'Newsletter Name',
       cell: (item: Newsletter) => (
@@ -127,21 +118,14 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
       isHeaderRow: true
     },
     {
-      id: 'discoverable',
-      header: 'Discoverable',
+      id: 'private',
+      header: 'Private',
       cell: (item: Newsletter) =>
-        item.discoverable !== undefined
-          ? item.discoverable
-            ? 'YES'
-            : 'NO'
-          : 'NO',
-      isHeaderRow: true
-    },
-    {
-      id: 'shared',
-      header: 'Shared',
-      cell: (item: Newsletter) =>
-        item.shared !== undefined ? (item.shared ? 'YES' : 'NO') : 'NO',
+        item.isPrivate !== undefined
+          ? item.isPrivate
+            ? 'Private'
+            : 'Discoverable'
+          : 'Private',
       isHeaderRow: true
     },
     {
@@ -150,13 +134,20 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
       cell: (item: Newsletter) => new Date(item.createdAt).toUTCString()
     }
   ]
+  const newslettersTableColumnDisplay = [
+    { id: 'accountId', visible: false },
+    { id: 'name', visible: true },
+    { id: 'numberOfDays', visible: true },
+    { id: 'private', visible: true },
+    { id: 'Newsletter Created', visible: true }
+  ]
 
   useEffect(() => {
     getNewsletters()
   }, [getNewsletters])
 
   const { items, actions, collectionProps, filterProps } = useCollection(
-    newsFeeds,
+    newsletters,
     {
       filtering: {
         empty: <Box>No items</Box>,
@@ -177,9 +168,20 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
   )
 
   return (
-    <>
+    <SpaceBetween direction='vertical' size='s'>
+      {(subscribedCount > newsletters.length && !subscribedAlertDismissed) ?
+        <Alert type='warning'
+          dismissible
+          onDismiss={() => setSubscribedAlertDismissed(true)}
+        >
+          There are {subscribedCount - newsletters.length} newsletters you are subscribed to that are no longer visible to you.
+          This can happen when a newsletter owner stops sharing a newsletter and doesn't unsubscribe its users.
+          Please contact your administrator for support.
+        </Alert> : <></>
+      }
       <Table
         {...collectionProps}
+        columnDisplay={newslettersTableColumnDisplay}
         columnDefinitions={newslettersTableColumnDefinitons}
         items={items}
         loadingText="Loading"
@@ -189,23 +191,6 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
           <Box>
             <SpaceBetween size="m" direction="vertical">
               <b>No Newsletters Found</b>
-              {getCurrentUserSubscribed ? (
-                <Button
-                  onClick={() => {
-                    navigate('/newsletters')
-                  }}
-                >
-                  Subscribe to a Newsletter
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    navigate('/newsletters/create')
-                  }}
-                >
-                  Create a Newsletter
-                </Button>
-              )}
             </SpaceBetween>
           </Box>
         }
@@ -221,6 +206,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
         selectedItems={selectedNewsletter ? [selectedNewsletter] : []}
         onSelectionChange={({ detail }) => {
           setSelectedNewsletter(detail.selectedItems[0] as Newsletter)
+          setEditDisabled(detail.selectedItems[0]?.accountId !== userContext?.accountId)
         }}
         header={
           <Header
@@ -235,7 +221,7 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
                   Create New Newsletter
                 </Button>
                 <ButtonDropdown
-                  items={[{ text: 'Edit Newsletter', id: 'edit' }]}
+                  items={[{ text: 'Edit Newsletter', id: 'edit', disabled: editDisabled }]}
                   onItemClick={handleUpdateDropdownItemClick}
                 >
                   Update Newsletter
@@ -247,6 +233,6 @@ export default function NewslettersTable(props?: NewsFeedTableProps) {
           </Header>
         }
       />
-    </>
+    </SpaceBetween>
   )
 }

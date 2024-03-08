@@ -11,6 +11,7 @@ import {
 export default function Authenticator(props: PropsWithChildren) {
   const appContext = useContext(AppContext)
   const [userId, setUserId] = useState(userContextDefault.userId)
+  const [account, setAccount] = useState(userContextDefault.accountId)
   const [userGroups, setUserGroups] = useState(
     userContextDefault.userGroups ?? []
   )
@@ -30,9 +31,7 @@ export default function Authenticator(props: PropsWithChildren) {
         const user = await getCurrentUser()
         if (user) {
           try {
-            console.debug('fetching user attributes')
             const attributes = await fetchUserAttributes()
-            console.debug('user attributes', attributes)
             if (attributes.given_name) {
               setUserGivenName(attributes.given_name)
             }
@@ -43,6 +42,9 @@ export default function Authenticator(props: PropsWithChildren) {
               setUserId(attributes.sub)
             } else {
               console.error('No sub found in user attributes')
+            }
+            if (attributes['custom:Account']){
+              setAccount(attributes['custom:Account'])
             }
           } catch (error) {
             //Error is okay
@@ -55,6 +57,7 @@ export default function Authenticator(props: PropsWithChildren) {
 
     const clearUser = async () => {
       setUserId('')
+      setAccount('')
       setUserGroups([])
       setUserGivenName('')
       setUserFamilyName('')
@@ -104,7 +107,9 @@ export default function Authenticator(props: PropsWithChildren) {
         userGivenName,
         setUserGivenName,
         userFamilyName,
-        setUserFamilyName
+        setUserFamilyName,
+        accountId: account,
+        setAccountId: setAccount
       }}
     >
       {userId.length < 1 ? (

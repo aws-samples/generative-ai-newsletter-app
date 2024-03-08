@@ -1,7 +1,7 @@
 import {
   TaggedElement,
   MultiSizeFormattedResponse
-} from '../prompts/prompt-processing'
+} from './prompt-processing'
 import { PromptHandler } from './prompt-handler'
 import { type ArticleData } from './types'
 
@@ -11,7 +11,7 @@ export class NewsletterSummaryBuilder extends PromptHandler {
   private readonly articles = new TaggedElement('articles')
   constructor (
     newletterArticles: ArticleData[],
-    newsletterIntroPrompt: string | null
+    newsletterIntroPrompt?: string
   ) {
     super({
       promptStart: '\n\nHuman:',
@@ -21,7 +21,7 @@ export class NewsletterSummaryBuilder extends PromptHandler {
       'You are an AI responsible for reading article summaries\n' +
       'and generating a newsletter summary.\n' +
       'Read the summaries and follow the guidance and instructions for creating a summarization'
-    if (newsletterIntroPrompt !== null) {
+    if (newsletterIntroPrompt !== undefined) {
       this.newsletterIntroPrompt.response = newsletterIntroPrompt
       this.toneContext =
         'Here is the tone of the article\n' +

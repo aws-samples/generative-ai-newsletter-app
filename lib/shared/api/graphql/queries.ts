@@ -8,22 +8,21 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getNewsletters = /* GraphQL */ `query GetNewsletters(
-  $input: GetNewslettersInput
+export const listNewsletters = /* GraphQL */ `query ListNewsletters(
+  $input: ListNewslettersInput
   $nextToken: String
   $limit: Int
 ) {
-  getNewsletters(input: $input, nextToken: $nextToken, limit: $limit) {
+  listNewsletters(input: $input, nextToken: $nextToken, limit: $limit) {
     newsletters {
       newsletterId
+      accountId
       title
       numberOfDaysToInclude
-      subscriptionIds
-      discoverable
-      shared
+      dataFeedIds
+      isPrivate
       scheduleId
       createdAt
-      owner
       newsletterIntroPrompt
       articleSummaryType
       newsletterStyle
@@ -34,17 +33,19 @@ export const getNewsletters = /* GraphQL */ `query GetNewsletters(
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewslettersQueryVariables,
-  APITypes.GetNewslettersQuery
+  APITypes.ListNewslettersQueryVariables,
+  APITypes.ListNewslettersQuery
 >;
 export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsletterInput) {
   getNewsletter(input: $input) {
     newsletterId
+    accountId
     title
     numberOfDaysToInclude
-    subscriptionIds
-    subscriptions {
-      subscriptionId
+    dataFeedIds
+    dataFeeds {
+      dataFeedId
+      accountId
       url
       feedType
       createdAt
@@ -52,14 +53,12 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
       title
       description
       summarizationPrompt
-      owner
+      isPrivate
       __typename
     }
-    discoverable
-    shared
+    isPrivate
     scheduleId
     createdAt
-    owner
     newsletterIntroPrompt
     articleSummaryType
     newsletterStyle
@@ -70,10 +69,15 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
   APITypes.GetNewsletterQueryVariables,
   APITypes.GetNewsletterQuery
 >;
-export const getDataFeedSubscriptions = /* GraphQL */ `query GetDataFeedSubscriptions($nextToken: String, $limit: Int) {
-  getDataFeedSubscriptions(nextToken: $nextToken, limit: $limit) {
-    subscriptions {
-      subscriptionId
+export const listDataFeeds = /* GraphQL */ `query ListDataFeeds(
+  $input: ListDataFeedsInput
+  $nextToken: String
+  $limit: Int
+) {
+  listDataFeeds(input: $input, nextToken: $nextToken, limit: $limit) {
+    dataFeeds {
+      dataFeedId
+      accountId
       url
       feedType
       createdAt
@@ -81,70 +85,72 @@ export const getDataFeedSubscriptions = /* GraphQL */ `query GetDataFeedSubscrip
       title
       description
       summarizationPrompt
-      owner
+      isPrivate
       __typename
     }
     nextToken
-    limit
     __typename
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetDataFeedSubscriptionsQueryVariables,
-  APITypes.GetDataFeedSubscriptionsQuery
+  APITypes.ListDataFeedsQueryVariables,
+  APITypes.ListDataFeedsQuery
 >;
-export const getDataFeedSubscription = /* GraphQL */ `query GetDataFeedSubscription($input: GetDataFeedSubscriptionInput) {
-  getDataFeedSubscription(input: $input) {
-    subscriptionId
+export const getDataFeed = /* GraphQL */ `query GetDataFeed($input: GetDataFeedInput) {
+  getDataFeed(input: $input) {
+    dataFeedId
+    accountId
     url
     feedType
     createdAt
     enabled
     articles {
-      subscriptionId
+      dataFeedId
       articleId
+      accountId
       url
       createdAt
       title
+      providedDescription
+      providedCategories
+      publishDate
       summarizationPrompt
       flaggedContent
       articleSummary
       keywords
       shortSummary
       longSummary
-      owner
       __typename
     }
     title
     description
     summarizationPrompt
-    owner
+    isPrivate
     __typename
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetDataFeedSubscriptionQueryVariables,
-  APITypes.GetDataFeedSubscriptionQuery
+  APITypes.GetDataFeedQueryVariables,
+  APITypes.GetDataFeedQuery
 >;
-export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
-  $input: DataFeedArticlesInput
-  $nextToken: String
-  $limit: Int
-) {
-  getDataFeedArticles(input: $input, nextToken: $nextToken, limit: $limit) {
-    dataFeedArticles {
-      subscriptionId
+export const listArticles = /* GraphQL */ `query ListArticles($input: ListArticlesInput, $nextToken: String, $limit: Int) {
+  listArticles(input: $input, nextToken: $nextToken, limit: $limit) {
+    articles {
+      dataFeedId
       articleId
+      accountId
       url
       createdAt
       title
+      providedDescription
+      providedCategories
+      publishDate
       summarizationPrompt
       flaggedContent
       articleSummary
       keywords
       shortSummary
       longSummary
-      owner
       __typename
     }
     nextToken
@@ -152,13 +158,14 @@ export const getDataFeedArticles = /* GraphQL */ `query GetDataFeedArticles(
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetDataFeedArticlesQueryVariables,
-  APITypes.GetDataFeedArticlesQuery
+  APITypes.ListArticlesQueryVariables,
+  APITypes.ListArticlesQuery
 >;
-export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input: GetNewsletterEmailInput) {
-  getNewsletterEmail(input: $input) {
+export const getPublication = /* GraphQL */ `query GetPublication($input: GetPublicationInput) {
+  getPublication(input: $input) {
     newsletterId
-    emailId
+    publicationId
+    accountId
     campaignId
     createdAt
     htmlPath
@@ -167,18 +174,19 @@ export const getNewsletterEmail = /* GraphQL */ `query GetNewsletterEmail($input
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewsletterEmailQueryVariables,
-  APITypes.GetNewsletterEmailQuery
+  APITypes.GetPublicationQueryVariables,
+  APITypes.GetPublicationQuery
 >;
-export const getNewsletterEmails = /* GraphQL */ `query GetNewsletterEmails(
-  $input: GetNewsletterEmailsInput
+export const listPublications = /* GraphQL */ `query ListPublications(
+  $input: ListPublicationsInput
   $nextToken: String
   $limit: Int
 ) {
-  getNewsletterEmails(input: $input, nextToken: $nextToken, limit: $limit) {
-    newsletterEmails {
+  listPublications(input: $input, nextToken: $nextToken, limit: $limit) {
+    items {
       newsletterId
-      emailId
+      publicationId
+      accountId
       campaignId
       createdAt
       htmlPath
@@ -190,42 +198,39 @@ export const getNewsletterEmails = /* GraphQL */ `query GetNewsletterEmails(
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNewsletterEmailsQueryVariables,
-  APITypes.GetNewsletterEmailsQuery
+  APITypes.ListPublicationsQueryVariables,
+  APITypes.ListPublicationsQuery
 >;
-export const getUserNewsletterSubscriptionStatus = /* GraphQL */ `query GetUserNewsletterSubscriptionStatus(
-  $input: UserNewsletterSubscriptionStatusInput
-) {
-  getUserNewsletterSubscriptionStatus(input: $input)
+export const getUserSubscriptionStatus = /* GraphQL */ `query GetUserSubscriptionStatus($input: GetUserSubscriptionStatusInput) {
+  getUserSubscriptionStatus(input: $input)
 }
 ` as GeneratedQuery<
-  APITypes.GetUserNewsletterSubscriptionStatusQueryVariables,
-  APITypes.GetUserNewsletterSubscriptionStatusQuery
+  APITypes.GetUserSubscriptionStatusQueryVariables,
+  APITypes.GetUserSubscriptionStatusQuery
 >;
-export const getUserNewsletterSubscriptions = /* GraphQL */ `query GetUserNewsletterSubscriptions($nextToken: String, $limit: Int) {
-  getUserNewsletterSubscriptions(nextToken: $nextToken, limit: $limit) {
+export const listUserSubscriptions = /* GraphQL */ `query ListUserSubscriptions($nextToken: String, $limit: Int) {
+  listUserSubscriptions(nextToken: $nextToken, limit: $limit) {
     newsletters {
       newsletterId
+      accountId
       title
       numberOfDaysToInclude
-      subscriptionIds
-      discoverable
-      shared
+      dataFeedIds
+      isPrivate
       scheduleId
       createdAt
-      owner
       newsletterIntroPrompt
       articleSummaryType
       newsletterStyle
       __typename
     }
-    nextToken
+    subscribedCount
     __typename
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetUserNewsletterSubscriptionsQueryVariables,
-  APITypes.GetUserNewsletterSubscriptionsQuery
+  APITypes.ListUserSubscriptionsQueryVariables,
+  APITypes.ListUserSubscriptionsQuery
 >;
 export const getNewsletterSubscriberStats = /* GraphQL */ `query GetNewsletterSubscriberStats($input: GetNewsletterSubscriberStatsInput) {
   getNewsletterSubscriberStats(input: $input) {
@@ -236,4 +241,18 @@ export const getNewsletterSubscriberStats = /* GraphQL */ `query GetNewsletterSu
 ` as GeneratedQuery<
   APITypes.GetNewsletterSubscriberStatsQueryVariables,
   APITypes.GetNewsletterSubscriberStatsQuery
+>;
+export const canManageNewsletter = /* GraphQL */ `query CanManageNewsletter($input: CanManageNewsletterInput) {
+  canManageNewsletter(input: $input)
+}
+` as GeneratedQuery<
+  APITypes.CanManageNewsletterQueryVariables,
+  APITypes.CanManageNewsletterQuery
+>;
+export const canManageDataFeed = /* GraphQL */ `query CanManageDataFeed($input: CanManageDataFeedInput) {
+  canManageDataFeed(input: $input)
+}
+` as GeneratedQuery<
+  APITypes.CanManageDataFeedQueryVariables,
+  APITypes.CanManageDataFeedQuery
 >;

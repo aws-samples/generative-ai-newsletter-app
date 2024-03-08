@@ -45,11 +45,11 @@ function App() {
             <Route path="/feeds" element={<DataFeedsDashboard />} />
             <Route path="/feeds/create" element={<CreateDataFeed />} />
             <Route
-              path="/feeds/:subscriptionId"
+              path="/feeds/:dataFeedId"
               element={<DataFeedDetails />}
             />
             <Route
-              path="/feeds/:subscriptionId/edit"
+              path="/feeds/:dataFeedId/edit"
               element={<EditDataFeed />}
             />
           </Routes>

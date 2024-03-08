@@ -24,7 +24,7 @@ export class ArticleSummaryBuilder {
 
   public getCompiledPrompt (): string {
     return (
-      'Human:\n\n' +
+      // 'Human:\n\n' +
       this.getBaseContextPrompt().before +
       (this.articleSummarizationPrompt !== null
         ? this.getArticleSummarizationPrompt().before +
@@ -34,8 +34,8 @@ export class ArticleSummaryBuilder {
       this.getPromptFormattedArticle() +
       this.getInstructions() +
       this.getErrorHandling() +
-      this.getFinalInstructionsPrompt() +
-      '\n\nAssistant:'
+      this.getFinalInstructionsPrompt() // +
+      // '\n\nAssistant:'
     )
   }
 

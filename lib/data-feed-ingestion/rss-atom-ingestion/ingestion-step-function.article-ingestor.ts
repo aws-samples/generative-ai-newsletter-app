@@ -2,6 +2,7 @@ import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { S3Client } from '@aws-sdk/client-s3'
+import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -9,11 +10,6 @@ import {
   PutItemCommand,
   type PutItemCommandInput
 } from '@aws-sdk/client-dynamodb'
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-  type InvokeModelCommandInput
-} from '@aws-sdk/client-bedrock-runtime'
 import { Upload } from '@aws-sdk/lib-storage'
 import { marshall } from '@aws-sdk/util-dynamodb'
 import axios from 'axios'
@@ -31,9 +27,11 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const s3Client = tracer.captureAWSv3Client(new S3Client())
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient())
-const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
+// const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
+const anthropic = new AnthropicBedrock()
 
-const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
+// const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
+const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
 const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
 
@@ -180,21 +178,14 @@ const generateArticleSummarization = async (
   )
   const prompt = summaryBuilder.getCompiledPrompt()
   console.debug(prompt)
-  const bedrockInput: InvokeModelCommandInput = {
-    body: JSON.stringify({
-      prompt,
-      max_tokens_to_sample: 500,
-      stop_sequences: ['\n\nHuman:']
-    }),
-    modelId: BEDROCK_MODEL_ID,
-    accept: 'application/json',
-    contentType: 'application/json'
-  }
-  const command = new InvokeModelCommand(bedrockInput)
-  const response = await bedrock.send(command)
-  const responseData = new TextDecoder().decode(response.body)
-  logger.debug('GenAI Output:\n' + responseData)
-  const processedResponse = summaryBuilder.getProcessedResponse(responseData)
+  const response = await anthropic.messages.create({
+    model: BEDROCK_MODEL_ID,
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }]
+  })
+  logger.debug('GenAI Output', { response })
+  const processedResponse = summaryBuilder.getProcessedResponse(response.content.map((item) => { return item.type === 'text' ? item.text : '' }).join('\n'))
+  logger.debug('Formatted response from Model:', { processedResponse })
   if (processedResponse.error.response !== null) {
     logger.error('Error in processed response from LLM', {
       processedResponse

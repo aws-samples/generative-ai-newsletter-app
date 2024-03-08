@@ -13,10 +13,7 @@ export class NewsletterSummaryBuilder extends PromptHandler {
     newletterArticles: ArticleData[],
     newsletterIntroPrompt?: string
   ) {
-    super({
-      promptStart: '\n\nHuman:',
-      promptEnd: '\n\nAssistant:'
-    })
+    super({})
     this.taskContext =
       'You are an AI responsible for reading article summaries\n' +
       'and generating a newsletter summary.\n' +

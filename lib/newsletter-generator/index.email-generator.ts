@@ -16,16 +16,11 @@ import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 // Note: Requires local path rather than shared path to bundle deps correctly
 import NewsletterEmail from '../shared/email-generator/emails/newsletter'
-
+import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
 import { NewsletterSummaryBuilder } from 'genai-newsletter-shared/prompts'
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-  type InvokeModelCommandInput
-} from '@aws-sdk/client-bedrock-runtime'
 import { type ArticleData } from 'genai-newsletter-shared/prompts/types'
 import { MultiSizeFormattedResponse } from 'genai-newsletter-shared/prompts/prompt-processing'
 import { ArticleSummaryType, type Newsletter } from 'genai-newsletter-shared/api/API'
@@ -40,9 +35,9 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const s3 = tracer.captureAWSv3Client(new S3Client())
 const lambda = tracer.captureAWSv3Client(new LambdaClient())
-const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
+const anthropic = new AnthropicBedrock()
 
-const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
+const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 
 const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
 const DATA_FEED_TABLE_LSI = process.env.DATA_FEED_TABLE_LSI
@@ -208,21 +203,13 @@ const generateNewsletterSummary = async (
   )
   const prompt = summaryBuilder.getCompiledPrompt()
   console.debug('Prompt generated', { prompt })
-  const bedrockInput: InvokeModelCommandInput = {
-    body: JSON.stringify({
-      prompt,
-      max_tokens_to_sample: 4000,
-      stop_sequences: ['\n\nHuman:']
-    }),
-    modelId: BEDROCK_MODEL_ID,
-    accept: 'application/json',
-    contentType: 'application/json'
-  }
-  const command = new InvokeModelCommand(bedrockInput)
-  const response = await bedrock.send(command)
-  const responseData = new TextDecoder().decode(response.body)
-  logger.debug('Response from Model:', { responseData })
-  const formattedResponse = summaryBuilder.getProcessedResponse(responseData)
+  const response = await anthropic.messages.create({
+    model: BEDROCK_MODEL_ID,
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }]
+  })
+  logger.debug('GenAI Output', { response })
+  const formattedResponse = summaryBuilder.getProcessedResponse(response.content.map(item => item.text).join('\n'))
   logger.debug('Formatted response from Model:', { formattedResponse })
   if (
     formattedResponse.error.response === null &&

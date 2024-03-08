@@ -56,7 +56,7 @@ export default function DataFeedDetail() {
             <SpaceBetween direction="horizontal" size="s">
               <Button
                 variant="primary"
-                disabled={canManageDataFeed}
+                disabled={canManageDataFeed !== true}
                 onClick={() => {
                   navigate(`/feeds/${dataFeedId}/edit`)
                 }}

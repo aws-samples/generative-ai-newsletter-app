@@ -84,7 +84,7 @@ export class DataFeedPollStepFunction extends Construct {
 
     const mapDataFeeds = new Map(this, 'MapDataFeeds', {
       itemsPath: '$.dataFeeds',
-      parameters: {
+      itemSelector: {
         dataFeedId: JsonPath.stringAt('$$.Map.Item.Value')
       }
     })

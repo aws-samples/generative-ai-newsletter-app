@@ -162,11 +162,9 @@ export class IngestionStepFunction extends Construct {
       payload: TaskInput.fromJsonPathAt('$')
     })
 
-    // TODO: Replace Map.parameters with Map.ItemSelector; Pending https://github.com/aws/aws-cdk/issues/23265
-    // AWS Deprecated parameters, but CDK has not reflected this update yet
     const mapArticles = new Map(this, 'MapArticles', {
       itemsPath: '$.articlesData.articles',
-      parameters: {
+      itemSelector: {
         summarizationPrompt: JsonPath.stringAt(
           '$.dataFeed.summarizationPrompt'
         ),

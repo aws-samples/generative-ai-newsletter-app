@@ -1,10 +1,17 @@
-import { BreadcrumbGroup } from '@cloudscape-design/components'
+import { BreadcrumbGroup, SplitPanel } from '@cloudscape-design/components'
 import BaseAppLayout from '../../components/base-app-layout'
 import useOnFollow from '../../common/hooks/use-on-follow'
 import NewsletterWizard from '../../components/newsletters/forms/newsletter-wizard'
 import BaseContentLayout from '../../components/base-content-layout'
+import { useState } from 'react'
+import NewsletterPreview from '../../components/newsletters/preview'
+import { NewsletterStyle } from 'genai-newsletter-shared/common'
 
 export default function CreateNewsletter() {
+  const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)
+  const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(
+    new NewsletterStyle()
+  )
   const onFollow = useOnFollow()
   return (
     <BaseAppLayout
@@ -27,10 +34,31 @@ export default function CreateNewsletter() {
           ]}
         />
       }
+      splitPanelOpen={splitPanelOpen}
+      onSplitPanelToggle={({ detail }) => {
+        setSplitPanelOpen(detail.open)
+      }}
+      splitPanelPreferences={{ position: 'side' }}
+      splitPanel={
+        <SplitPanel
+          header="Preview Newsletter Style"
+          hidePreferencesButton={true}
+        >
+          <NewsletterPreview previewMode={true} styleProps={newsletterStyle} />
+        </SplitPanel>
+      }
       content={
         <BaseContentLayout>
-          <NewsletterWizard />
+          <NewsletterWizard
+            previewPane={{
+              newsletterStyle,
+              setNewsletterStyle,
+              setSplitPanelOpen,
+              splitPanelOpen
+            }}
+          />
         </BaseContentLayout>
+
       }
     />
   )

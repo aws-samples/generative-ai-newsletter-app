@@ -17,6 +17,7 @@ import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type UIConfig } from '../shared/common/deploy-config'
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 interface UserInterfaceProps {
 
@@ -95,6 +96,11 @@ export class UserInterface extends Construct {
       }
     )
     emailBucket.grantRead(newslettersOAI)
+    emailBucket.addToResourcePolicy(new PolicyStatement({
+      actions: ['s3:GetObject'],
+      resources: [emailBucket.arnForObjects('*')],
+      principals: [newslettersOAI.grantPrincipal]
+    }))
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
     })

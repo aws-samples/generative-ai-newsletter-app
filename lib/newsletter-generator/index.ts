@@ -27,6 +27,7 @@ import { CfnScheduleGroup } from 'aws-cdk-lib/aws-scheduler'
 import { Construct } from 'constructs'
 import { PinpointApp } from './pinpoint-app'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
+import { type UIConfig } from 'lib/shared'
 
 interface NewsletterGeneratorProps {
   dataFeedTable: Table
@@ -53,6 +54,7 @@ export class NewsletterGenerator extends Construct {
     const { dataFeedTable, userPool } = props
     this.newsletterScheduleGroupName =
       Stack.of(this).stackName + 'NewsletterSubscriptions'
+    const uiConfig = this.node.tryGetContext('ui') as UIConfig
     const newsletterTable = new Table(this, 'NewsletterTable', {
       removalPolicy: RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
       tableName: Stack.of(this).stackName + '-NewsletterTable',
@@ -156,7 +158,7 @@ export class NewsletterGenerator extends Construct {
         EMAIL_BUCKET: emailBucket.bucketName,
         NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION:
           newsletterCampaignCreatorFunction.functionName,
-        APP_HOST_NAME: this.node.tryGetContext('hostName')
+        APP_HOST_NAME: uiConfig.hostName ?? ''
       }
     })
     props.dataFeedTable.grantReadData(emailGeneratorFunction)

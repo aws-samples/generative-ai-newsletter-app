@@ -17,11 +17,10 @@ import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type UIConfig } from '../shared/common/deploy-config'
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 interface UserInterfaceProps {
 
-  emailBucketArn: string
+  emailBucket: Bucket
   userPoolId: string
   userPoolClientId: string
   identityPoolId: string
@@ -33,7 +32,7 @@ export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
     super(scope, id)
     const {
-      emailBucketArn
+      emailBucket
     } = props
 
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
@@ -51,7 +50,7 @@ export class UserInterface extends Construct {
     websiteBucket.grantRead(websiteOAI)
 
     const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
-    const emailBucket = Bucket.fromBucketArn(this, 'EmailBucket', emailBucketArn)
+    emailBucket.grantRead(newslettersOAI)
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(
       this,
@@ -95,12 +94,6 @@ export class UserInterface extends Construct {
         ]
       }
     )
-    emailBucket.grantRead(newslettersOAI)
-    emailBucket.addToResourcePolicy(new PolicyStatement({
-      actions: ['s3:GetObject'],
-      resources: [emailBucket.arnForObjects('*')],
-      principals: [newslettersOAI.grantPrincipal]
-    }))
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
       value: cloudfrontDistribution.distributionDomainName
     })

@@ -83,7 +83,7 @@ export class GenAINewsletter extends Stack {
     })
 
     new UserInterface(this, 'UI', {
-      emailBucketArn: newsletterGenerator.emailBucketArn,
+      emailBucket: newsletterGenerator.emailBucket,
       userPoolId: authentication.userPoolId,
       userPoolClientId: authentication.userPoolClientId,
       graphqlApiUrl: api.graphqlApiUrl,

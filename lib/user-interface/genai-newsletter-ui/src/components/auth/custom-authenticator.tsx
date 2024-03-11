@@ -7,9 +7,11 @@ import {
   CustomAuthenticator,
   DefaultAuthenticator
 } from './authenticator-views'
+import { Container, SpaceBetween, Spinner } from '@cloudscape-design/components'
 
 export default function Authenticator(props: PropsWithChildren) {
   const appContext = useContext(AppContext)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [userId, setUserId] = useState(userContextDefault.userId)
   const [account, setAccount] = useState(userContextDefault.accountId)
   const [userGroups, setUserGroups] = useState(
@@ -23,6 +25,7 @@ export default function Authenticator(props: PropsWithChildren) {
   )
   const { children } = props
   useEffect(() => {
+    setIsLoading(true)
     if (!appContext) {
       return
     }
@@ -43,7 +46,7 @@ export default function Authenticator(props: PropsWithChildren) {
             } else {
               console.error('No sub found in user attributes')
             }
-            if (attributes['custom:Account']){
+            if (attributes['custom:Account']) {
               setAccount(attributes['custom:Account'])
             }
           } catch (error) {
@@ -52,6 +55,8 @@ export default function Authenticator(props: PropsWithChildren) {
         }
       } catch (error) {
         //Error is okay
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -112,15 +117,24 @@ export default function Authenticator(props: PropsWithChildren) {
         setAccountId: setAccount
       }}
     >
-      {userId.length < 1 ? (
-        appContext?.Auth.Cognito.loginWith?.oauth !== undefined ? (
-          <CustomAuthenticator />
+      {isLoading ?
+        <SpaceBetween direction="vertical" size="l" alignItems="center">
+          <Container>
+            <SpaceBetween size='l' direction='vertical' alignItems='center'>
+              <h2>Loading</h2>
+              <Spinner size='big' />
+            </SpaceBetween>
+          </Container>
+        </SpaceBetween> :
+        userId.length < 1 ? (
+          appContext?.Auth.Cognito.loginWith?.oauth !== undefined ? (
+            <CustomAuthenticator />
+          ) : (
+            <DefaultAuthenticator />
+          )
         ) : (
-          <DefaultAuthenticator />
-        )
-      ) : (
-        children
-      )}
+          children
+        )}
     </UserContext.Provider>
   )
 }

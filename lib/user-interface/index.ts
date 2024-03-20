@@ -12,7 +12,7 @@ import {
   ViewerProtocolPolicy
 } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
-import { BlockPublicAccess, Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
+import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
@@ -85,12 +85,14 @@ export class UserInterface extends Construct {
       'CloudFrontDistribution',
       {
         loggingConfig: {
-          bucket: props.loggingBucket,
+          bucket: new Bucket(this, 'CloudFrontLoggingBucket', {
+            objectOwnership: ObjectOwnership.OBJECT_WRITER,
+            serverAccessLogsBucket: props.loggingBucket,
+            serverAccessLogsPrefix: 'cloudfront-access-logs-access-logs/',
+            enforceSSL: true,
+            encryption: BucketEncryption.S3_MANAGED
+          }),
           prefix: 'cloudfront-access-logs/'
-        },
-        geoRestriction: {
-          restrictionType: 'blacklist',
-          locations: ['']
         },
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         originConfigs: [
@@ -218,6 +220,10 @@ export class UserInterface extends Construct {
         {
           id: 'AwsSolutions-CFR4',
           reason: 'Using default CloudFront cert which doesn\'t allow for customized TLS versions'
+        },
+        {
+          id: 'AwsSolutions-CFR1',
+          reason: 'Not requiring any geo-restrictions'
         }
       ]
     )

@@ -1,3 +1,22 @@
+## **0.5.1**&emsp;<sub><sup>2024-03-20 (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6...143cbafd4aed5151e0981003ef557da9a1a3d483)</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`newsletter`
+
+- fixed missing App Host Name on Email Generator lambda, causing missing flag links (3de4a05acb17d63319eea6375af1d1202e4c2632)
+
+##### &ensp;`newsletters`
+
+- users received "Access Denied" when attempting to view a newsletter publication (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6)
+
+##### &ensp;`ui`
+
+- second fix for email preview access denied from S3 (60fc9dd5894359dc5cd24a1a415359e9b11d0880)
+- added Loading view when page is doing full load rather than show login view (e34c9fb5a1878fbca28c4edcc6fc8b2f03516095)
+
+<br>
+
 ## **0.5.0**&emsp;<sub><sup>2024-03-08 (d78abfd8db9d69eb15042226a6c9910b9dfabbea...b52749ad5400be50807d9d9a077e033c40f874bd)</sup></sub>
 
 ### Features

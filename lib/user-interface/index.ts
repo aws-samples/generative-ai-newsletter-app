@@ -54,6 +54,7 @@ export class UserInterface extends Construct {
     websiteBucket.addToResourcePolicy(
       new PolicyStatement({
         actions: [
+          's3:ListBucket',
           's3:GetObject'
         ],
         resources: [
@@ -69,6 +70,7 @@ export class UserInterface extends Construct {
     emailBucket.addToResourcePolicy(
       new PolicyStatement({
         actions: [
+          's3:ListBucket',
           's3:GetObject'
         ],
         resources: [
@@ -90,6 +92,7 @@ export class UserInterface extends Construct {
             serverAccessLogsBucket: props.loggingBucket,
             serverAccessLogsPrefix: 'cloudfront-access-logs-access-logs/',
             enforceSSL: true,
+            blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
             encryption: BucketEncryption.S3_MANAGED
           }),
           prefix: 'cloudfront-access-logs/'
@@ -129,7 +132,7 @@ export class UserInterface extends Construct {
       }
     )
     new CfnOutput(this, 'CloudFrontDistributionDomainName', {
-      value: cloudfrontDistribution.distributionDomainName
+      value: `https://${cloudfrontDistribution.distributionDomainName}/`
     })
 
     const exports = {
@@ -210,6 +213,15 @@ export class UserInterface extends Construct {
       distribution: cloudfrontDistribution
     })
 
+    NagSuppressions.addResourceSuppressions(
+      websiteBucket,
+      [
+        {
+          id: 'AwsSolutions-S5',
+          reason: 'OAI requires ListBucket permission'
+        }
+      ],
+      true)
     NagSuppressions.addResourceSuppressions(
       cloudfrontDistribution,
       [

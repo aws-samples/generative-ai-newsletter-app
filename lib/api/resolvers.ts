@@ -4,13 +4,15 @@ import {
   AppsyncFunction,
   FunctionRuntime,
   Resolver,
-  LambdaDataSource
+  LambdaDataSource,
+  DynamoDbDataSource
 } from 'aws-cdk-lib/aws-appsync'
 import { Construct } from 'constructs'
 import path = require('path')
 import { type ApiProps } from '.'
 import { type BundlingOptions, DockerImage, BundlingOutput } from 'aws-cdk-lib'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
+import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 
 interface ApiResolversProps extends ApiProps {
   api: GraphqlApi
@@ -73,95 +75,312 @@ export class ApiResolvers extends Construct {
       }
     }
 
-    /** DATA SOURCES FOR AppSync */
-    const newsletterTableSource = api.addDynamoDbDataSource(
-      'NewsletterTableSource',
-      newsletterTable
-    )
-    newsletterTable.grantReadData(newsletterTableSource)
-    const dataFeedTableSource = api.addDynamoDbDataSource(
-      'DataFeedTableSource',
-      dataFeedTable
+    /** ****** DATA SOURCES FOR AppSync ******* **/
+
+    const newsletterTableSourceRole = new Role(this, 'NewsletterTableSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        NewsletterTableSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'dynamodb:GetItem',
+                'dynamodb:PutItem',
+                'dynamodb:UpdateItem',
+                'dynamodb:DeleteItem',
+                'dynamodb:Query',
+                'dynamodb:Scan',
+                'dynamodb:BatchGetItem'
+              ],
+              resources: [
+                newsletterTable.tableArn,
+                `${newsletterTable.tableArn}/index/${props.newsletterTableItemTypeGSI}`
+              ]
+            })
+          ]
+        })
+      }
+    })
+
+    const newsletterTableSource = new DynamoDbDataSource(this, 'NewsletterTableSource', {
+      api,
+      table: newsletterTable,
+      serviceRole: newsletterTableSourceRole.withoutPolicyUpdates(),
+      name: 'NewsletterTableSource',
+      description: 'DynamoDB data source for newsletter table'
+    })
+
+    const dataFeedTableSourceRole = new Role(this, 'DataFeedTableSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        DataFeedTableSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'dynamodb:GetItem',
+                'dynamodb:PutItem',
+                'dynamodb:UpdateItem',
+                'dynamodb:DeleteItem',
+                'dynamodb:Query',
+                'dynamodb:Scan',
+                'dynamodb:BatchGetItem'
+              ],
+              resources: [
+                dataFeedTable.tableArn
+              ]
+            })
+          ]
+        })
+      }
+    }
     )
 
-    const accountTableSource = api.addDynamoDbDataSource(
-      'AccountTableSource',
-      accountTable
+    const dataFeedTableSource = new DynamoDbDataSource(this, 'DataFeedTableSource', {
+      api,
+      table: dataFeedTable,
+      description: 'DynamoDB data source for Data Feed table',
+      serviceRole: dataFeedTableSourceRole.withoutPolicyUpdates(),
+      name: 'DataFeedTableSource'
+    })
+
+    const accountTableSourceRole = new Role(this, 'AccountTableSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        AccountTableSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'dynamodb:Query'
+              ],
+              resources: [
+                accountTable.tableArn,
+                `${accountTable.tableArn}/index/${props.accountTableUserIndex}`
+              ]
+            })
+          ]
+        })
+      }
+    })
+
+    const accountTableSource = new DynamoDbDataSource(this, 'AccountTableSource', {
+      api,
+      table: accountTable,
+      serviceRole: accountTableSourceRole.withoutPolicyUpdates(),
+      name: 'AccountTableSource',
+      description: 'DynamoDB data source for account table'
+    })
+
+    const isAuthorizedReadDataSourceRole = new Role(this, 'IsAuthorizedReadDataSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        IsAuthorizedReadDataSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.readActionAuthCheckFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    }
     )
-    accountTable.grantReadData(accountTableSource)
 
     const isAuthorizedToReadLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedReadDataSource', {
       api,
-      lambdaFunction: props.functions.readActionAuthCheckFunction
+      lambdaFunction: props.functions.readActionAuthCheckFunction,
+      name: 'isAuthorizedReadDataSource',
+      description: 'Lambda data source for isAuthorizedRead function',
+      serviceRole: isAuthorizedReadDataSourceRole.withoutPolicyUpdates()
     })
-    props.functions.readActionAuthCheckFunction.grantInvoke(isAuthorizedToReadLambdaDataSource)
+
+    const isAuthorizedCreateDataSourceRole = new Role(this, 'IsAuthorizedCreateDataSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        IsAuthorizedCreateDataSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.createActionAuthCheckFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    }
+    )
 
     const isAuthorizedToCreateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedCreateDataSource', {
       api,
-      lambdaFunction: props.functions.createActionAuthCheckFunction
+      lambdaFunction: props.functions.createActionAuthCheckFunction,
+      name: 'isAuthorizedCreateDataSource',
+      description: 'Lambda data source for isAuthorizedCreate function',
+      serviceRole: isAuthorizedCreateDataSourceRole.withoutPolicyUpdates()
     })
-    props.functions.createActionAuthCheckFunction.grantInvoke(isAuthorizedToCreateLambdaDataSource)
+
+    const listAuthFilterLambdaDataSourceRole = new Role(this, 'ListAuthFilterLambdaDataSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        ListAuthFilterLambdaDataSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.listAuthFilterFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    })
 
     const listAuthFilterLambdaDataSource = new LambdaDataSource(this, 'listAuthFilterDataSource', {
       api,
-      lambdaFunction: props.functions.listAuthFilterFunction
+      lambdaFunction: props.functions.listAuthFilterFunction,
+      name: 'listAuthFilterDataSource',
+      description: 'Lambda data source for listAuthFilter function',
+      serviceRole: listAuthFilterLambdaDataSourceRole.withoutPolicyUpdates()
     })
-    props.functions.listAuthFilterFunction.grantInvoke(listAuthFilterLambdaDataSource)
+
+    const isAuthorizedToUpdateLambdaDataSourceRole = new Role(this, 'IsAuthorizedToUpdateLambdaDataSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        IsAuthorizedToUpdateLambdaDataSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.updateActionAuthCheckFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    })
 
     const isAuthorizedToUpdateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedUpdateDataSource', {
       api,
-      lambdaFunction: props.functions.updateActionAuthCheckFunction
+      lambdaFunction: props.functions.updateActionAuthCheckFunction,
+      name: 'isAuthorizedUpdateDataSource',
+      description: 'Lambda data source for isAuthorizedUpdate function',
+      serviceRole: isAuthorizedToUpdateLambdaDataSourceRole.withoutPolicyUpdates()
     })
-    props.functions.updateActionAuthCheckFunction.grantInvoke(isAuthorizedToUpdateLambdaDataSource)
 
-    const dataFeedSubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'DataFeedSubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.feedSubscriberFunction
+    const dataFeedSubscriberLambdaSourceRole = new Role(this, 'DataFeedSubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        DataFeedSubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.feedSubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
+    }
     )
 
-    const newsletterCreatorLambdaSource = new LambdaDataSource(
-      this,
-      'NewsletterCreatorLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.createNewsletterFunction
+    const dataFeedSubscriberLambdaSource = new LambdaDataSource(this, 'DataFeedSubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.feedSubscriberFunction,
+      name: 'DataFeedSubscriberLambdaSource',
+      description: 'Lambda data source for feedSubscriber function',
+      serviceRole: dataFeedSubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
+
+    const newsletterCreatorLambdaSourceRole = new Role(this, 'NewsletterCreatorLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        NewsletterCreatorLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.createNewsletterFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
-    )
-    props.functions.createNewsletterFunction.grantInvoke(
-      newsletterCreatorLambdaSource.grantPrincipal
-    )
+    })
 
-    const userSubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'UserSubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.userSubscriberFunction,
-        name: 'UserSubscriberLambdaSource'
+    const newsletterCreatorLambdaSource = new LambdaDataSource(this, 'NewsletterCreatorLambdaSource', {
+      api,
+      lambdaFunction: props.functions.createNewsletterFunction,
+      name: 'NewsletterCreatorLambdaSource',
+      description: 'Lambda data source for createNewsletter function',
+      serviceRole: newsletterCreatorLambdaSourceRole.withoutPolicyUpdates()
+    })
+
+    const userSubscriberLambdaSourceRole = new Role(this, 'UserSubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        UserSubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.userSubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
+    }
     )
 
-    props.functions.userSubscriberFunction.grantInvoke(
-      userSubscriberLambdaSource.grantPrincipal
-    )
+    const userSubscriberLambdaSource = new LambdaDataSource(this, 'UserSubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.userSubscriberFunction,
+      name: 'UserSubscriberLambdaSource',
+      description: 'Lambda data source for userSubscriber function',
+      serviceRole: userSubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
 
-    const userUnsubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'UserUnsubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.userUnsubscriberFunction,
-        name: 'UserUnsubscriberLambdaSource'
+    const userUnsubscriberLambdaSourceRole = new Role(this, 'UserUnsubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        UserUnsubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.userUnsubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
-    )
+    })
 
-    props.functions.userUnsubscriberFunction.grantInvoke(
-      userUnsubscriberLambdaSource.grantPrincipal
-    )
+    const userUnsubscriberLambdaSource = new LambdaDataSource(this, 'UserUnsubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.userUnsubscriberFunction,
+      name: 'UserUnsubscriberLambdaSource',
+      description: 'Lambda data source for userUnsubscriber function',
+      serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
 
     /** AppSync Resolver Pipeline Functions */
 

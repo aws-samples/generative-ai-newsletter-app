@@ -17,10 +17,12 @@ export class NewsSubscriptionIngestion extends Construct {
   public readonly dataFeedPollStepFunctionStateMachine: StateMachine
   public readonly feedSubscriberFunction: NodejsFunction
 
-  constructor (scope: Construct, id: string) {
+  constructor (scope: Construct, id: string, props: { loggingBucket: Bucket }) {
     super(scope, id)
+    const { loggingBucket } = props
     const dataFeedTable = new Table(this, 'DataFeedTable', {
       tableName: Stack.of(this).stackName + '-DataFeedTable',
+      pointInTimeRecovery: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
       partitionKey: {
         name: 'dataFeedId',
@@ -56,7 +58,8 @@ export class NewsSubscriptionIngestion extends Construct {
     const rssAtomIngestion = new RssAtomFeedConstruct(this, 'RssAtomIngestion', {
       dataFeedTable,
       dataFeedTableTypeIndex,
-      dataFeedTableLSI
+      dataFeedTableLSI,
+      loggingBucket
     })
 
     this.dataFeedTable = dataFeedTable

@@ -4,7 +4,6 @@ import {
   FieldLogLevel,
   GraphqlApi
 } from 'aws-cdk-lib/aws-appsync'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Construct } from 'constructs'
 import path = require('path')
 import { ApiResolvers } from './resolvers'
@@ -13,6 +12,8 @@ import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { Stack } from 'aws-cdk-lib'
 import { type CfnPolicyStore } from 'aws-cdk-lib/aws-verifiedpermissions'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
+import { type Bucket } from 'aws-cdk-lib/aws-s3'
+import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 
 export interface ApiProps {
   userPoolId: string
@@ -22,6 +23,7 @@ export interface ApiProps {
   accountTable: ITable
   accountTableUserIndex: string
   avpPolicyStore: CfnPolicyStore
+  loggingBucket: Bucket
   functions: {
     readActionAuthCheckFunction: NodejsFunction
     createActionAuthCheckFunction: NodejsFunction
@@ -39,6 +41,7 @@ export class API extends Construct {
   public readonly graphqlApiUrl: string
   constructor (scope: Construct, id: string, props: ApiProps) {
     super(scope, id)
+
     const graphqlApi = new GraphqlApi(this, 'API', {
       name: Stack.of(this).stackName + 'GraphQLAPI',
       definition: Definition.fromFile(
@@ -61,8 +64,8 @@ export class API extends Construct {
         ACCOUNT_TABLE: props.accountTable.tableName
       },
       logConfig: {
-        retention: RetentionDays.ONE_MONTH,
-        fieldLogLevel: FieldLogLevel.ALL
+        fieldLogLevel: FieldLogLevel.ALL,
+        retention: RetentionDays.INFINITE
       },
       xrayEnabled: true
     })

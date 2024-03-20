@@ -14,10 +14,12 @@ import {
   Architecture,
   LambdaInsightsVersion,
   LogFormat,
+  Runtime,
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
+import { NagSuppressions } from 'cdk-nag'
 
 interface PinpointAppProps {
   newsletterTable: Table
@@ -64,6 +66,7 @@ export class PinpointApp extends Construct {
           'Function responsible for filtering Pinpoint Endpoints for a Pinpoint Campaign to only subscribed users',
         handler: 'handler',
         architecture: Architecture.ARM_64,
+        runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
         logFormat: LogFormat.JSON,
         logRetention: RetentionDays.ONE_WEEK,
@@ -80,6 +83,7 @@ export class PinpointApp extends Construct {
       }
     )
     props.newsletterTable.grantReadData(pinpointCampaignHookFunction)
+
     const pinpointPrincipal = new PrincipalWithConditions(
       new ServicePrincipal('pinpoint.amazonaws.com'),
       {
@@ -152,5 +156,16 @@ export class PinpointApp extends Construct {
       pinpointAddNewsletterCampaignAndSegmentPolicyStatement
     this.pinpointSubscribeUserToNewsletterPolicyStatement =
       pinpointSubscribeUserToNewsletterPolicyStatement
+
+    /**
+       * CDK NAG Suppressions
+       */
+    NagSuppressions.addResourceSuppressions(
+      [pinpointCampaignHookFunction, pinpointProjectAdminPolicy],
+      [{
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing CloudWatch/XRay'
+      }], true
+    )
   }
 }

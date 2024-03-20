@@ -12,20 +12,21 @@ import {
   ViewerProtocolPolicy
 } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
-import { BlockPublicAccess, Bucket, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
+import { BlockPublicAccess, Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type UIConfig } from '../shared/common/deploy-config'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { NagSuppressions } from 'cdk-nag'
 
 interface UserInterfaceProps {
-
   emailBucket: Bucket
   userPoolId: string
   userPoolClientId: string
   identityPoolId: string
   graphqlApiUrl: string
-
+  loggingBucket: Bucket
 }
 
 export class UserInterface extends Construct {
@@ -41,26 +42,57 @@ export class UserInterface extends Construct {
     const websiteBucket = new Bucket(this, 'GenAINewsletterFrontEnd', {
       removalPolicy: RemovalPolicy.DESTROY,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-      autoDeleteObjects: true,
+      enforceSSL: true,
+      encryption: BucketEncryption.S3_MANAGED,
       websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html'
+      websiteErrorDocument: 'index.html',
+      serverAccessLogsBucket: props.loggingBucket,
+      serverAccessLogsPrefix: 'website-access-logs/'
     })
 
     const websiteOAI = new OriginAccessIdentity(this, 'S3OriginWebsite')
-    websiteBucket.grantRead(websiteOAI)
+    websiteBucket.addToResourcePolicy(
+      new PolicyStatement({
+        actions: [
+          's3:GetObject'
+        ],
+        resources: [
+          websiteBucket.bucketArn,
+          websiteBucket.arnForObjects('*')
+        ],
+        principals: [websiteOAI.grantPrincipal],
+        effect: Effect.ALLOW
+      })
+    )
 
     const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
-    emailBucket.grantRead(newslettersOAI)
+    emailBucket.addToResourcePolicy(
+      new PolicyStatement({
+        actions: [
+          's3:GetObject'
+        ],
+        resources: [
+          emailBucket.bucketArn,
+          emailBucket.arnForObjects('*')
+        ],
+        principals: [newslettersOAI.grantPrincipal],
+        effect: Effect.ALLOW
+      })
+    )
 
     const cloudfrontDistribution = new CloudFrontWebDistribution(
       this,
       'CloudFrontDistribution',
       {
         loggingConfig: {
-          bucket: new Bucket(this, 'CloudFrontLoggingBucket', {
-            objectOwnership: ObjectOwnership.OBJECT_WRITER
-          })
+          bucket: props.loggingBucket,
+          prefix: 'cloudfront-access-logs/'
         },
+        geoRestriction: {
+          restrictionType: 'blacklist',
+          locations: ['']
+        },
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         originConfigs: [
           {
             behaviors: [{ isDefaultBehavior: true }],
@@ -175,5 +207,19 @@ export class UserInterface extends Construct {
       destinationBucket: websiteBucket,
       distribution: cloudfrontDistribution
     })
+
+    NagSuppressions.addResourceSuppressions(
+      cloudfrontDistribution,
+      [
+        {
+          id: 'AwsSolutions-CFR2',
+          reason: 'WAF not required for solution'
+        },
+        {
+          id: 'AwsSolutions-CFR4',
+          reason: 'Using default CloudFront cert which doesn\'t allow for customized TLS versions'
+        }
+      ]
+    )
   }
 }

@@ -11,11 +11,12 @@ import {
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import {
   DefinitionBody,
   JsonPath,
+  LogLevel,
   Map,
   StateMachine,
   TaskInput
@@ -25,6 +26,7 @@ import {
   DynamoGetItem,
   LambdaInvoke
 } from 'aws-cdk-lib/aws-stepfunctions-tasks'
+import { NagSuppressions } from 'cdk-nag'
 import { Construct } from 'constructs'
 
 interface IngestionStepFunctionProps extends StackProps {
@@ -46,7 +48,6 @@ export class IngestionStepFunction extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
@@ -66,7 +67,6 @@ export class IngestionStepFunction extends Construct {
         architecture: Architecture.ARM_64,
         tracing: Tracing.ACTIVE,
         logFormat: LogFormat.JSON,
-        logRetention: RetentionDays.ONE_WEEK,
         applicationLogLevel: ApplicationLogLevel.DEBUG,
         insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
         timeout: cdk.Duration.minutes(5),
@@ -88,7 +88,6 @@ export class IngestionStepFunction extends Construct {
         tracing: Tracing.ACTIVE,
         architecture: Architecture.ARM_64,
         logFormat: LogFormat.JSON,
-        logRetention: RetentionDays.ONE_WEEK,
         applicationLogLevel: ApplicationLogLevel.DEBUG,
         insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
         environment: {
@@ -182,7 +181,13 @@ export class IngestionStepFunction extends Construct {
     const stateMachine = new StateMachine(this, 'IngestionStateMachine', {
       comment:
         'State machine responsible for ingesting data from RSS feeds, summarizing the data, and storing the data',
-      definitionBody: DefinitionBody.fromChainable(definition)
+      definitionBody: DefinitionBody.fromChainable(definition),
+      logs: {
+        destination: new LogGroup(this, 'IngestionStateMachineLogGroup'),
+        includeExecutionData: true,
+        level: LogLevel.ALL
+      },
+      tracingEnabled: true
     })
     props.dataFeedTable.grantReadData(stateMachine)
     feedReaderFunction.grantInvoke(stateMachine)
@@ -191,5 +196,19 @@ export class IngestionStepFunction extends Construct {
     props.dataFeedTable.grantWriteData(articleIngestionFunction)
     props.rssAtomDataBucket.grantPut(stateMachine)
     this.stateMachine = stateMachine
+
+    /**
+     * CDK NAG Suppressions
+     */
+    NagSuppressions.addResourceSuppressions(
+      [feedReaderFunction, articleIngestionFunction, filterIngestedArticlesFunction,
+        stateMachine],
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'Allowing CloudWatch/X-Ray'
+        }
+      ], true
+    )
   }
 }

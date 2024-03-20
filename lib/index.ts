@@ -14,6 +14,7 @@ import getConfig from './config'
 import { type IUserPool, type IUserPoolClient } from 'aws-cdk-lib/aws-cognito'
 import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
 import { type IGraphqlApi } from 'aws-cdk-lib/aws-appsync'
+import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 
 export class GenAINewsletter extends Stack {
   public readonly userPool: IUserPool
@@ -35,6 +36,11 @@ export class GenAINewsletter extends Stack {
     this.node.setContext('authConfig', config.auth)
     this.node.setContext('ui', config.ui)
 
+    const loggingBucket = new Bucket(this, 'GenAINewsletter-LoggingBucket', {
+      encryption: BucketEncryption.S3_MANAGED,
+      enforceSSL: true
+    })
+
     const authentication = new Authentication(this, 'AuthenticationStack')
 
     const authorization = new Authorization(this, 'AuthorizationConstruct', {
@@ -45,7 +51,10 @@ export class GenAINewsletter extends Stack {
 
     const dataFeedIngestion = new NewsSubscriptionIngestion(
       this,
-      'NewsletterIngestionStack'
+      'NewsletterIngestionStack',
+      {
+        loggingBucket
+      }
     )
 
     const newsletterGenerator = new NewsletterGenerator(
@@ -56,7 +65,8 @@ export class GenAINewsletter extends Stack {
         dataFeedTableLSI,
         accountTable: authentication.accountTable,
         accountTableUserIndex: authentication.accountTableUserIndex,
-        userPool: authentication.userPool
+        userPool: authentication.userPool,
+        loggingBucket
       }
     )
 
@@ -68,6 +78,7 @@ export class GenAINewsletter extends Stack {
       newsletterTable: newsletterGenerator.newsletterTable,
       newsletterTableItemTypeGSI: newsletterGenerator.newsletterTableItemTypeGSI,
       avpPolicyStore: authorization.policyStore,
+      loggingBucket,
       functions: {
         readActionAuthCheckFunction: authorization.readActionAuthCheckFunction,
         createActionAuthCheckFunction: authorization.createActionAuthCheckFunction,
@@ -87,7 +98,8 @@ export class GenAINewsletter extends Stack {
       userPoolId: authentication.userPoolId,
       userPoolClientId: authentication.userPoolClientId,
       graphqlApiUrl: api.graphqlApiUrl,
-      identityPoolId: authentication.identityPoolId
+      identityPoolId: authentication.identityPoolId,
+      loggingBucket
     })
     // userInterfaceStack.addDependency(api., 'UI Requires Endpoints Defined in API')
   }

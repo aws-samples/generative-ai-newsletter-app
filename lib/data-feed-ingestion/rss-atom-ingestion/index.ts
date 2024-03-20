@@ -1,17 +1,18 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
-import { Bucket } from 'aws-cdk-lib/aws-s3'
+import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import { IngestionStepFunction } from './ingestion-step-function'
 import { DataFeedPollStepFunction } from './data-feed-poll-step-function'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { NagSuppressions } from 'cdk-nag'
 
 interface RssAtomFeedProps {
   dataFeedTable: Table
   dataFeedTableTypeIndex: string
   dataFeedTableLSI: string
+  loggingBucket: Bucket
 }
 
 export class RssAtomFeedConstruct extends Construct {
@@ -21,10 +22,14 @@ export class RssAtomFeedConstruct extends Construct {
   public readonly rssAtomDataBucket: Bucket
   constructor (scope: Construct, id: string, props: RssAtomFeedProps) {
     super(scope, id)
-    const { dataFeedTable, dataFeedTableTypeIndex } = props
+    const { dataFeedTable, dataFeedTableTypeIndex, loggingBucket } = props
     const rssAtomDataBucket = new Bucket(this, 'RssAtomDataBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: loggingBucket,
+      serverAccessLogsPrefix: 'rss-atom-feed-data-bucket-access-logs/',
+      enforceSSL: true,
+      encryption: BucketEncryption.S3_MANAGED
     })
 
     const ingestionStepFunction = new IngestionStepFunction(
@@ -58,7 +63,6 @@ export class RssAtomFeedConstruct extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
@@ -82,5 +86,16 @@ ingestionStepFunction.stateMachine.stateMachineArn
     this.dataFeedPollStepFunction = dataFeedPollStepFunction
     this.feedSubscriberFunction = feedSubscriberFunction
     this.ingestionStepFunction = ingestionStepFunction
+
+    /**
+     * CDK NAG Suppressions
+     */
+    NagSuppressions.addResourceSuppressions(
+      [feedSubscriberFunction],
+      [{
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing CloudWatch & XRay'
+      }], true
+    )
   }
 }

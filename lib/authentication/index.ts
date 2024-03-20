@@ -12,11 +12,11 @@ import {
   type IUserPoolClient
 } from 'aws-cdk-lib/aws-cognito'
 import { Construct } from 'constructs'
-import { Role, type IRole, PolicyStatement, Effect, Policy } from 'aws-cdk-lib/aws-iam'
+import { Role, type IRole, PolicyStatement, Effect, Policy, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { NagSuppressions } from 'cdk-nag'
 
 interface AuthenticationProps {
   userPoolId?: string
@@ -47,7 +47,8 @@ export class Authentication extends Construct {
         name: 'accountId',
         type: AttributeType.STRING
       },
-      billingMode: BillingMode.PAY_PER_REQUEST
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true
     })
     accountTable.addGlobalSecondaryIndex({
       indexName: this.accountTableUserIndex,
@@ -57,15 +58,18 @@ export class Authentication extends Construct {
       }
     })
     this.accountTable = accountTable
+    const preTokenGenerationHookFunctionRole = new Role(this, 'pre-token-generation-hook-role', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+    }).withoutPolicyUpdates()
     const preTokenGenerationHookFunction = new NodejsFunction(this, 'pre-token-generation-hook', {
       description:
         'Post Authentication, Pre-Token Generation Hook that creates a user\'s accountId',
       handler: 'handler',
+      role: preTokenGenerationHookFunctionRole,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       memorySize: 128,
@@ -75,7 +79,6 @@ export class Authentication extends Construct {
         ACCOUNT_TABLE: accountTable.tableName
       }
     })
-    accountTable.grantWriteData(preTokenGenerationHookFunction)
     if (auth === undefined || auth === null) {
       const selfSignUpEnabled =
         this.node.tryGetContext('selfSignUpEnabled') ?? false
@@ -129,17 +132,6 @@ export class Authentication extends Construct {
       this.identityPool = identityPool
       this.userPoolClient = userPoolClient
       this.authenticatedUserRole = identityPool.authenticatedRole
-
-      preTokenGenerationHookFunction.role?.attachInlinePolicy(new Policy(this, 'PostAuthHookUserAttribtues', {
-        statements: [
-          new PolicyStatement({
-            actions: ['cognito-idp:AdminUpdateUserAttributes'],
-            resources: [userPool.userPoolArn],
-            effect: Effect.ALLOW
-          })
-        ]
-      })
-      )
     } else {
       const userPool = UserPool.fromUserPoolId(
         this,
@@ -211,17 +203,46 @@ export class Authentication extends Construct {
           this.authenticatedUserRole = identityPool.authenticatedRole as Role
         }
       }
-      preTokenGenerationHookFunction.addToRolePolicy(new PolicyStatement({
-        actions: ['cognito-idp:AdminUpdateUserAttributes'],
-        resources: [userPool.userPoolArn],
-        effect: Effect.ALLOW
-      }))
       this.userPool = userPool
     }
+    preTokenGenerationHookFunctionRole.attachInlinePolicy(new Policy(this, 'pre-token-generation-hook-policy', {
+      statements: [
+        new PolicyStatement({
+          actions: ['dynamodb:PutItem', 'dynamodb:Scan'],
+          resources: [
+            accountTable.tableArn
+          ],
+          effect: Effect.ALLOW
+        }),
+        new PolicyStatement({
+          actions: ['cognito-idp:AdminUpdateUserAttributes'],
+          resources: [this.userPool.userPoolArn]
+        })
+      ]
+    }))
+    preTokenGenerationHookFunctionRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName('AWSXrayWriteOnlyAccess'))
     this.userPoolId = this.userPool.userPoolId
     this.userPoolArn = this.userPool.userPoolArn
     this.identityPoolId = this.identityPool.identityPoolId
     this.authenticatedUserRoleArn = this.authenticatedUserRole.roleArn
     this.userPoolClientId = this.userPoolClient.userPoolClientId
+    /**
+       * Adding nag suppression to decrease sec requirements for login
+       */
+    NagSuppressions.addResourceSuppressions(this.userPool, [
+      {
+        id: 'AwsSolutions-COG1',
+        reason: 'Skipping - Sample doesn\'t need advanced security'
+      },
+      {
+        id: 'AwsSolutions-COG2',
+        reason: 'Skipping - Sample doesn\'t need advanced security'
+      },
+      {
+        id: 'AwsSolutions-COG3',
+        reason: 'Skipping - Sample doesn\'t need advanced security'
+      }
+    ])
   }
 }

@@ -3,7 +3,6 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as fs from 'fs'
 import * as path from 'path'
 import { Construct } from 'constructs'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import {
   ApplicationLogLevel,
   Architecture,
@@ -14,6 +13,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda'
 import { PolicyStatement, Effect, Policy, PolicyDocument } from 'aws-cdk-lib/aws-iam'
 import { CfnPolicyTemplate, type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions'
+import { NagSuppressions } from 'cdk-nag'
 
 interface PermissionsProps {
   userPoolId: string
@@ -114,7 +114,6 @@ export class Authorization extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       timeout: Duration.minutes(5),
@@ -135,7 +134,6 @@ export class Authorization extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       timeout: Duration.minutes(5),
@@ -155,7 +153,6 @@ export class Authorization extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       timeout: Duration.minutes(5),
@@ -175,7 +172,6 @@ export class Authorization extends Construct {
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
       logFormat: LogFormat.JSON,
-      logRetention: RetentionDays.ONE_WEEK,
       applicationLogLevel: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       timeout: Duration.minutes(5),
@@ -192,5 +188,24 @@ export class Authorization extends Construct {
     this.createActionAuthCheckFunction = createActionAuthCheckFunction
     this.listAuthFilterFunction = listAuthFilterFunction
     this.updateActionAuthCheckFunction = updateAuthCheckFunction
+
+    /**
+     * cdk_nag suppressions
+     */
+    NagSuppressions.addResourceSuppressions(
+      [
+        createActionAuthCheckFunction,
+        readActionAuthCheckFunction,
+        listAuthFilterFunction,
+        updateAuthCheckFunction
+      ],
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'Allowing CloudWatch & X-Ray to Operate'
+        }
+      ],
+      true
+    )
   }
 }

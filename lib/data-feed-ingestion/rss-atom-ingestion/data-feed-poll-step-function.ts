@@ -11,13 +11,14 @@ import {
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import {
   StateMachine,
   IntegrationPattern,
   Map,
   DefinitionBody,
-  JsonPath
+  JsonPath,
+  LogLevel
 } from 'aws-cdk-lib/aws-stepfunctions'
 import {
   LambdaInvoke,
@@ -25,6 +26,7 @@ import {
 } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import { SfnStateMachine as StateMachineTarget } from 'aws-cdk-lib/aws-events-targets'
 import { Construct } from 'constructs'
+import { NagSuppressions } from 'cdk-nag'
 
 interface DataFeedPollStepFunctionProps extends StackProps {
   dataFeedTable: Table
@@ -52,7 +54,6 @@ export class DataFeedPollStepFunction extends Construct {
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
         logFormat: LogFormat.JSON,
-        logRetention: RetentionDays.ONE_WEEK,
         applicationLogLevel: ApplicationLogLevel.DEBUG,
         insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
         environment: {
@@ -96,7 +97,13 @@ export class DataFeedPollStepFunction extends Construct {
     const stateMachine = new StateMachine(this, 'StateMachine', {
       comment:
         "State machine responsible for starting each feed's ingestion process",
-      definitionBody: DefinitionBody.fromChainable(definition)
+      definitionBody: DefinitionBody.fromChainable(definition),
+      logs: {
+        destination: new LogGroup(this, 'DataFeedPollStepFunction'),
+        level: LogLevel.ALL,
+        includeExecutionData: true
+      },
+      tracingEnabled: true
     })
     getDataFeedsFunction.grantInvoke(stateMachine)
     props.dataFeedTable.grantReadData(getDataFeedsFunction)
@@ -107,5 +114,16 @@ export class DataFeedPollStepFunction extends Construct {
     })
 
     this.stateMachine = stateMachine
+
+    /**
+     * CDK NAG Suppressions
+     */
+    NagSuppressions.addResourceSuppressions(
+      [stateMachine, getDataFeedsFunction],
+      [{
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing CloudWatch & XRay'
+      }], true
+    )
   }
 }

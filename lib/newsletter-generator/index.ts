@@ -22,12 +22,13 @@ import {
 } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
-import { Bucket } from 'aws-cdk-lib/aws-s3'
+import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 import { CfnScheduleGroup } from 'aws-cdk-lib/aws-scheduler'
 import { Construct } from 'constructs'
 import { PinpointApp } from './pinpoint-app'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
 import { type UIConfig } from 'lib/shared'
+import { NagSuppressions } from 'cdk-nag'
 
 interface NewsletterGeneratorProps {
   dataFeedTable: Table
@@ -35,6 +36,7 @@ interface NewsletterGeneratorProps {
   accountTable: Table
   accountTableUserIndex: string
   userPool: IUserPool
+  loggingBucket: Bucket
 }
 
 export class NewsletterGenerator extends Construct {
@@ -51,13 +53,14 @@ export class NewsletterGenerator extends Construct {
   private readonly newsletterScheduleGroupName: string
   constructor (scope: Construct, id: string, props: NewsletterGeneratorProps) {
     super(scope, id)
-    const { dataFeedTable, userPool } = props
+    const { dataFeedTable, userPool, loggingBucket } = props
     this.newsletterScheduleGroupName =
       Stack.of(this).stackName + 'NewsletterSubscriptions'
     const uiConfig = this.node.tryGetContext('ui') as UIConfig
     const newsletterTable = new Table(this, 'NewsletterTable', {
       removalPolicy: RemovalPolicy.RETAIN_ON_UPDATE_OR_DELETE,
       tableName: Stack.of(this).stackName + '-NewsletterTable',
+      pointInTimeRecovery: true,
       partitionKey: {
         name: 'newsletterId',
         type: AttributeType.STRING
@@ -96,7 +99,11 @@ export class NewsletterGenerator extends Construct {
 
     const emailBucket = new Bucket(this, 'EmailBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: loggingBucket,
+      serverAccessLogsPrefix: 'email-bucket-server-access-logs/',
+      encryption: BucketEncryption.S3_MANAGED,
+      enforceSSL: true
     })
     this.emailBucketArn = emailBucket.bucketArn
 
@@ -331,5 +338,18 @@ export class NewsletterGenerator extends Construct {
     this.userSubscriberFunction = userSubscriberFunction
     this.userUnsubscriberFunction = userUnsubscriberFunction
     this.getNewsletterFunction = getNewsletterFunction
+
+    /**
+     * CDK NAG Suppressions
+     */
+    NagSuppressions.addResourceSuppressions(
+      [newsletterCampaignCreatorFunction, userSubscriberFunction, userUnsubscriberFunction,
+        getNewsletterFunction, emailGeneratorFunction, emailGeneratorSchedulerInvokeRole,
+        newsletterCreatorFunction],
+      [{
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing * for CloudWatch, Xray, Pinpoint App Project, Scheduler'
+      }], true
+    )
   }
 }

@@ -1,30 +1,25 @@
 import * as fs from 'fs'
 import { type DeployConfig } from '../lib/shared/common/deploy-config'
-import { bigHeader, formatText } from './consts'
+import { formatText } from './consts'
 import prompt from 'prompt-sync'
 import { CONFIG_VERSION } from './config-version'
 import path from 'path'
+import figlet from 'figlet'
 const deployConfig = path.join(__dirname, '../bin/config.json')
 
 const prompter = prompt({ sigint: true })
 
-console.log(
-  bigHeader(
-    'CDK Deployment Configuration Creator for the GenAI Newsletter App.'
-  )
-)
 let configStyle: 'EXISTING' | 'UPDATE' | 'NEW' = 'NEW'
 let config: DeployConfig | null = null
 if (fs.existsSync(deployConfig)) {
   const configFromFile: DeployConfig = JSON.parse(
     fs.readFileSync(deployConfig, 'utf8')
   )
-  console.log(formatText('A configuration already exists.', { bold: true }))
-  console.log(JSON.stringify(configFromFile, null, '\t'))
+  console.log(formatText('A configuration already exists.', { bold: true, backgroundColor: 'bg-yellow' }))
   let existingConfigChoice: string | null = null
   let readyToProceed = false
   while (!readyToProceed) {
-    console.log(formatText('\nDo you want to \n', { bold: true }))
+    console.log(formatText('\nDo you want to', { bold: true }))
     console.log(
       '   ▶️ (' +
         formatText('e', { textColor: 'green' }) +
@@ -50,7 +45,7 @@ if (fs.existsSync(deployConfig)) {
     switch (existingConfigChoice) {
       case 'u':
         console.log(
-          formatText('Update existing configuration\n', {
+          formatText('Update existing configuration', {
             bold: true
           })
         )
@@ -82,10 +77,8 @@ if (fs.existsSync(deployConfig)) {
   }
 }
 console.log(
-  formatText('Requirements Check', {
-    bigHeader: true,
-    textColor: 'blue',
-    bold: true
+  figlet.textSync('Requirements Check', {
+    font: 'Mini'
   })
 )
 console.log(

@@ -4,6 +4,7 @@
     "jsx": "react-jsx",
     "target": "ES2020",
     "module": "commonjs",
+    "moduleResolution": "node",
     "lib": [
       "es2020",
       "dom",
@@ -13,7 +14,7 @@
     "strict": true,
     "checkJs": true,
     "noImplicitAny": true,
-    "noEmit": false,
+    "noEmit": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,

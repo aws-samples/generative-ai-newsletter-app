@@ -1,10 +1,15 @@
 import { Command } from 'commander'
 import { CONFIG_VERSION } from './config-version'
+import figlet from 'figlet'
 
 const program = new Command()
 
+console.log(figlet.textSync('GenAI Newsletter', {
+  font: 'Slant'
+}))
+
 program
-  .name('npm run deploy-config')
+  .name('npm run config')
   .description(
     'CLI utility for creating, viewing, and updating you GenAI Newsletter deployment configuration.'
   )
@@ -25,7 +30,7 @@ program
   .description('Show the current deployment configuration details')
 
 program
-  .command('create', '📝 Create a new deployment configuration')
+  .command('manage', '📝 Create or Manage the deployment configuration')
   .description('Create a new deployment configuration')
 
-program.parse(process.argv)
+program.parse()

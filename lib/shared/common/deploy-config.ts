@@ -33,6 +33,7 @@ export interface DeployConfig {
 
 export interface UIConfig {
   hostName?: string
+  acmCertificateArn?: string
   sideNavigation?: Array<{
     text: string
     href: string

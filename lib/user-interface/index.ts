@@ -3,12 +3,14 @@ import {
   CfnOutput,
   DockerImage,
   Duration,
-  RemovalPolicy
+  RemovalPolicy,
+  Stack
 } from 'aws-cdk-lib'
 import {
   CloudFrontAllowedMethods,
   CloudFrontWebDistribution,
   OriginAccessIdentity,
+  ViewerCertificate,
   ViewerProtocolPolicy
 } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
@@ -19,6 +21,7 @@ import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type UIConfig } from '../shared/common/deploy-config'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { NagSuppressions } from 'cdk-nag'
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager'
 
 interface UserInterfaceProps {
   emailBucket: Bucket
@@ -36,6 +39,7 @@ export class UserInterface extends Construct {
       emailBucket
     } = props
 
+    const ui = this.node.tryGetContext('ui') as UIConfig
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
     const buildPath = path.join(appPath, 'dist')
 
@@ -86,6 +90,7 @@ export class UserInterface extends Construct {
       this,
       'CloudFrontDistribution',
       {
+        comment: `${Stack.of(this).stackName} Front End`,
         loggingConfig: {
           bucket: new Bucket(this, 'CloudFrontLoggingBucket', {
             objectOwnership: ObjectOwnership.OBJECT_WRITER,
@@ -98,6 +103,11 @@ export class UserInterface extends Construct {
           prefix: 'cloudfront-access-logs/'
         },
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        viewerCertificate: (ui.acmCertificateArn !== undefined && ui.hostName !== undefined)
+          ? ViewerCertificate.fromAcmCertificate(Certificate.fromCertificateArn(this, 'AcmCertificate', ui.acmCertificateArn), {
+            aliases: [ui.hostName]
+          })
+          : undefined,
         originConfigs: [
           {
             behaviors: [{ isDefaultBehavior: true }],
@@ -135,6 +145,12 @@ export class UserInterface extends Construct {
       value: `https://${cloudfrontDistribution.distributionDomainName}/`
     })
 
+    const amplifyUI = ui
+    delete amplifyUI.acmCertificateArn
+    if (amplifyUI.hostName === undefined) {
+      amplifyUI.hostName = cloudfrontDistribution.distributionDomainName
+    }
+
     const exports = {
       Auth: {
         Cognito: {
@@ -144,7 +160,7 @@ export class UserInterface extends Construct {
           loginWith: {}
         }
       },
-      ui: this.node.tryGetContext('ui') as UIConfig,
+      ui: amplifyUI,
       API: {
         GraphQL: {
           endpoint: props.graphqlApiUrl,

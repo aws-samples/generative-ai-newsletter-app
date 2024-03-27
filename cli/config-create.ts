@@ -292,6 +292,87 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
         )
       }
     }
+    /**
+     * Does the user want to configure a Host Name & ACM Cert for the Frontend Cloudfront
+     */
+    let configHostname = false
+    if (config.ui?.acmCertificateArn === undefined || config.ui.hostName === undefined) {
+      console.log(formatText('Do you want to configure a custom hostname for the frontend?',
+        { textColor: 'blue' }))
+      console.log(formatText('Requires a hostname & a pre-existing AWS Certificate Manager public cert ARN.' +
+      'For more information, visit https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html',
+      { italic: true }))
+      while (true) {
+        const response = prompter(
+          formatText('Do you want to proceed? (y/N):', { bold: true, textColor: 'blue' }),
+          'N'
+        )
+        if (response.toLowerCase() === 'y') {
+          configHostname = true
+          break
+        } else if (response.toLowerCase() === 'n') {
+          break
+        } else {
+          console.log(
+            formatText('Invalid Input!', {
+              backgroundColor: 'bg-white',
+              textColor: 'red',
+              bold: true
+            })
+          )
+        }
+      }
+      if (configHostname) {
+        while (true) {
+          const existingHostname = ((config.ui?.hostName) != null) ? config.ui.hostName : ''
+          const response = prompter(
+            formatText(`Enter the hostname you want to use for the frontend:(${existingHostname})`, { textColor: 'blue' })
+          )
+          const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]).)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+          if (response.length > 0 && hostnameRegex.test(response)) {
+            if (config.ui === undefined) {
+              config.ui = {}
+            }
+            config.ui.hostName = response
+            break
+          } else if (response.length < 1 && config.ui?.hostName !== undefined && config.ui.hostName !== null) {
+            break
+          } else {
+            console.log(
+              formatText('Invalid Input!', {
+                backgroundColor: 'bg-white',
+                textColor: 'red',
+                bold: true
+              })
+            )
+          }
+        }
+        while (true) {
+          const existingAcmCert = ((config.ui?.acmCertificateArn) != null) ? config.ui.acmCertificateArn : ''
+          const response = prompter(
+            formatText(`Enter the ACM Certificate ARN you want to use for the frontend:(${existingAcmCert})`, { textColor: 'blue' })
+          )
+          const acmCertRegex = /^arn:aws:acm:\S+:\d+:\w+\/\S+$/
+          if (response.length > 0 && acmCertRegex.test(response)) {
+            if (config.ui === undefined) {
+              config.ui = {}
+            }
+            config.ui.acmCertificateArn = response
+            break
+          } else if (response.length < 1 && config.ui?.acmCertificateArn !== undefined && config.ui.acmCertificateArn !== null) {
+            break
+          } else {
+            console.log(
+              formatText('Invalid Input!', {
+                backgroundColor: 'bg-white',
+                textColor: 'red',
+                bold: true
+              })
+            )
+          }
+        }
+      }
+    }
   }
   fs.writeFileSync(deployConfig, JSON.stringify(config, null, '\t'))
 }

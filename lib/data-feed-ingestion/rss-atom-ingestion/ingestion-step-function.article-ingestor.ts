@@ -27,10 +27,8 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const s3Client = tracer.captureAWSv3Client(new S3Client())
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient())
-// const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
 const anthropic = new AnthropicBedrock()
 
-// const BEDROCK_MODEL_ID = 'anthropic.claude-v2:1'
 const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
 const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
@@ -47,12 +45,6 @@ interface ArticleIngestorInput {
 }
 
 const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
-  logger.debug('event', { event })
-  tracer.putMetadata('event', event)
-  await ingestArticle(event)
-}
-
-const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
   const { dataFeedId, articleId: inputArticleId, url, title } = event.input
   const accountId = event.input.accountId ?? await getAccountIdForDataFeed(dataFeedId)
   const summarizationPrompt = event.summarizationPrompt
@@ -72,17 +64,66 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
     } else {
       articleText = $('body').text()
     }
-    if (articleText !== undefined && articleText.length > 255) {
+    if (articleText !== undefined) {
       try {
         await storeSiteContent(articleText, dataFeedId, articleId)
       } catch (error) {
-        logger.error('Failed to load site content for ', url)
+        logger.error('Failed to store site contents to s3 ', {
+          error,
+          url,
+          dataFeedId,
+          articleId,
+          title,
+          articleText
+        })
       }
+      let response
       try {
-        const response = await generateArticleSummarization(
+        response = await generateArticleSummarization(
           articleText,
           summarizationPrompt
         )
+      } catch (error) {
+        logger.error('Failed to generate article summary for ' + url, {
+          error
+        })
+        tracer.addErrorAsMetadata(error as Error)
+        logger.debug('Attempting to find a fallback URL')
+        const redirectFallback = checkForRedirectFallback($)
+        if (redirectFallback !== null) {
+          const $$ = await getSiteContent(url)
+          if ($$('article').length > 0) {
+            articleText = $$('article').text()
+          } else {
+            articleText = $$('body').text()
+          }
+          if (articleText !== undefined && articleText.length > 255) {
+            try {
+              await storeSiteContent(articleText, dataFeedId, articleId)
+            } catch (error) {
+              logger.error('Failed to store site contents to s3 ', {
+                error,
+                url,
+                dataFeedId,
+                articleId,
+                title,
+                articleText
+              })
+            }
+            try {
+              response = await generateArticleSummarization(
+                articleText,
+                summarizationPrompt
+              )
+            } catch (error) {
+              logger.error('Failed to generate article summary for ' + url, {
+                error
+              })
+              tracer.addErrorAsMetadata(error as Error)
+            }
+          }
+        }
+      } finally {
         if (response !== undefined && response !== null) {
           await saveArticleData(
             response,
@@ -93,14 +134,7 @@ const ingestArticle = async (event: ArticleIngestorInput): Promise<void> => {
             title,
             summarizationPrompt
           )
-        } else {
-          throw new Error('Response is undefined')
         }
-      } catch (error) {
-        logger.error('Failed to generate article summary for ' + url, {
-          error
-        })
-        tracer.addErrorAsMetadata(error as Error)
       }
     } else {
       logger.error('Failed to generate article summary for ' + url)
@@ -253,6 +287,23 @@ const getAccountIdForDataFeed = async (dataFeedId: string): Promise<string> => {
   } else {
     throw new Error('No account id found for data feed ' + dataFeedId)
   }
+}
+
+const checkForRedirectFallback = ($: cheerio.Root): string | null => {
+  logger.debug('Checking for redirect fallback in <noscript> tag')
+  if ($('noscript').length > 0 && $('noscript').children('a').length === 1) {
+    logger.debug('<noscript> exists with one anchor URL.', { noscript: $('noscript').html()?.toString() })
+    tracer.putAnnotation('redirectFallback', true)
+    metrics.addMetric('RedirectFallback', MetricUnits.Count, 1)
+    const redirectFallback = $('noscript').children('a').first().attr('href')
+    if (redirectFallback !== undefined) {
+      logger.debug('Redirect fallback found', { redirectFallback })
+      return redirectFallback
+    } else {
+      logger.debug('No redirect fallback found')
+    }
+  }
+  return null
 }
 
 export const handler = middy()

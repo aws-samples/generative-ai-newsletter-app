@@ -1,3 +1,42 @@
+## **0.6.0**&emsp;<sub><sup>2024-03-27 (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6...ed4419c6bf98b0836d07f1cde2f57c2fecabc648)</sup></sub>
+
+### Features
+
+##### &ensp;`user interface`
+
+- deploy config CLI allows for custom hostname and ACM Cert now (ed4419c6bf98b0836d07f1cde2f57c2fecabc648)
+
+### Bug Fixes
+
+- fixed CDK NAG bug for CloudFront (4a2caab8283ff9c03d029160ffb1f77aae093a1b)
+
+##### &ensp;`newsletter`
+
+- fixed missing App Host Name on Email Generator lambda, causing missing flag links (3de4a05acb17d63319eea6375af1d1202e4c2632)
+
+##### &ensp;`newsletters`
+
+- users received "Access Denied" when attempting to view a newsletter publication (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6)
+
+##### &ensp;`ui`
+
+- second fix for email preview access denied from S3 (60fc9dd5894359dc5cd24a1a415359e9b11d0880)
+- added Loading view when page is doing full load rather than show login view (e34c9fb5a1878fbca28c4edcc6fc8b2f03516095)
+
+##### &ensp;`user interface`
+
+- fixed permission issue with CloudFront access UI Bucket (c2efa5cc49b4f218d1f7e88ee3f0a2b5ee0c23aa)
+
+
+### BREAKING CHANGES
+- `user interface` Previously, if a hostname/cert were set in console, they would remain unchanged\. (ed4419c6bf98b0836d07f1cde2f57c2fecabc648)
+
+With this change, each deployment will set the hostname and acm cert \(or unset\) based on the config
+  file\.
+  
+  re \#38
+<br>
+
 ## **0.5.1**&emsp;<sub><sup>2024-03-20 (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6...143cbafd4aed5151e0981003ef557da9a1a3d483)</sup></sub>
 
 ### Bug Fixes

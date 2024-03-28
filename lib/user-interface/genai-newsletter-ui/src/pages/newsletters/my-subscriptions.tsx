@@ -34,14 +34,15 @@ export default function MyNewsletterSubscriptions() {
       content={
         <BaseContentLayout
           header={
-            <Header description="Create Newsletters or find an existing newsletter to subscribe to or update.">
-              <h1>GenAI Powered Newsletters</h1>
+            <Header 
+            variant='awsui-h1-sticky'
+            description="View all the Newsletters that you are currently subscribed to that were created by you or others.">
+              My Newsletter Subscriptions
             </Header>
           }
         >
           <Container>
             <NewslettersTable
-              title="My Subscribed Newsletters"
               includeSubscriptions
             />
           </Container>

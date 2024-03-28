@@ -34,8 +34,8 @@ export default function NewslettersDashboard() {
       content={
         <BaseContentLayout
           header={
-            <Header description="Create Newsletters or find an existing newsletter to subscribe to or update.">
-              <h1>GenAI Powered Newsletters</h1>
+            <Header variant='awsui-h1-sticky' description="Create Newsletters or find an existing newsletter to subscribe to or update.">
+              Newsletters Dashboard
             </Header>
           }
         >

@@ -13,9 +13,11 @@ interface BaseContentLayoutProps extends PropsWithChildren {
 
 export default function BaseContentLayout(props: BaseContentLayoutProps) {
   const appContext = useContext(AppContext)
-  const { children } = props
+  const { children, header } = props
   return (
-    <ContentLayout>
+    <ContentLayout
+      header={header}
+    >
       {appContext?.ui?.persistentAlert ? (
         <Alert
           type={appContext.ui.persistentAlert.type}

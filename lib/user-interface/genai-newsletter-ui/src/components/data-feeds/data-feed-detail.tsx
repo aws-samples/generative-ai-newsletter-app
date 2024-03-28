@@ -1,13 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { DataFeed } from 'genai-newsletter-shared/api/API'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {
-  Button,
   Container,
   FormField,
-  Header,
   SpaceBetween,
   Spinner,
   Toggle
@@ -15,10 +13,8 @@ import {
 
 export default function DataFeedDetail() {
   const { dataFeedId } = useParams()
-  const navigate = useNavigate()
   const appContext = useContext(AppContext)
   const [setDataFeedId, setDataFeed] = useState<DataFeed | null>(null)
-  const [canManageDataFeed, setCanManageDataFeed] = useState<boolean>(false)
   const [loading, setLoading] = useState(true)
 
   const getDataFeed = useCallback(async () => {
@@ -35,12 +31,6 @@ export default function DataFeedDetail() {
       return
     }
     setDataFeed(result.data.getDataFeed as DataFeed)
-    try {
-      const canManageDataFeed = await apiClient.dataFeeds.canManageDataFeed({ dataFeedId })
-      setCanManageDataFeed(canManageDataFeed.data.canManageDataFeed)
-    } catch (e) {
-      setCanManageDataFeed(false)
-    }
     setLoading(false)
   }, [appContext, dataFeedId])
 
@@ -50,23 +40,6 @@ export default function DataFeedDetail() {
 
   return (
     <Container
-      header={
-        <Header
-          actions={
-            <SpaceBetween direction="horizontal" size="s">
-              <Button
-                variant="primary"
-                disabled={canManageDataFeed !== true}
-                onClick={() => {
-                  navigate(`/feeds/${dataFeedId}/edit`)
-                }}
-              >
-                Edit Data Feed
-              </Button>
-            </SpaceBetween>
-          }
-        />
-      }
     >
       {loading ? (
         <SpaceBetween size="l" alignItems="center" direction="vertical">
@@ -75,10 +48,13 @@ export default function DataFeedDetail() {
         </SpaceBetween>
       ) : (
         <SpaceBetween direction="vertical" size="s">
-          <h2>{setDataFeedId?.title}</h2>
-          <span>
+          <FormField label='Data Feed Name'>
+            <span style={{ fontWeight: 'bold' }}>{setDataFeedId?.title}</span>
+          </FormField>
+          <FormField label='Description'>
             <i>{setDataFeedId?.description}</i>
-          </span>
+          </FormField>
+
           <FormField label="Feed URL">{setDataFeedId?.url}</FormField>
           <FormField label="DataFeedId">{setDataFeedId?.dataFeedId}</FormField>
           <FormField label="Enabled">
@@ -97,10 +73,11 @@ export default function DataFeedDetail() {
           <FormField label="Feed Type">{setDataFeedId?.feedType}</FormField>
           <FormField label="Date Created">{setDataFeedId?.createdAt}</FormField>
           <FormField label="Article Summarization Prompt">
-            {setDataFeedId?.summarizationPrompt}
+            {setDataFeedId?.summarizationPrompt ? setDataFeedId?.summarizationPrompt?.length : <span style={{ fontStyle: 'italic' }}>No Custom Prompt Provided</span>}
           </FormField>
         </SpaceBetween>
-      )}
-    </Container>
+      )
+      }
+    </Container >
   )
 }

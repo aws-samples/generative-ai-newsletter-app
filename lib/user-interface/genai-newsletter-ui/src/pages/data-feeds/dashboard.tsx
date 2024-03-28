@@ -27,11 +27,10 @@ export default function DataFeedsDashboard() {
       content={
         <BaseContentLayout
           header={
-            <Header description="Create new data feeds for Newsletters or browse/update existing feeds.">
-              <h1>Data Feeds</h1>
-              <h3>
-                Automated Information Ingestion, Enhanced by Generative AI
-              </h3>
+            <Header
+              variant='awsui-h1-sticky'
+             description="Create new data feeds for Newsletters or browse/update existing feeds.">
+              Data Feeds Dashboard
             </Header>
           }
         >

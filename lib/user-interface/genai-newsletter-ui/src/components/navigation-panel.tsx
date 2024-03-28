@@ -114,7 +114,7 @@ export default function NavigationPanel() {
       activeHref={activeHref}
       onFollow={onFollow}
       onChange={onChange}
-      header={{ href: '/', text: 'GenAI Newsletter Platform' }}
+      header={{ href: '/', text: 'GenAI Newsletter App' }}
       items={items}
     />
   )

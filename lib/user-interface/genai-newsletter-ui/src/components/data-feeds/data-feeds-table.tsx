@@ -148,7 +148,7 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
       resizableColumns
       loading={loadingDataFeeds}
       selectionType="single"
-      trackBy="subscriptionId"
+      trackBy="dataFeedId"
       selectedItems={selectedDataFeed ? [selectedDataFeed] : []}
       onSelectionChange={({ detail }) => {
         setSelectedDataFeed(detail.selectedItems[0])

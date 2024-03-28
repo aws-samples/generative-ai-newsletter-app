@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {
@@ -10,7 +10,9 @@ import {
 import BaseAppLayout from '../../components/base-app-layout'
 import {
   BreadcrumbGroup,
+  Button,
   Container,
+  Header,
   SpaceBetween,
   SplitPanel,
   StatusIndicator
@@ -25,6 +27,7 @@ import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style
 
 export default function NewsletterDetail() {
   const { newsletterId } = useParams()
+  const navigate = useNavigate()
   const onFollow = useOnFollow()
   const appContext = useContext(AppContext)
   const [canManageNewsletter, setCanManageNewsletter] = useState<boolean>(false)
@@ -132,12 +135,44 @@ export default function NewsletterDetail() {
         </SplitPanel>
       }
       content={
-        <BaseContentLayout>
+        <BaseContentLayout
+          header={<Header
+            variant="awsui-h1-sticky"
+            description="Browse the details of the Data Feed"
+            actions={
+              <SpaceBetween size="xs" direction="horizontal">
+                <Button
+                  disabled={!canManageNewsletter}
+                  onClick={() => {
+                    navigate(`/newsletters/${newsletterId}/edit`)
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button disabled>Delete (Not Yet Implemented)</Button>
+                <Button
+                  iconAlign="right"
+                  variant="primary"
+                  onClick={() => {
+                    setSplitPanelOpen(
+                      !splitPanelOpen
+                    )
+                  }}
+                >
+                  {splitPanelOpen
+                    ? 'Hide Preview'
+                    : 'Show Preview'}
+                </Button>
+              </SpaceBetween>
+            }
+          >
+            Newsletter Details
+          </Header>}
+        >
           <SpaceBetween direction="vertical" size="m">
             <Container>
               {newsletter != undefined ? (
                 <NewsletterReviewForm
-                  canManageNewsletter={canManageNewsletter}
                   isPrivate={newsletter.isPrivate ?? true}
                   numberOfDaysToInclude={newsletter.numberOfDaysToInclude}
                   selectedDataFeeds={
@@ -158,10 +193,6 @@ export default function NewsletterDetail() {
                       ? newsletter.articleSummaryType
                       : ArticleSummaryType.SHORT_SUMMARY
                   }
-                  templatePreview={{
-                    setSplitPanelOpen,
-                    splitPanelOpen
-                  }}
                 />
               ) : (
                 <>

@@ -42,7 +42,11 @@ export default function GlobalHeader() {
     >
       <TopNavigation
         identity={{
-          href: '#'
+          href: '/',
+          logo: {
+            src: '/images/logo.png',
+            alt: 'GenAI Newsletter App'
+          }
         }}
         utilities={[
           {

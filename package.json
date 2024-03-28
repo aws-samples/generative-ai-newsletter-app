@@ -1,6 +1,6 @@
 {
   "name": "genai-newsletter",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "bin": {
     "genai-newsletter-app": "bin/genai-newsletter-app.js"
   },

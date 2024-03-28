@@ -1,3 +1,14 @@
+## **0.8.0**&emsp;<sub><sup>2024-03-28 (a242431babf4117efb23add5ef016fc86726fc5f...a36914b5ccb6e7d7df0ce370618683d3168fc840)</sup></sub>
+
+### Features
+
+##### &ensp;`user interface`
+
+- added favicon & added AWS Icon to Global Header (a242431babf4117efb23add5ef016fc86726fc5f)
+- added Dark Theme option \- Users can toggle between light and dark (a36914b5ccb6e7d7df0ce370618683d3168fc840)
+
+<br>
+
 ## **0.7.0**&emsp;<sub><sup>2024-03-28 (7d813299b8f6451f8e34b97351eb8f046f1cdc93...72f7c2d8af920cff48ba8222c0224fab66a0e5cc)</sup></sub>
 
 ### Features

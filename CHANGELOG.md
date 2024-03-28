@@ -1,3 +1,27 @@
+## **0.7.0**&emsp;<sub><sup>2024-03-28 (7d813299b8f6451f8e34b97351eb8f046f1cdc93...72f7c2d8af920cff48ba8222c0224fab66a0e5cc)</sup></sub>
+
+### Features
+
+##### &ensp;`data feeds`
+
+- rSS/ATOM feed ingest will handle page redirect to article (85101eeed252578b523756401e12491de0d48e89)
+
+##### &ensp;`user interface`
+
+- updated Landing Page content (72f7c2d8af920cff48ba8222c0224fab66a0e5cc)
+
+### Bug Fixes
+
+##### &ensp;`cli`
+
+- hotfix for cli (7d813299b8f6451f8e34b97351eb8f046f1cdc93)
+
+##### &ensp;`graphql api`
+
+- fixed AppSync Data Source permissions to access Data Feed table index (329b2d1473f48f6a23da36f9d418085f3f83d8ea)
+
+<br>
+
 ## **0.6.0**&emsp;<sub><sup>2024-03-27 (ba3a6026bc63e1240c75fbe68acbc81dab5e65d6...ed4419c6bf98b0836d07f1cde2f57c2fecabc648)</sup></sub>
 
 ### Features

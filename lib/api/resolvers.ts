@@ -126,7 +126,8 @@ export class ApiResolvers extends Construct {
                 'dynamodb:BatchGetItem'
               ],
               resources: [
-                dataFeedTable.tableArn
+                dataFeedTable.tableArn,
+                `${dataFeedTable.tableArn}/index/${props.dataFeedTableTypeIndex}`
               ]
             })
           ]

@@ -1,7 +1,6 @@
 import { Stack } from 'aws-cdk-lib'
 import {
-  NewsSubscriptionIngestion,
-  dataFeedTableLSI
+  NewsSubscriptionIngestion
 } from './data-feed-ingestion'
 import { NewsletterGenerator } from './newsletter-generator'
 import { Authentication } from './authentication'
@@ -62,7 +61,7 @@ export class GenAINewsletter extends Stack {
       'NewsletterGenerator',
       {
         dataFeedTable: dataFeedIngestion.dataFeedTable,
-        dataFeedTableLSI,
+        dataFeedTableLSI: dataFeedIngestion.dataFeedTableLSI,
         accountTable: authentication.accountTable,
         accountTableUserIndex: authentication.accountTableUserIndex,
         userPool: authentication.userPool,
@@ -73,6 +72,8 @@ export class GenAINewsletter extends Stack {
     const api = new API(this, 'API', {
       userPoolId: authentication.userPoolId,
       dataFeedTable: dataFeedIngestion.dataFeedTable,
+      dataFeedTableLSI: dataFeedIngestion.dataFeedTableLSI,
+      dataFeedTableTypeIndex: dataFeedIngestion.dataFeedTableTypeIndex,
       accountTable: authentication.accountTable,
       accountTableUserIndex: authentication.accountTableUserIndex,
       newsletterTable: newsletterGenerator.newsletterTable,

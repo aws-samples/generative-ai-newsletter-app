@@ -7,15 +7,14 @@ import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import { RssAtomFeedConstruct } from './rss-atom-ingestion'
 
-export const dataFeedTableTypeIndex = 'type-index'
-export const dataFeedTableLSI = 'lsi-date-index'
-
 export class NewsSubscriptionIngestion extends Construct {
   public readonly dataFeedTable: Table
   public readonly rssAtomDataBucket: Bucket
   public readonly rssAtomIngestionStepFunctionStateMachine: StateMachine
   public readonly dataFeedPollStepFunctionStateMachine: StateMachine
   public readonly feedSubscriberFunction: NodejsFunction
+  public readonly dataFeedTableTypeIndex = 'type-index'
+  public readonly dataFeedTableLSI = 'lsi-date-index'
 
   constructor (scope: Construct, id: string, props: { loggingBucket: Bucket }) {
     super(scope, id)
@@ -36,7 +35,7 @@ export class NewsSubscriptionIngestion extends Construct {
     })
 
     dataFeedTable.addLocalSecondaryIndex({
-      indexName: dataFeedTableLSI,
+      indexName: this.dataFeedTableLSI,
       sortKey: {
         name: 'createdAt',
         type: AttributeType.STRING
@@ -44,7 +43,7 @@ export class NewsSubscriptionIngestion extends Construct {
     })
 
     dataFeedTable.addGlobalSecondaryIndex({
-      indexName: dataFeedTableTypeIndex,
+      indexName: this.dataFeedTableTypeIndex,
       partitionKey: {
         name: 'sk',
         type: AttributeType.STRING
@@ -57,8 +56,8 @@ export class NewsSubscriptionIngestion extends Construct {
 
     const rssAtomIngestion = new RssAtomFeedConstruct(this, 'RssAtomIngestion', {
       dataFeedTable,
-      dataFeedTableTypeIndex,
-      dataFeedTableLSI,
+      dataFeedTableTypeIndex: this.dataFeedTableTypeIndex,
+      dataFeedTableLSI: this.dataFeedTableLSI,
       loggingBucket
     })
 

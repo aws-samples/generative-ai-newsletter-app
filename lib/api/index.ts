@@ -18,6 +18,8 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 export interface ApiProps {
   userPoolId: string
   dataFeedTable: Table
+  dataFeedTableTypeIndex: string
+  dataFeedTableLSI: string
   newsletterTable: Table
   newsletterTableItemTypeGSI: string
   accountTable: ITable

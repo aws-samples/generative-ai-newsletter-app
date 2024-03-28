@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { AppConfig } from '../common/types'
 import { Amplify } from 'aws-amplify'
+import { ThemeProvider, defaultDarkModeOverride } from '@aws-amplify/ui-react'
 import { AppContext } from '../common/app-context'
 import App from '../app'
 import { Alert } from '@cloudscape-design/components'
 import Authenticator from './auth/custom-authenticator'
 import { generateClient } from 'aws-amplify/api'
+import { StorageHelper } from '../common/helpers/storage-helper'
+import { Mode } from '@cloudscape-design/global-styles'
 
 export default function AppConfigured() {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [error, setError] = useState<boolean | null>(null)
+  const [theme, setTheme] = useState(StorageHelper.getTheme());
   useEffect(() => {
     (async () => {
       try {
@@ -28,6 +32,36 @@ export default function AppConfigured() {
       }
     })()
   }, [])
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "style"
+        ) {
+          const newValue =
+            document.documentElement.style.getPropertyValue(
+              "--app-color-scheme"
+            );
+
+          const mode = newValue === "dark" ? Mode.Dark : Mode.Light;
+          if (mode !== theme) {
+            setTheme(mode);
+          }
+        }
+      })
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [theme]);
+
 
   if (!config) {
     if (error) {
@@ -56,9 +90,17 @@ export default function AppConfigured() {
 
   return (
     <AppContext.Provider value={config}>
-      <Authenticator>
-        <App />
-      </Authenticator>
+      <ThemeProvider
+        theme={{
+          name: "default-theme",
+          overrides: [defaultDarkModeOverride],
+        }}
+        colorMode={theme === Mode.Dark ? "dark" : "light"}
+      >
+        <Authenticator>
+          <App />
+        </Authenticator>
+      </ThemeProvider>
     </AppContext.Provider>
   )
 }

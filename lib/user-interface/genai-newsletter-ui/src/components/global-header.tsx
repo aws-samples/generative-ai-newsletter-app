@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { signOut } from '@aws-amplify/auth'
 import {
   ButtonDropdownProps,
@@ -6,9 +6,12 @@ import {
 } from '@cloudscape-design/components'
 import { UserContext } from '../common/user-context'
 import { AppContext } from '../common/app-context'
+import { StorageHelper } from '../common/helpers/storage-helper'
+import { Mode } from '@cloudscape-design/global-styles'
 export default function GlobalHeader() {
   const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
+  const [theme, setTheme] = useState<Mode>(StorageHelper.getTheme());
 
   const onUtilClick = ({
     detail
@@ -19,6 +22,13 @@ export default function GlobalHeader() {
       signOut()
     }
   }
+  const onChangeThemeClick = () => {
+    if (theme === Mode.Dark) {
+      setTheme(StorageHelper.applyTheme(Mode.Light));
+    } else {
+      setTheme(StorageHelper.applyTheme(Mode.Dark));
+    }
+  };
   const addedLinks = []
   if (appContext?.ui?.headerLinks) {
     for (const link of appContext.ui.headerLinks) {
@@ -49,6 +59,11 @@ export default function GlobalHeader() {
           }
         }}
         utilities={[
+          {
+            type: "button",
+            text: theme === Mode.Dark ? "Light Mode" : "Dark Mode",
+            onClick: onChangeThemeClick,
+          },
           {
             type: 'menu-dropdown',
             iconName: 'user-profile',

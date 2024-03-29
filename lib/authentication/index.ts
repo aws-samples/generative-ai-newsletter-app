@@ -61,7 +61,7 @@ export class Authentication extends Construct {
     const preTokenGenerationHookFunctionRole = new Role(this, 'pre-token-generation-hook-role', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com')
     })
-    preTokenGenerationHookFunctionRole.addManagedPolicy(ManagedPolicy.fromManagedPolicyName(this, 'PreTokenLambdaManagedPolicy', 'AWSLambdaBasicExecutionRole'))
+    preTokenGenerationHookFunctionRole.addManagedPolicy(ManagedPolicy.fromManagedPolicyArn(this, 'PreTokenGenRoleLambdaExecution', 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'))
     const preTokenGenerationHookFunction = new NodejsFunction(this, 'pre-token-generation-hook', {
       description:
         'Post Authentication, Pre-Token Generation Hook that creates a user\'s accountId',

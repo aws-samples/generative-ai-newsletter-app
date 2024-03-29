@@ -1,3 +1,14 @@
+## **0.8.1**&emsp;<sub><sup>2024-03-29 (64dda49aaa846e0bc7fabac4692541589ffb321e...586d9d988846a52ffb12bba39cfe6d6af4dc0629)</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`authentication`
+
+- new users failed to login because the PreToken Lambda failed (64dda49aaa846e0bc7fabac4692541589ffb321e)
+- new users failed to login because the PreToken Lambda failed (586d9d988846a52ffb12bba39cfe6d6af4dc0629)
+
+<br>
+
 ## **0.8.0**&emsp;<sub><sup>2024-03-28 (a242431babf4117efb23add5ef016fc86726fc5f...a36914b5ccb6e7d7df0ce370618683d3168fc840)</sup></sub>
 
 ### Features

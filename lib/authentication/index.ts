@@ -60,7 +60,8 @@ export class Authentication extends Construct {
     this.accountTable = accountTable
     const preTokenGenerationHookFunctionRole = new Role(this, 'pre-token-generation-hook-role', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com')
-    }).withoutPolicyUpdates()
+    })
+    preTokenGenerationHookFunctionRole.addManagedPolicy(ManagedPolicy.fromManagedPolicyName(this, 'PreTokenLambdaManagedPolicy', 'AWSLambdaBasicExecutionRole'))
     const preTokenGenerationHookFunction = new NodejsFunction(this, 'pre-token-generation-hook', {
       description:
         'Post Authentication, Pre-Token Generation Hook that creates a user\'s accountId',
@@ -244,5 +245,12 @@ export class Authentication extends Construct {
         reason: 'Skipping - Sample doesn\'t need advanced security'
       }
     ])
+
+    NagSuppressions.addResourceSuppressions(preTokenGenerationHookFunctionRole, [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing PreTokenGenerationHookFunctionRole to have * policies'
+      }
+    ], true)
   }
 }

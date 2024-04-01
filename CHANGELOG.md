@@ -1,3 +1,13 @@
+## **0.9.0**&emsp;<sub><sup>2024-04-01 (ab705cf5f9bd727cb56b9ebcdf199f30d6e01bb9...ab705cf5f9bd727cb56b9ebcdf199f30d6e01bb9)</sup></sub>
+
+### Features
+
+##### &ensp;`newsletter email`
+
+- unsubscribe from email footer (ab705cf5f9bd727cb56b9ebcdf199f30d6e01bb9)
+
+<br>
+
 ## **0.8.1**&emsp;<sub><sup>2024-03-29 (64dda49aaa846e0bc7fabac4692541589ffb321e...586d9d988846a52ffb12bba39cfe6d6af4dc0629)</sup></sub>
 
 ### Bug Fixes

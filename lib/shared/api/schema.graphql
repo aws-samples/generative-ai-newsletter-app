@@ -173,6 +173,11 @@ input UnsubscribeFromNewsletterInput {
   newsletterId: String!
 }
 
+input ExternalUnsubscribeFromNewsletter {
+  newsletterId: String!
+  userId: String!
+}
+
 
 
 input GetNewsletterInput {
@@ -220,6 +225,7 @@ type Mutation {
     @aws_cognito_user_pools
   unsubscribeFromNewsletter(input: UnsubscribeFromNewsletterInput): Boolean
     @aws_cognito_user_pools
+  externalUnsubscribeFromNewsletter(input: ExternalUnsubscribeFromNewsletter): Boolean! @aws_cognito_user_pools 
   updateNewsletter(
     input: UpdateNewsletterInput!
   ): Boolean @aws_cognito_user_pools

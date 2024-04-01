@@ -53,6 +53,7 @@ export interface PinpointEmailConfig {
 }
 export interface NewsletterEmailProps {
   title?: string
+  newsletterId?: string
   articles?: ArticleData[]
   newsletterSummary?: MultiSizeFormattedResponse
   appHostName?: string

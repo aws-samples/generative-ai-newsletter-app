@@ -150,4 +150,12 @@ export class ResolverPermissions extends ResolverPermissionMapBase {
     resourceId: 'newsletterId',
     resourceType: 'newsletter'
   }))
+
+  /**
+   * There are no authorization checks on this endpoint
+   */
+  externalUnsubscribeFromNewsletter = new CreateActionStatement({
+    actionId: 'N/A',
+    resourceType: 'N/A'
+  })
 }

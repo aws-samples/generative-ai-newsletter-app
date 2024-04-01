@@ -22,6 +22,9 @@ export abstract class ResolverPermissionMapBase {
   abstract listUserSubscriptions: ReadActionStatement | ListActionStatement
   abstract createDataFeed: CreateActionStatement | UpdateActionStatement
   abstract createNewsletter: CreateActionStatement | UpdateActionStatement
+  abstract externalUnsubscribeFromNewsletter:
+    | CreateActionStatement
+    | UpdateActionStatement
   abstract flagArticle: CreateActionStatement | UpdateActionStatement
   abstract subscribeToNewsletter: CreateActionStatement | UpdateActionStatement
   abstract unsubscribeFromNewsletter:
@@ -61,6 +64,8 @@ export abstract class ResolverPermissionMapBase {
         return this.createDataFeed
       case 'createNewsletter':
         return this.createNewsletter
+      case 'externalUnsubscribeFromNewsletter':
+        return this.externalUnsubscribeFromNewsletter
       case 'flagArticle':
         return this.flagArticle
       case 'subscribeToNewsletter':

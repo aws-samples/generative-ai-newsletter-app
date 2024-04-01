@@ -92,6 +92,15 @@ export const unsubscribeFromNewsletter = /* GraphQL */ `mutation UnsubscribeFrom
   APITypes.UnsubscribeFromNewsletterMutationVariables,
   APITypes.UnsubscribeFromNewsletterMutation
 >;
+export const externalUnsubscribeFromNewsletter = /* GraphQL */ `mutation ExternalUnsubscribeFromNewsletter(
+  $input: ExternalUnsubscribeFromNewsletter
+) {
+  externalUnsubscribeFromNewsletter(input: $input)
+}
+` as GeneratedMutation<
+  APITypes.ExternalUnsubscribeFromNewsletterMutationVariables,
+  APITypes.ExternalUnsubscribeFromNewsletterMutation
+>;
 export const updateNewsletter = /* GraphQL */ `mutation UpdateNewsletter($input: UpdateNewsletterInput!) {
   updateNewsletter(input: $input)
 }

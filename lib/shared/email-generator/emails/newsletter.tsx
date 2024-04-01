@@ -20,6 +20,7 @@ export default function NewsletterEmail (
 ): React.ReactElement {
   const {
     title,
+    newsletterId,
     articles,
     appHostName,
     footerOverride,
@@ -95,7 +96,7 @@ export default function NewsletterEmail (
               <Text>
                 <p>
                   This newsletter was created automatically and content was
-                  summarized using Generative AI services powered by AWS.
+                  summarized using generative AI services powered by AWS.
                 </p>
                 {appHostName !== undefined && appHostName.length > 2
                   ? (
@@ -117,6 +118,7 @@ export default function NewsletterEmail (
                   content is incorrect, click the Flag this summary link to flag
                   the generated content (*If Flag this summary link is available).
                 </Text>
+                <a href={`https://${appHostName}/unsubscribe/index.html?newsletterId=${newsletterId}&userId={{Id}}`} >Unsubscribe from this newsletter</a>
               </Text>
             )}
         </Section>

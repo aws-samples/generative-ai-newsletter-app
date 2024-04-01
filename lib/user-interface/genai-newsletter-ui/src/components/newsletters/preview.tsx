@@ -47,6 +47,7 @@ export default function NewsletterPreview(props?: NewsletterEmailProps) {
       articleSummaryType={
         props?.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY
       }
+      newsletterId={props?.newsletterId ?? 'XXXX'}
       articles={props?.articles ?? sampleArticles}
       newsletterSummary={props?.newsletterSummary ?? sampleNewsletterSummary}
       appHostName={appContext?.ui?.hostName ?? '/'}

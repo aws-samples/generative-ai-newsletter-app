@@ -83,6 +83,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
         articles,
         newsletterSummary,
         newsletter.title,
+        newsletterId,
         newsletter.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY,
         newsletter.newsletterStyle !== null ? newsletter.newsletterStyle as unknown as NewsletterStyle : undefined
       )
@@ -225,6 +226,7 @@ const generateEmail = async (
   articles: ArticleData[],
   newsletterSummary: MultiSizeFormattedResponse,
   title: string,
+  newsletterId: string,
   articleSummaryType: ArticleSummaryType,
   newsletterStyle?: NewsletterStyle
 ): Promise<GeneratedEmailContents> => {
@@ -232,6 +234,7 @@ const generateEmail = async (
   const html = render(
     NewsletterEmail({
       articles,
+      newsletterId,
       title,
       newsletterSummary,
       appHostName: APP_HOST_NAME,
@@ -245,6 +248,7 @@ const generateEmail = async (
   const text = render(
     NewsletterEmail({
       title,
+      newsletterId,
       articles,
       newsletterSummary,
       appHostName: APP_HOST_NAME,

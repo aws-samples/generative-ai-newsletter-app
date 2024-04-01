@@ -92,6 +92,11 @@ export type UnsubscribeFromNewsletterInput = {
   newsletterId: string,
 };
 
+export type ExternalUnsubscribeFromNewsletter = {
+  newsletterId: string,
+  userId: string,
+};
+
 export type UpdateNewsletterInput = {
   newsletterId: string,
   title?: string | null,
@@ -300,6 +305,14 @@ export type UnsubscribeFromNewsletterMutationVariables = {
 
 export type UnsubscribeFromNewsletterMutation = {
   unsubscribeFromNewsletter?: boolean | null,
+};
+
+export type ExternalUnsubscribeFromNewsletterMutationVariables = {
+  input?: ExternalUnsubscribeFromNewsletter | null,
+};
+
+export type ExternalUnsubscribeFromNewsletterMutation = {
+  externalUnsubscribeFromNewsletter: boolean,
 };
 
 export type UpdateNewsletterMutationVariables = {

@@ -12,7 +12,12 @@ import {
 import {
   CreateCampaignCommand,
   PinpointClient,
-  type CreateCampaignCommandInput
+  type CreateCampaignCommandInput,
+  type CreateEmailTemplateCommandInput,
+  CreateEmailTemplateCommand,
+  BadRequestException,
+  type UpdateEmailTemplateCommandInput,
+  UpdateEmailTemplateCommand
 } from '@aws-sdk/client-pinpoint'
 import {
   GetObjectCommand,
@@ -53,7 +58,8 @@ const lambdaHandler = async (
     emailKey !== undefined
       ? await getEmailBodiesFromS3(emailKey)
       : await getEmailBodiesFromS3(await getEmailKey(newsletterId, emailId))
-  const campaignId = await createEmailCampaign(newsletterId, html, text, title)
+  await createEmailTemplate(emailId, html, text, title)
+  const campaignId = await createEmailCampaign(emailId, title)
   await saveCampaignId(newsletterId, emailId, campaignId)
 }
 
@@ -137,35 +143,78 @@ const getEmailBodiesFromS3 = async (
   }
 }
 
-const createEmailCampaign = async (
+const createEmailTemplate = async (
   emailId: string,
   html: string,
   text: string,
+  title: string
+): Promise<void> => {
+  logger.debug('Creating email template', { emailId })
+  try {
+    const input: CreateEmailTemplateCommandInput = {
+      EmailTemplateRequest: {
+        HtmlPart: html,
+        TextPart: text,
+        Subject: title
+      },
+      TemplateName: emailId
+    }
+    const command = new CreateEmailTemplateCommand(input)
+    const response = await pinpoint.send(command)
+    if (response.CreateTemplateMessageBody?.Arn !== undefined) {
+      logger.debug('Email template created', { response })
+      metrics.addMetric('EmailTemplateCreated', MetricUnits.Count, 1)
+    } else {
+      throw new Error('Email template not created')
+    }
+  } catch (error) {
+    logger.error('Error creating email template', { error })
+    if (error instanceof BadRequestException && error.message.includes('Pinpoint Template already exists')) {
+      logger.warn('Pinpoint Email Template Already Exists!', { error })
+      logger.info('Attempting to create a new template version')
+      const input: UpdateEmailTemplateCommandInput = {
+        CreateNewVersion: false,
+        EmailTemplateRequest: {
+          HtmlPart: html,
+          TextPart: text,
+          Subject: title
+        },
+        TemplateName: emailId
+      }
+      const command = new UpdateEmailTemplateCommand(input)
+      await pinpoint.send(command)
+    } else {
+      logger.error('Error!', { error })
+    }
+  }
+}
+
+const createEmailCampaign = async (
+  emailId: string,
   newsletterTitle: string
 ): Promise<string> => {
   logger.debug('Creating email campaign', { emailId })
   const input: CreateCampaignCommandInput = {
     ApplicationId: PINPOINT_APP_ID,
     WriteCampaignRequest: {
+      TemplateConfiguration: {
+        EmailTemplate: {
+          Name: emailId
+        }
+      },
       Hook: {
         LambdaFunctionName: PINPOINT_CAMPAIGN_HOOK_FUNCTION,
         Mode: 'FILTER'
       },
       Name: emailId,
       SegmentId: PINPOINT_BASE_SEGMENT_ID,
-      MessageConfiguration: {
-        EmailMessage: {
-          Title: newsletterTitle,
-          Body: text,
-          HtmlBody: html
-        }
-      },
       Schedule: {
         StartTime: 'IMMEDIATE',
         Frequency: 'ONCE'
       }
     }
   }
+  logger.debug('CreateCampaignCommandInput', { input })
   const command = new CreateCampaignCommand(input)
   const response = await pinpoint.send(command)
   if (response.CampaignResponse?.Id !== undefined) {

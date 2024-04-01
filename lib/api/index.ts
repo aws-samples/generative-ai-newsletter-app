@@ -14,9 +14,11 @@ import { type CfnPolicyStore } from 'aws-cdk-lib/aws-verifiedpermissions'
 import { UserPool } from 'aws-cdk-lib/aws-cognito'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { type IRole } from 'aws-cdk-lib/aws-iam'
 
 export interface ApiProps {
   userPoolId: string
+  unauthenticatedUserRole: IRole
   dataFeedTable: Table
   dataFeedTableTypeIndex: string
   dataFeedTableLSI: string

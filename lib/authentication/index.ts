@@ -28,11 +28,13 @@ export class Authentication extends Construct {
   public readonly userPool: IUserPool
   private readonly identityPool: IIdentityPool
   private readonly authenticatedUserRole: IRole
+  public readonly unauthenticatedUserRole: IRole
   private readonly userPoolClient: IUserPoolClient
   public readonly userPoolId: string
   public readonly userPoolArn: string
   public readonly identityPoolId: string
   public readonly authenticatedUserRoleArn: string
+  public readonly unauthenticatedUserRoleArn: string
   public readonly userPoolClientId: string
   public readonly accountTable: Table
   public readonly accountTableUserIndex = 'userId-index'
@@ -133,6 +135,7 @@ export class Authentication extends Construct {
       this.identityPool = identityPool
       this.userPoolClient = userPoolClient
       this.authenticatedUserRole = identityPool.authenticatedRole
+      this.unauthenticatedUserRole = identityPool.unauthenticatedRole
     } else {
       const userPool = UserPool.fromUserPoolId(
         this,
@@ -189,6 +192,14 @@ export class Authentication extends Construct {
               mutable: true
             }
           )
+          this.unauthenticatedUserRole = Role.fromRoleArn(
+            this,
+            'UnauthenticatedUserRole',
+            auth.cognito.unauthenticatedUserArn as string,
+            {
+              mutable: true
+            }
+          )
         } else {
           const identityPool = new IdentityPool(this, 'IdentityPool', {
             authenticationProviders: {
@@ -202,6 +213,7 @@ export class Authentication extends Construct {
           })
           this.identityPool = identityPool
           this.authenticatedUserRole = identityPool.authenticatedRole as Role
+          this.unauthenticatedUserRole = identityPool.unauthenticatedRole as Role
         }
       }
       this.userPool = userPool
@@ -227,6 +239,7 @@ export class Authentication extends Construct {
     this.userPoolArn = this.userPool.userPoolArn
     this.identityPoolId = this.identityPool.identityPoolId
     this.authenticatedUserRoleArn = this.authenticatedUserRole.roleArn
+    this.unauthenticatedUserRoleArn = this.unauthenticatedUserRole.roleArn
     this.userPoolClientId = this.userPoolClient.userPoolClientId
     /**
        * Adding nag suppression to decrease sec requirements for login

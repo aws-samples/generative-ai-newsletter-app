@@ -12,7 +12,7 @@ import path = require('path')
 import { type ApiProps } from '.'
 import { type BundlingOptions, DockerImage, BundlingOutput } from 'aws-cdk-lib'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
-import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
+import { Effect, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 
 interface ApiResolversProps extends ApiProps {
   api: GraphqlApi
@@ -21,7 +21,7 @@ interface ApiResolversProps extends ApiProps {
 export class ApiResolvers extends Construct {
   constructor (scope: Construct, id: string, props: ApiResolversProps) {
     super(scope, id)
-    const { api, dataFeedTable, newsletterTable, accountTable } = props
+    const { api, dataFeedTable, newsletterTable, accountTable, unauthenticatedUserRole } = props
 
     const functionsPath = path.join(__dirname, 'functions')
     const getFunctionBundlingOptions = (
@@ -898,6 +898,26 @@ export class ApiResolvers extends Construct {
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, unsubscribeFromNewsletter]
     })
+
+    const externalUnsubscribeResolver = new Resolver(this, 'ExternalUnsubscriberResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'externalUnsubscribeFromNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('externalUnsubscribeFromNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [unsubscribeFromNewsletter]
+    })
+    unauthenticatedUserRole.attachInlinePolicy(new Policy(this, 'UnauthRoleUnsubscribe', {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['appsync:GraphQL'],
+          resources: [externalUnsubscribeResolver.arn]
+        })
+      ]
+    }))
 
     new Resolver(this, 'GetSubscriptionStatusResolver', {
       api,

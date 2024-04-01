@@ -31,10 +31,13 @@ import {
   ListNewslettersInput,
   GetNewsletterInput,
   CanManageNewsletterInput,
-  CanManageNewsletterQuery
+  CanManageNewsletterQuery,
+  ExternalUnsubscribeFromNewsletter,
+  ExternalUnsubscribeFromNewsletterMutation
 } from 'genai-newsletter-shared/api'
 import {
   createNewsletter,
+  externalUnsubscribeFromNewsletter,
   subscribeToNewsletter,
   unsubscribeFromNewsletter,
   updateNewsletter
@@ -250,5 +253,23 @@ export class NewslettersClient {
       return {data:{canManageNewsletter:false}} as GraphQLResult<GraphQLQuery<CanManageNewsletterQuery>>
     }
     
+  }
+
+  async externalUnsubscribeFromNewsletter(
+    input: ExternalUnsubscribeFromNewsletter
+  ): Promise<GraphQLResult<GraphQLQuery<ExternalUnsubscribeFromNewsletterMutation>>> {
+    try {
+      const result = await client.graphql({
+        query: externalUnsubscribeFromNewsletter,
+        variables: { input }
+      })
+      if (result.errors) {
+        throw result.errors
+      }
+      return result as GraphQLResult<GraphQLQuery<ExternalUnsubscribeFromNewsletterMutation>>
+    } catch (e) {
+      console.error(e)
+    }
+    return {} as GraphQLResult<GraphQLQuery<ExternalUnsubscribeFromNewsletterMutation>>
   }
 }

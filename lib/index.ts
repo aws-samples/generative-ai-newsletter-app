@@ -71,6 +71,7 @@ export class GenAINewsletter extends Stack {
 
     const api = new API(this, 'API', {
       userPoolId: authentication.userPoolId,
+      unauthenticatedUserRole: authentication.unauthenticatedUserRole,
       dataFeedTable: dataFeedIngestion.dataFeedTable,
       dataFeedTableLSI: dataFeedIngestion.dataFeedTableLSI,
       dataFeedTableTypeIndex: dataFeedIngestion.dataFeedTableTypeIndex,

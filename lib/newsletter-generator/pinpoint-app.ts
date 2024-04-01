@@ -126,11 +126,17 @@ export class PinpointApp extends Construct {
           'mobiletargeting:CreateSegment',
           'mobiletargeting:GetSegment',
           'mobiletargeting:CreateCampaign',
-          'mobiletargeting:GetCampaign'
+          'mobiletargeting:GetCampaign',
+          'mobiletargeting:ListTemplates',
+          'mobiletargeting:ListTemplateVersions',
+          'mobiletargeting:GetEmailTemplate',
+          'mobiletargeting:CreateEmailTemplate',
+          'mobiletargeting:UpdateEmailTemplate'
         ],
         resources: [
           `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}`,
-          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:apps/${pinpointApp.ref}/*`,
+          `arn:aws:mobiletargeting:${stackDetails.region}:${stackDetails.account}:templates/*`
         ]
       })
 

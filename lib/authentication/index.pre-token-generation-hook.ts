@@ -77,8 +77,6 @@ const lambdaHandler = async (event: PreTokenGenerationAuthenticationTriggerEvent
     } catch (e) {
       logger.error('Error updating user attributes', { e })
     }
-    console.log(accountId)
-    event.response.claimsOverrideDetails.claimsToAddOrOverride = { 'custom:Account': accountId }
   }
   return event
 }

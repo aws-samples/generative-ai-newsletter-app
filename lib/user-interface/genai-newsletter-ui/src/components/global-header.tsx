@@ -60,6 +60,13 @@ export default function GlobalHeader() {
         }}
         utilities={[
           {
+            type: 'button',
+            text: 'User Guide',
+            href: 'https://gitlab.aws.dev/awsrudy/genai-newsletter/-/wikis/home',
+            external: true,
+            target: '_blank'
+          },
+          {
             type: "button",
             text: theme === Mode.Dark ? "Light Mode" : "Dark Mode",
             onClick: onChangeThemeClick,

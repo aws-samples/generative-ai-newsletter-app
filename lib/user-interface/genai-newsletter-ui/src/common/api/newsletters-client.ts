@@ -9,7 +9,7 @@ import {
   getUserSubscriptionStatus,
   listUserSubscriptions,
   canManageNewsletter
-} from 'genai-newsletter-shared/api/graphql/queries'
+} from '../../../../../shared/api/graphql/queries'
 import {
   CreateNewsletterInput,
   CreateNewsletterMutation,
@@ -34,14 +34,14 @@ import {
   CanManageNewsletterQuery,
   ExternalUnsubscribeFromNewsletter,
   ExternalUnsubscribeFromNewsletterMutation
-} from 'genai-newsletter-shared/api'
+} from '../../../../../shared/api/API'
 import {
   createNewsletter,
   externalUnsubscribeFromNewsletter,
   subscribeToNewsletter,
   unsubscribeFromNewsletter,
   updateNewsletter
-} from 'genai-newsletter-shared/api/graphql/mutations'
+} from '../../../../../shared/api/graphql/mutations'
 
 const client = generateClient({
   authMode: 'userPool'

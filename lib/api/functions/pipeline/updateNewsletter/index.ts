@@ -3,7 +3,7 @@ import {
   util,
   type DynamoDBUpdateItemRequest
 } from '@aws-appsync/utils'
-import { type UpdateNewsletterInput } from 'genai-newsletter-shared/api'
+import { type UpdateNewsletterInput } from '../../../../shared/api'
 
 export function request (ctx: Context): DynamoDBUpdateItemRequest {
   const input: UpdateNewsletterInput = ctx.args.input

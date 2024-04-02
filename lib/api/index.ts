@@ -5,7 +5,7 @@ import {
   GraphqlApi
 } from 'aws-cdk-lib/aws-appsync'
 import { Construct } from 'constructs'
-import path = require('path')
+import * as path from 'path'
 import { ApiResolvers } from './resolvers'
 import { type ITable, type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'

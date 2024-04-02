@@ -17,14 +17,14 @@ import {
   Dispatch
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArticleSummaryType, DataFeed } from 'genai-newsletter-shared/api/API'
+import { ArticleSummaryType, DataFeed } from '../../../../../../shared/api/API'
 import { ApiClient } from '../../../common/api'
 import { AppContext } from '../../../common/app-context'
 import NewsletterDataFeedsSelectionForm from './data-feeds-selection-table'
 import NewsletterDetailsForm from './newsletter-details'
 import NewsletterReviewForm from './newsletter-review'
 import NewsletterIntroPrompt from './newsletter-intro-prompt'
-import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
+import { NewsletterStyle } from '../../../../../../shared/common/newsletter-style'
 import NewsletterDesignerForm from './newsletter-designer'
 
 interface NewsletterWizardProps {

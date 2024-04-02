@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useCollection } from '@cloudscape-design/collection-hooks'
-import { Newsletter } from 'genai-newsletter-shared/api/API'
+import { Newsletter } from '../../../../../shared/api/API'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {

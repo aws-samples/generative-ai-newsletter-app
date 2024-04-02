@@ -5,7 +5,7 @@ import NewsletterWizard from '../../components/newsletters/forms/newsletter-wiza
 import BaseContentLayout from '../../components/base-content-layout'
 import { useState } from 'react'
 import NewsletterPreview from '../../components/newsletters/preview'
-import { NewsletterStyle } from 'genai-newsletter-shared/common'
+import { NewsletterStyle } from '../../../../../shared/common'
 
 export default function CreateNewsletter() {
   const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)

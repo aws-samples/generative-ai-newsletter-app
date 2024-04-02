@@ -1,4 +1,4 @@
-import { type ReadAuthCheckInput } from 'genai-newsletter-shared/common/types'
+import { type ReadAuthCheckInput } from '../../../../shared/common'
 import { type Context, util, type AppSyncIdentityCognito, type LambdaRequest } from '@aws-appsync/utils'
 
 export function request (ctx: Context): LambdaRequest {

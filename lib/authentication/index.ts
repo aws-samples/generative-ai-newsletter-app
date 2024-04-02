@@ -1,4 +1,4 @@
-import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
+import { Duration, RemovalPolicy, Stack, CfnOutput } from 'aws-cdk-lib'
 import {
   type IIdentityPool,
   IdentityPool,
@@ -235,6 +235,12 @@ export class Authentication extends Construct {
     }))
     preTokenGenerationHookFunctionRole.addManagedPolicy(
       ManagedPolicy.fromAwsManagedPolicyName('AWSXrayWriteOnlyAccess'))
+
+    new CfnOutput(this, 'UserPoolLink', {
+      key: 'UserPoolLink',
+      exportName: 'UserPoolLink',
+      value: `https://${Stack.of(this).region}.console.aws.amazon.com/cognito/v2/idp/user-pools/${this.userPool.userPoolId}/users?region=${Stack.of(this).region}`
+    })
     this.userPoolId = this.userPool.userPoolId
     this.userPoolArn = this.userPool.userPoolArn
     this.identityPoolId = this.identityPool.identityPoolId

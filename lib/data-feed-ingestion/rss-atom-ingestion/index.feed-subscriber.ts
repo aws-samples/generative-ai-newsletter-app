@@ -20,7 +20,7 @@ import {
   DataFeedType,
   type CreateDataFeedInput,
   type DataFeed
-} from 'genai-newsletter-shared/api/API'
+} from '../../shared/api/API'
 
 const SERVICE_NAME = 'feed-subscriber'
 

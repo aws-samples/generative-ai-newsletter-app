@@ -5,7 +5,7 @@ import NewsletterWizard from '../../components/newsletters/forms/newsletter-wiza
 import { useParams } from 'react-router-dom'
 import BaseContentLayout from '../../components/base-content-layout'
 import NewsletterPreview from '../../components/newsletters/preview'
-import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
+import { NewsletterStyle } from '../../../../../shared/common/newsletter-style'
 import { useState } from 'react'
 
 export default function EditNewsletter() {

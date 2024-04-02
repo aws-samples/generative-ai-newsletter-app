@@ -12,7 +12,7 @@ import {
   type EndpointBatchItem,
   type MessageConfiguration
 } from '@aws-sdk/client-pinpoint'
-import { SubscriberType } from 'genai-newsletter-shared/common'
+import { SubscriberType } from '../shared/common'
 
 const SERVICE_NAME = 'pinpoint-campaign-hook'
 

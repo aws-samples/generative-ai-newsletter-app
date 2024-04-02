@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 import { useParams } from 'react-router-dom'
-import { Publication } from 'genai-newsletter-shared/api/API'
+import { Publication } from '../../../../../shared/api/API'
 import { ApiClient } from '../../common/api'
 import {
   Button,

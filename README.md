@@ -1,33 +1,98 @@
-# Generative AI Powered Newsletters
+# Generative AI Newsletter Application
 
-This goal of this project is to create a sample application that showcases AWS Serverless and GenAI technology to subscribe to news feeds and publications, accurately summarize the data and generate visually appealing newsletters for end-user consumption.
+The Generative AI Newsletter Application sample is a ready-to-use serverless solution designed to allow users to create rich newsletters automatically with content summaries that are AI-generated. 
 
-The project is currently in the initial design phase with a PRFAQ in the works.
-
-This document will be filled out more as the project evolves.
-
-### Some High-Level Thoughts for the Project
-
-- Leverage serverless technology as much as possible, avoid provisioned resources like SageMaker endpoints, to reduce cost of running the sample
-- Leverage Bedrock for LLM for summarization, text embedding, etc.
-- Aim to provide methods to reduce hallucination and enable the user to validate information. This can be, for example, including links to sources
-- Develop a Front-End UI that leverages [Cloudscape](https://cloudscape.design) React framework
-- Aim to leverage newer technology that may not have samples, such as Bedrock Agents
-- Enable Newsletter subscriptions (users could get an emailed newsletter, a text with a link to a newsletter, a slack notification, etc)
+The application offers users the ability to influence the generative AI prompts to customize how content is summarized such as the tone, intended audience, and more. Users can stylize the HTML newsletter, define how frequently newsletters are created and share the newsletters with others. 
 
 ## Deploying the Solution
 
-The following steps will guide you through deploying the CDK Application to your environment.
+The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & NodeJS
 
-1. In your project root folder, install package dependencies: `npm install --save-dev`
-2. After all packages are installed, you will need to build the solution by running `npm run build`. This will trigger amplify codegen to create the API files from the `schema.graphql` file. If generated files exist, they will simply be regenerated. Once the generation is complete, `tsc` will compile the typescript project.
-3. Run the configuration CLI to setup the necessary CDK context file. To run the configuration creation CLI, run `npm run config create`. This will will you through setting up your configuration. If a config exists, you can optionally update values. If you'd like to view the existing config, you can run `npm run config show`
-4. Deploy the stack to AWS. `npm run deploy`
+### Prerequisites
+* You will need an [AWS Account](https://repost.aws/knowledge-center/create-and-activate-aws-account).
 
-### Project Leads
+* Either an [IAM User](https://console.aws.amazon.com/iamv2/home?#/users/create) or [IAM Identity Center User](https://aws.amazon.com/iam/identity-center/) with `AdministratorAccess` policy granted to your user. *Not recommended for a production environment.*
+* [AWS CLI](https://aws.amazon.com/cli/) installed and configured to use with your AWS account.
+* [NodeJS 16 or 18](https://nodejs.org/en/download/) installed
+* The `ARN` of your [verified email identity](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-email-manage-verify.html) that you will send newsletter emails from. You will also be asked to provide an email address that will be the sender, which must be associated with the verified email identity.
 
-This project is currently lead by Addie Rudy ([awsrudy@](https://phonetool.amazon.com/users/awsrudy)) and Pete Conrad ([peteconr@](https://phonetool.amazon.com/users/peteconr))
 
-### Additional Documentation
+### Deployment
 
-To find additional documentation, please visit the `documentation/` directory from the root of the repo.
+1. Clone the repository
+	```
+	git clone https://gitlab.aws.dev/awsrudy/genai-newsletter/
+	```
+1. Change directory into the cloned repository
+	```
+	cd genai-newsletter
+	```
+1. Install the project dependencies & build the project
+	```
+	npm install && npm run build
+	```
+1. Run the configuration wizard to create a deployment configuration file.
+	```
+	npm run config manage
+	```
+	The configuration wizard will generate a configuration file in `bin/config.json`. This file will be used during the deployment. Unless you need to change the configuration file, you do not need to run the configuration wizard for future deployments. If you change the **Stack Name**, it will cause a new deployment to occur. 
+
+1. [*Optional*] Bootstrap AWS CDK on the target AWS Account & Region. 
+	> Note: This is required if you have never used AWS CDK on this account and region combination. ([More information on CDK bootstrapping](https://docs.aws.amazon.com/cdk/latest/guide/cli.html#cli-bootstrap)).
+
+1. Deploy the solution
+	```
+	npx cdk deploy
+	```
+	You can view the progress of your CDK deployment in the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home) in the selected region.
+
+1. Once the deployment is complete, CDK should show outputs that resemble the following. (Note: terms in brackets represents a generated/dynamic value)
+	```
+	...
+	Outputs:
+	[stackName].AppLink = https://dxxxxxxxxxxxxx.cloudfront.net/
+	[stackName].UserPoolLink = https://[region].console.aws.amazon.com/cognito/v2/idp/user-pools/xxxxx_XXXXX/users?region=[region]
+	...
+	```	
+	If you need these outputs again, you can view the deployment in the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home) by navigating to the deployed stack and visiting the "Outputs" tab.
+
+### Creating Users
+
+User accounts for the application are managed using [Amazon Cognito](https://aws.amazon.com/cognito/).
+
+1. Navigate to the Amazon Cognito in the AWS Console and select the User Pool deployed with the solution. Alternatively, you can navigate directly to the user pool by navigating to the `UserPoolLink` provided in the CDK output/CloudFormation output. 
+1. In the **Users** box, click the **Create user** button.
+1. Complete the user information form. 
+	It is recommended to select "Send an email invitation".
+	The Email address is required. 
+1. Once the form is complete, click the **Create user** button.
+
+### First Time Login
+
+1. Navigate to the `AppLink` URL provided in the CDK or CloudFormation output. This is the main URL for the application. 
+1. Login with the email and temporary password.
+1. If login is successful, you will be asked to provide your name and update your password.
+1. After you complete the name and password update, you will be logged into the application and can get started.
+
+
+### User Guide
+To learn how to start ingesting data with Data Feeds and creating dynamic Newsletters, visit the [User Guide](./USER_GUIDE.md).
+
+## Author
+
+* [Addie Rudy](https://www.linkedin.com/in/addierudy/)
+
+## Threat Model
+
+Review the threat model developed for the solution [here](documentation/ThreatModel.md). Additionally, you can download the [Threat Model JSON](documentation/GenAINewsletter_ThreatComposer.json) and view the visualized threat model by importing the JSON into [Threat Composer](https://awslabs.github.io/threat-composer/workspaces/default/dashboard).
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file. 
+
+## Additional Resources
+
+- [Changelog](CHANGELOG.md)
+- [License](LICENSE)
+- [Code of Content](CODE_OF_CONDUCT.md)
+- [Contributing](CONTRIBUTING.md)

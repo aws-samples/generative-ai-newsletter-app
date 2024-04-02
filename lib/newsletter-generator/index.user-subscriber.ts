@@ -19,7 +19,7 @@ import {
   type ListUsersCommandInput,
   ListUsersCommand
 } from '@aws-sdk/client-cognito-identity-provider'
-import { SubscriberType } from 'genai-newsletter-shared/common'
+import { SubscriberType } from '../shared/common'
 
 const SERVICE_NAME = 'user-subscriber'
 

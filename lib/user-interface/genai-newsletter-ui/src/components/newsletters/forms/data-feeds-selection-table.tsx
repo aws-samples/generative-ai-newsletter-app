@@ -2,7 +2,7 @@ import {
   Table
 } from '@cloudscape-design/components'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { DataFeed, ListDataFeedsInput } from 'genai-newsletter-shared/api/API'
+import { DataFeed, ListDataFeedsInput } from '../../../../../../shared/api/API'
 import { AppContext } from '../../../common/app-context'
 import { ApiClient } from '../../../common/api'
 import {

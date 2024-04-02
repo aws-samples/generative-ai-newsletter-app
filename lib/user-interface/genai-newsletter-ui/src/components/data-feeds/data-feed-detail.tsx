@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { DataFeed } from 'genai-newsletter-shared/api/API'
+import { DataFeed } from '../../../../../shared/api/API'
 import { AppContext } from '../../common/app-context'
 import { ApiClient } from '../../common/api'
 import {

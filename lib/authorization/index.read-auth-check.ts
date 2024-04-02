@@ -4,9 +4,9 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { VerifiedPermissionsClient, Decision, IsAuthorizedCommand, GetSchemaCommand, type IsAuthorizedCommandInput } from '@aws-sdk/client-verifiedpermissions'
 import { type Context } from 'aws-lambda'
 import middy from '@middy/core'
-import { ResolverPermissions } from 'genai-newsletter-shared/api/schema-to-avp/resolver-authorizations'
+import { ResolverPermissions } from '../shared/api/schema-to-avp/resolver-authorizations'
 import { type ReadActionStatement, UpdateActionStatement } from 'lib/shared/api/schema-to-avp'
-import { type ReadAuthCheckInput } from 'genai-newsletter-shared/common/types'
+import { type ReadAuthCheckInput } from '../shared/common/types'
 
 const SERVICE_NAME = 'read-auth-check'
 

@@ -1,7 +1,6 @@
 import {
   Aws,
   CfnOutput,
-  DockerImage,
   Duration,
   RemovalPolicy,
   Stack
@@ -17,7 +16,6 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
-import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { type UIConfig } from '../shared/common/deploy-config'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { NagSuppressions } from 'cdk-nag'
@@ -41,7 +39,6 @@ export class UserInterface extends Construct {
 
     const ui = this.node.tryGetContext('ui') as UIConfig
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
-    const buildPath = path.join(appPath, 'dist')
 
     const websiteBucket = new Bucket(this, 'GenAINewsletterFrontEnd', {
       removalPolicy: RemovalPolicy.DESTROY,
@@ -141,9 +138,6 @@ export class UserInterface extends Construct {
         ]
       }
     )
-    new CfnOutput(this, 'CloudFrontDistributionDomainName', {
-      value: `https://${cloudfrontDistribution.distributionDomainName}/`
-    })
 
     const amplifyUI = ui
     delete amplifyUI.acmCertificateArn
@@ -185,48 +179,19 @@ export class UserInterface extends Construct {
       exports
     )
 
-    const frontEndAsset = s3deploy.Source.asset(appPath, {
-      bundling: {
-        image: DockerImage.fromRegistry(
-          'public.ecr.aws/sam/build-nodejs20.x:latest'
-        ),
-        command: [
-          'sh',
-          '-c',
-          [
-            'npm --cache /tmp/.npm install',
-            'npm --cache /tmp/.npm run build',
-            'cp -aur /asset-input/dist/* /asset-output/'
-          ].join(' && ')
-        ],
-        local: {
-          tryBundle (outputDir: string) {
-            try {
-              const options: ExecSyncOptionsWithBufferEncoding = {
-                stdio: 'inherit',
-                env: {
-                  ...process.env
-                }
-              }
-
-              execSync(`npm --silent --prefix "${appPath}" ci`, options)
-              execSync(`npm --silent --prefix "${appPath}" run build`, options)
-              execSync(`cp -R ${buildPath}/* ${outputDir}`)
-            } catch (e) {
-              console.error(e)
-              return false
-            }
-            return true
-          }
-        }
-      }
-    })
+    const frontEndAsset = s3deploy.Source.asset(`${appPath}/dist`)
 
     new s3deploy.BucketDeployment(this, 'UIDeployment', {
       prune: false,
       sources: [frontEndAsset, awsExports],
       destinationBucket: websiteBucket,
       distribution: cloudfrontDistribution
+    })
+
+    new CfnOutput(this, 'AppLink', {
+      exportName: 'AppLink',
+      key: 'AppLink',
+      value: `https://${(ui.acmCertificateArn !== undefined && ui.hostName !== undefined) ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
     })
 
     NagSuppressions.addResourceSuppressions(

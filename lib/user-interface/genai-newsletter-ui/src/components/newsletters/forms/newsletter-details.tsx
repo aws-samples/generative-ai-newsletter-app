@@ -5,7 +5,7 @@ import {
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { ArticleSummaryType } from 'genai-newsletter-shared/api/API'
+import { ArticleSummaryType } from '../../../../../../shared/api/API'
 import { ArticleSummaryTypeLabel } from '../../../common/types'
 
 interface NewsletterDetailsFormProps {

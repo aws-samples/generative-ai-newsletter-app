@@ -7,7 +7,7 @@ import {
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { ArticleSummaryType, DataFeed } from 'genai-newsletter-shared/api/API'
+import { ArticleSummaryType, DataFeed } from '../../../../../../shared/api/API'
 import { useNavigate, useParams } from 'react-router-dom'
 
 interface NewsletterReviewForm {

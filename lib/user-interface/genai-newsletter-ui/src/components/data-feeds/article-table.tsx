@@ -9,7 +9,7 @@ import {
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { AppContext } from '../../common/app-context'
-import { Article } from 'genai-newsletter-shared/api/API'
+import { Article } from '../../../../../shared/api/API'
 import { ApiClient } from '../../common/api'
 import {
   ArticlesTableColumnDefiniton,

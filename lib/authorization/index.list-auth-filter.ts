@@ -4,9 +4,9 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { VerifiedPermissionsClient, Decision, GetSchemaCommand, type EntityItem, type EntitiesDefinition, type BatchIsAuthorizedInput, BatchIsAuthorizedCommand, type BatchIsAuthorizedOutput } from '@aws-sdk/client-verifiedpermissions'
 import { type Context } from 'aws-lambda'
 import middy from '@middy/core'
-import { ResolverPermissions } from 'genai-newsletter-shared/api/schema-to-avp/resolver-authorizations'
+import { ResolverPermissions } from '../shared/api/schema-to-avp/resolver-authorizations'
 import { type ReadActionStatement, UpdateActionStatement } from 'lib/shared/api/schema-to-avp'
-import { type ListFilterAuthInput } from 'genai-newsletter-shared/common/types'
+import { type ListFilterAuthInput } from '../shared/common/types'
 
 const SERVICE_NAME = 'list-auth-filter'
 

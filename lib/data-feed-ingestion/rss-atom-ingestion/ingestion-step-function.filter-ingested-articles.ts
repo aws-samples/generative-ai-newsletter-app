@@ -6,7 +6,7 @@ import {
   QueryCommand,
   type QueryCommandInput
 } from '@aws-sdk/client-dynamodb'
-import { type FeedArticle } from 'genai-newsletter-shared/common'
+import { type FeedArticle } from '../../shared/common'
 
 const SERVICE_NAME = 'filter-ingested-articles'
 

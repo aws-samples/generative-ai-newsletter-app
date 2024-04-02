@@ -6,7 +6,7 @@ import {
   SpaceBetween,
   Toggle
 } from '@cloudscape-design/components'
-import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
+import { NewsletterStyle } from '../../../../../../shared/common/newsletter-style'
 import { MuiColorInput } from 'mui-color-input'
 import { useEffect, useState } from 'react'
 

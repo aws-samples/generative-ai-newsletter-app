@@ -1,8 +1,8 @@
 import { Dispatch, SetStateAction } from 'react'
 import { AuthConfig, APIConfig } from '@aws-amplify/core'
-import { UIConfig } from 'genai-newsletter-shared/common'
+import { UIConfig } from '../../../../shared/common'
 import { Client } from 'aws-amplify/api'
-import { ArticleSummaryType } from 'genai-newsletter-shared/api'
+import { ArticleSummaryType } from '../../../../shared/api'
 
 export interface AppConfig {
   Auth: AuthConfig

@@ -8,7 +8,7 @@ import {
   DynamoDbDataSource
 } from 'aws-cdk-lib/aws-appsync'
 import { Construct } from 'constructs'
-import path = require('path')
+import * as path from 'path'
 import { type ApiProps } from '.'
 import { type BundlingOptions, DockerImage, BundlingOutput } from 'aws-cdk-lib'
 import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
@@ -397,7 +397,6 @@ export class ApiResolvers extends Construct {
         runtime: FunctionRuntime.JS_1_0_0
       })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const isAuthorizedToCreateFunction = new AppsyncFunction(this,
       'IsAuthorizedToCreate', {
         name: 'isAuthorizedToCreate',

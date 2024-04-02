@@ -6,7 +6,7 @@ import {
   ArticleSummaryType,
   DataFeed,
   Newsletter
-} from 'genai-newsletter-shared/api/API'
+} from '../../../../../shared/api/API'
 import BaseAppLayout from '../../components/base-app-layout'
 import {
   BreadcrumbGroup,
@@ -23,7 +23,7 @@ import PublicationsTable from '../../components/newsletters/publications-table'
 import UserSubscriberData from '../../components/newsletters/user-subscriber-data'
 import BaseContentLayout from '../../components/base-content-layout'
 import NewsletterPreview from '../../components/newsletters/preview'
-import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
+import { NewsletterStyle } from '../../../../../shared/common/newsletter-style'
 
 export default function NewsletterDetail() {
   const { newsletterId } = useParams()

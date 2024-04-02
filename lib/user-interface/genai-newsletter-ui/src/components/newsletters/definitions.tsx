@@ -7,7 +7,7 @@ import {
   Popover,
   SpaceBetween
 } from '@cloudscape-design/components'
-import { Article, DataFeed } from 'genai-newsletter-shared/api/API'
+import { Article, DataFeed } from '../../../../../shared/api/API'
 
 export const NewsletterWizardDataFeedsTableColumnDefinition = () => {
   return [

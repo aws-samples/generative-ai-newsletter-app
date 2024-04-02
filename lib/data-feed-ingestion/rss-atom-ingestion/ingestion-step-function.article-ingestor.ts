@@ -16,8 +16,8 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
-import { ArticleSummaryBuilder } from 'genai-newsletter-shared/prompts/article-summary-prompt'
-import { type MultiSizeFormattedResponse } from 'genai-newsletter-shared/prompts/prompt-processing'
+import { ArticleSummaryBuilder } from '../../shared/prompts/article-summary-prompt'
+import { type MultiSizeFormattedResponse } from '../../shared/prompts/prompt-processing'
 
 const SERVICE_NAME = 'article-ingestor'
 

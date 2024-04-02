@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type React from 'react'
 import { ArticleSummaryType } from '../../api'
 import { MultiSizeFormattedResponse } from '../../prompts/prompt-processing'

@@ -1,3 +1,4 @@
+import type React from 'react'
 import {
   Body,
   Container,
@@ -11,9 +12,9 @@ import {
   Hr,
   Img
 } from '@react-email/components'
-import { ArticleSummaryType } from 'genai-newsletter-shared/api/API'
-import { type NewsletterEmailProps } from 'genai-newsletter-shared/common/types'
-import { NewsletterStyle } from 'genai-newsletter-shared/common/newsletter-style'
+import { ArticleSummaryType } from '../../../shared/api/API'
+import { type NewsletterEmailProps } from '../../../shared/common/types'
+import { NewsletterStyle } from '../../../shared/common/newsletter-style'
 
 export default function NewsletterEmail (
   props: NewsletterEmailProps
@@ -78,10 +79,10 @@ export default function NewsletterEmail (
                         Flag this summary
                       </Link>
                     </Text>
-                  )
+                    )
                   : (
                     <></>
-                  )}
+                    )}
               </Row>
             )
           })}
@@ -90,8 +91,8 @@ export default function NewsletterEmail (
         <Section key="FooterSection" style={footer}>
           {footerOverride !== undefined && footerOverride.length > 0
             ? (
-              footerOverride
-            )
+                footerOverride
+              )
             : (
               <Text>
                 <p>
@@ -108,10 +109,10 @@ export default function NewsletterEmail (
                       }
                       height="50px"
                     />
-                  )
+                    )
                   : (
                     <></>
-                  )}
+                    )}
                 <br />
                 <Text>
                   Some content may be inaccurate or misleading. If you feel
@@ -120,7 +121,7 @@ export default function NewsletterEmail (
                 </Text>
                 <a href={`https://${appHostName}/unsubscribe/index.html?newsletterId=${newsletterId}&userId={{Id}}`} >Unsubscribe from this newsletter</a>
               </Text>
-            )}
+              )}
         </Section>
       </Container>
     </Body>
@@ -135,10 +136,10 @@ export default function NewsletterEmail (
         <Preview>Your latest news update!</Preview>
         {body}
       </Html>
-    ) as React.ReactElement
+      ) as React.ReactElement
     : (
-      body
-    )
+        body
+      )
 }
 
 const footer = {

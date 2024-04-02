@@ -15,13 +15,13 @@ import {
   ListDataFeedsQuery,
   UpdateDataFeedInput,
   UpdateDataFeedMutation,
-} from 'genai-newsletter-shared/api'
-import { canManageDataFeed, getDataFeed, listArticles, listDataFeeds } from 'genai-newsletter-shared/api/graphql/queries'
+} from '../../../../../shared/api/API'
+import { canManageDataFeed, getDataFeed, listArticles, listDataFeeds } from '../../../../../shared/api/graphql/queries'
 import {
   createDataFeed,
   flagArticle,
   updateDataFeed
-} from 'genai-newsletter-shared/api/graphql/mutations'
+} from '../../../../../shared/api/graphql/mutations'
 
 const client = generateClient({
   authMode: 'userPool'

@@ -1,7 +1,7 @@
 {
   "type": "commonjs",
   "name": "genai-newsletter",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "bin": {
     "genai-newsletter-app": "bin/genai-newsletter-app.js"
   },

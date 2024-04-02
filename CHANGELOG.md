@@ -1,3 +1,17 @@
+## **0.9.1**&emsp;<sub><sup>2024-04-02 (3af5423d788c6342a18cc8fc9bf932957375b026...1db6fe221cf8c6deb9d218b6cecf58f4313af424)</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`authentication`
+
+- fixed post\-auth hook that was attempting to update claims unsuccessfully (cc33fa2799ffd56324ba9dd28a89261029f26da6)
+
+### Merges
+
+- remote\-tracking branch 'origin/main' into 43\-bug\-auth\-hook\-claims\-update\-error (8e5012a20d1f3f3317fa02d03c735b6dfafadd8d)
+
+<br>
+
 ## **0.9.0**&emsp;<sub><sup>2024-04-01 (ab705cf5f9bd727cb56b9ebcdf199f30d6e01bb9...ab705cf5f9bd727cb56b9ebcdf199f30d6e01bb9)</sup></sub>
 
 ### Features

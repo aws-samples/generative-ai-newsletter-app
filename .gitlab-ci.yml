@@ -26,6 +26,9 @@ build-branch:
   script:
     - echo "Executing build..."
     - npm run build
+  artifacts:
+    paths:
+      - ./lib/user-interface/genai-newsletter-ui/dist
   cache:
     policy: push
     when: on_success
@@ -49,7 +52,6 @@ synthesize-stack:
     - npx cdk synth
   artifacts:
     paths:
-      - ./lib/user-interface/genai-newsletter-ui/dist
       - ./cdk.out
       - ./bin/config.json
   rules:

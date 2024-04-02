@@ -189,8 +189,6 @@ export class UserInterface extends Construct {
     })
 
     new CfnOutput(this, 'AppLink', {
-      exportName: 'AppLink',
-      key: 'AppLink',
       value: `https://${(ui.acmCertificateArn !== undefined && ui.hostName !== undefined) ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
     })
 

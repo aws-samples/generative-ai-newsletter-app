@@ -237,8 +237,6 @@ export class Authentication extends Construct {
       ManagedPolicy.fromAwsManagedPolicyName('AWSXrayWriteOnlyAccess'))
 
     new CfnOutput(this, 'UserPoolLink', {
-      key: 'UserPoolLink',
-      exportName: 'UserPoolLink',
       value: `https://${Stack.of(this).region}.console.aws.amazon.com/cognito/v2/idp/user-pools/${this.userPool.userPoolId}/users?region=${Stack.of(this).region}`
     })
     this.userPoolId = this.userPool.userPoolId

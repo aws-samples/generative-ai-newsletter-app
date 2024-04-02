@@ -13,7 +13,7 @@ export default function Welcome() {
             <Header
               variant='awsui-h1-sticky'
               description="Effortlessly Curate and Distribute Personalized Newsletters"
-            >GenAI Newsletter App</Header>
+            >Generative AI Newsletter App</Header>
           }
         >
           <SpaceBetween size='l' direction='vertical'>

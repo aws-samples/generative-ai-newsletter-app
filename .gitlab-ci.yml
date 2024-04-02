@@ -49,6 +49,7 @@ synthesize-stack:
     - npx cdk synth
   artifacts:
     paths:
+      - ./lib/user-interface/genai-newsletter-ui/dist
       - ./cdk.out
       - ./bin/config.json
   rules:

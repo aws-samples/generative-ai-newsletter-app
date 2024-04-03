@@ -38,9 +38,9 @@ Here's a detailed description of the high-level architecture:
 
 *Overall, the Generative AI Newsletter Application leverages various AWS services, including AWS AppSync, Amazon CloudFront, AWS Step Functions, AWS Lambda, Amazon DynamoDB, Amazon S3, Amazon Bedrock, Amazon Pinpoint, and Amazon Verified.*
 ### Architecture Diagram
-![Architecture Diagram](./High-Level-Architecture.jpg)
-![Data Feed Ingestion](./Data-Feed-Ingestion-Flow.png)
-![Newsletter Generation](./Newletter-Generator-Detailed-Architecture.png)
+![Architecture Diagram](./documentation-assets/High-Level-Architecture.jpg)
+![Data Feed Ingestion](./documentation-assets/Data-Feed-Ingestion-Flow.png)
+![Newsletter Generation](./documentation-assets/Newletter-Generator-Detailed-Architecture.png)
 
 
 ## Dataflow

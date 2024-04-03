@@ -82,7 +82,7 @@ To learn how to start ingesting data with Data Feeds and creating dynamic Newsle
 
 * [Addie Rudy](https://www.linkedin.com/in/addierudy/)
 
-## `Threat `Model
+## Threat Model
 
 Review the threat model developed for the solution [here](THREAT_MODEL.md). Additionally, you can download the [Threat Model JSON](documentation-assets/GenAINewsletter_ThreatComposer.json) and view the visualized threat model by importing the JSON into [Threat Composer](https://awslabs.github.io/threat-composer/workspaces/default/dashboard).
 

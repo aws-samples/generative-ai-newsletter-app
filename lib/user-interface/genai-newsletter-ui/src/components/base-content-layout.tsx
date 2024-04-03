@@ -4,7 +4,7 @@ import {
   ContentLayout,
   SpaceBetween
 } from '@cloudscape-design/components'
-import { PropsWithChildren, useContext } from 'react'
+import { PropsWithChildren, useContext, useState } from 'react'
 import { AppContext } from '../common/app-context'
 
 interface BaseContentLayoutProps extends PropsWithChildren {
@@ -14,16 +14,20 @@ interface BaseContentLayoutProps extends PropsWithChildren {
 export default function BaseContentLayout(props: BaseContentLayoutProps) {
   const appContext = useContext(AppContext)
   const { children, header } = props
+  const [dismissed, setDismissed] = useState(false)
+  const dismissAlert = () => {
+    setDismissed(true)
+  }
   return (
     <ContentLayout
       header={header}
     >
-      {appContext?.ui?.persistentAlert ? (
+      {appContext?.ui?.persistentAlert && !dismissed ? (
         <Alert
           type={appContext.ui.persistentAlert.type}
           action={
             appContext.ui.persistentAlert.buttonHref &&
-            appContext.ui.persistentAlert.buttonText ? (
+              appContext.ui.persistentAlert.buttonText ? (
               <SpaceBetween direction="horizontal" size="s">
                 <Button href={appContext.ui.persistentAlert.buttonHref}>
                   {appContext.ui.persistentAlert.buttonText}
@@ -33,6 +37,7 @@ export default function BaseContentLayout(props: BaseContentLayoutProps) {
               <></>
             )
           }
+          onDismiss={dismissAlert}
           dismissible={appContext.ui.persistentAlert.dismissable}
         >
           {appContext.ui.persistentAlert.message}

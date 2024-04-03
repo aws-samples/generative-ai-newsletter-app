@@ -50,7 +50,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "ansi-escape-sequences": "^6.2.2",
     "aws-amplify": "^6.0.9",
-    "aws-cdk": "^2.131.0",
+    "aws-cdk": "^2.135.0",
     "commitizen": "^4.3.0",
     "compare-versions": "^6.1.0",
     "cz-conventional-changelog": "^3.3.0",

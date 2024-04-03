@@ -9,8 +9,7 @@ import {
   Row,
   Text,
   Link,
-  Hr,
-  Img
+  Hr
 } from '@react-email/components'
 import { ArticleSummaryType } from '../../../shared/api/API'
 import { type NewsletterEmailProps } from '../../../shared/common/types'
@@ -97,22 +96,8 @@ export default function NewsletterEmail (
               <Text>
                 <p>
                   This newsletter was created automatically and content was
-                  summarized using generative AI services powered by AWS.
+                  summarized using generative AI services powered by Amazon Bedrock.
                 </p>
-                {appHostName !== undefined && appHostName.length > 2
-                  ? (
-                    <Img
-                      src={
-                        appHostName === '/'
-                          ? '/images/powered_by_aws.png'
-                          : `https://${appHostName}/images/powered_by_aws.png`
-                      }
-                      height="50px"
-                    />
-                    )
-                  : (
-                    <></>
-                    )}
                 <br />
                 <Text>
                   Some content may be inaccurate or misleading. If you feel

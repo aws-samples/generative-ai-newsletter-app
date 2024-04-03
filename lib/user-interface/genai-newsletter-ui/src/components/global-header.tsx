@@ -52,17 +52,14 @@ export default function GlobalHeader() {
     >
       <TopNavigation
         identity={{
+          title: 'Generative AI Newsletter Application',
           href: '/',
-          logo: {
-            src: '/images/logo.png',
-            alt: 'GenAI Newsletter App'
-          }
         }}
         utilities={[
           {
             type: 'button',
             text: 'User Guide',
-            href: 'https://gitlab.aws.dev/awsrudy/genai-newsletter/-/wikis/home',
+            href: 'https://gitlab.aws.dev/awsrudy/genai-newsletter/-/blob/main/USER_GUIDE.md?ref_type=heads',
             external: true,
             target: '_blank'
           },

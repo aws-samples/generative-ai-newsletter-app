@@ -1,11 +1,11 @@
-# AWS GenAI Newsletter Sample Solution
+# AWS Generative AI Newsletter Application Sample Solution
 ## Application Info
 This solution provides a serverless application for setting up RSS/ATOM data feeds, generating summaries of articles from those feeds using customizable prompts, creating newsletters by selecting multiple data feeds and their summaries, generating an overall newsletter summary, subscribing to public or private newsletters, and flagging incorrect summaries for review.
 
 
 ## Architecture
 ### Introduction
-**The GenAI Newsletter Solution is a serverless architecture on AWS that automates the generation and distribution of newsletters by aggregating data from various sources.** 
+**The Generative AI Newsletter App is a serverless architecture on AWS that automates the generation and distribution of newsletters by aggregating data from various sources.** 
 
 Here's a detailed description of the high-level architecture:
 
@@ -36,7 +36,7 @@ Here's a detailed description of the high-level architecture:
    - The use of serverless services, such as AWS Lambda, Amazon DynamoDB, and Amazon S3, provides automatic scaling and high availability for the solution.
    - EventBridge Scheduler is used to trigger the newsletter generation process, ensuring reliable and scheduled newsletter delivery.
 
-*Overall, the GenAI Newsletter Solution leverages various AWS services, including AWS AppSync, Amazon CloudFront, AWS Step Functions, AWS Lambda, Amazon DynamoDB, Amazon S3, Amazon Bedrock, Amazon Pinpoint, and Amazon Verified.*
+*Overall, the Generative AI Newsletter Application leverages various AWS services, including AWS AppSync, Amazon CloudFront, AWS Step Functions, AWS Lambda, Amazon DynamoDB, Amazon S3, Amazon Bedrock, Amazon Pinpoint, and Amazon Verified.*
 ### Architecture Diagram
 ![Architecture Diagram](./High-Level-Architecture.jpg)
 ![Data Feed Ingestion](./Data-Feed-Ingestion-Flow.png)
@@ -45,7 +45,7 @@ Here's a detailed description of the high-level architecture:
 
 ## Dataflow
 ### Introduction
-The data flows provide an in-depth look at the GenAI Newsletter Solution operates. This outlines the key processes and interactions that enable the solution to function.
+The data flows provide an in-depth look at the Generative AI Newsletter Application operates. This outlines the key processes and interactions that enable the solution to function.
 
 #### Entities:
 

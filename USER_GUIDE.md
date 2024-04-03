@@ -20,7 +20,7 @@ To create your data feed:
 1. Complete the details of the data feed form including a title, optional description, URL of the ATOM or RSS feed.
 
 1. The **Summarization Prompt** instructs the Data Feed ingestion process on how to summarize the articles it consumes. Because this makes Data Feed summaries unique, you can create multiple Data Feeds for the same source and prompt each one to summarize differently. 
-![Data Feed Create](./documentation/DataFeed-Create-Image.png)
+![Data Feed Create](./documentation-assets/DataFeed-Create-Image.png)
 
 1. Click **Add** to create the Data Feed. 
 You will be navigated to the Data Feed Details page. 
@@ -31,17 +31,17 @@ Once a Data Feed is created, the first run of ingestion will begin. Generally wi
 
 1. To create a newsletter, go to the Newsletters Dashboard and click **Create Newsletter**.
 1. In the Newsletter Wizard, completed the newsletter details and click **Next** to proceed. 
-![Newsletter Create Wizard](./documentation/Newsletter-Create-Image.png)
+![Newsletter Create Wizard](./documentation-assets/Newsletter-Create-Image.png)
 1. Add one or more data feeds to your newsletter. If you don't have any data feeds, you will need to create at least one first. See [Setting up Data Feeds](#setting-up-data-feeds).
-![Newsletter Create Wizard](./documentation/Newsletter-Create-AddDataFeeds-Image.png)
+![Newsletter Create Wizard](./documentation-assets/Newsletter-Create-AddDataFeeds-Image.png)
 1. *Optionally* add a Newsletter Introduction Prompt. This prompt will be used to influence how the each Newsletter publication's introduction will be written. 
-![Newsletter Create Wizard - Prompt](./documentation/Newsletter-Create-Prompt-Image.png)
+![Newsletter Create Wizard - Prompt](./documentation-assets/Newsletter-Create-Prompt-Image.png)
 1. *Optionally* customize the style of the newsletter to have a unique look and feel. Click the **Show Preview** button to live preview a sample newsletter with your custom style.
-![Newsletter Create Wizard - Style](./documentation/Newsletter-Create-Style-Image.png)
+![Newsletter Create Wizard - Style](./documentation-assets/Newsletter-Create-Style-Image.png)
 1. Finally, review the newsletter settings to confirm everything is correct. Then click the **Create Newsletter** button to create your newsletter. 
-![Newsletter Create Wizard - Style](./documentation/Newsletter-Create-Review-Image.png)
+![Newsletter Create Wizard - Style](./documentation-assets/Newsletter-Create-Review-Image.png)
 1. Once the newsletter is successfully created, you will be taken to the Newsletter detail page. By default **you are not subscribed** to the newly created Newsletter. 
-![Newsletter Details](./documentation/Newsletter-Details-Image.png)
+![Newsletter Details](./documentation-assets/Newsletter-Details-Image.png)
 
 
 ### Subscribing to Newsletters

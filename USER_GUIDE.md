@@ -83,5 +83,5 @@ Occassionally, a summary may not be generated in a way that is deemed accurate. 
 
 
 ### Deleting Data
-Deleting newsletters, feeds, articles, summaries, etc. does not natively exist in the solution at this point. If you require data to be removal, please contact us for support. 
+Deleting newsletters, feeds, articles, summaries, etc. does not natively exist in the solution at this point. An admin can remove data from S3/DynamoDB if necessary.
 

@@ -1,3 +1,11 @@
+## **0.9.2**&emsp;<sub><sup>2024-04-03 (2fa39380d025729852d5d2708675d8b1bf674a74...a8bd1237094005a739aa6606e43ddc55d967c7ef)</sup></sub>
+
+### Bug Fixes
+
+- fixed bug with CfnOutputs not able to exist in more than one stack (a1ece298e883de02c1dfe07b8e0b70d7abe701b5)
+
+<br>
+
 ## **0.9.1**&emsp;<sub><sup>2024-04-02 (3af5423d788c6342a18cc8fc9bf932957375b026...1db6fe221cf8c6deb9d218b6cecf58f4313af424)</sup></sub>
 
 ### Bug Fixes

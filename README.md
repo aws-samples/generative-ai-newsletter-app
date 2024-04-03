@@ -88,7 +88,9 @@ Review the threat model developed for the solution [here](THREAT_MODEL.md). Addi
 
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file. 
+This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file. 
+
+Third-party dependencies have their own licenses. See the [NOTICE](NOTICE) file.
 
 ## Additional Resources
 

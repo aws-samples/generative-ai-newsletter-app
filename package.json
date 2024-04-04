@@ -100,6 +100,7 @@
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.1.0",
     "constructs": "^10.0.0",
+    "cz": "^1.8.2",
     "mui-color-input": "^2.0.3",
     "source-map-support": "^0.5.21"
   },

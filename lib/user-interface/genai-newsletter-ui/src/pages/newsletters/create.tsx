@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { BreadcrumbGroup, SplitPanel } from '@cloudscape-design/components'
 import BaseAppLayout from '../../components/base-app-layout'
 import useOnFollow from '../../common/hooks/use-on-follow'

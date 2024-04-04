@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { AppConfig } from '../types'
 import { DataFeedsClient } from './data-feeds-client'
 import { NewslettersClient } from './newsletters-client'

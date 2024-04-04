@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { type PluginFunction } from '@graphql-codegen/plugin-helpers'
 import { type GraphQLSchema } from 'graphql'
 import { factory, SyntaxKind, type PropertyDeclaration, type ClassDeclaration, type ImportDeclaration, createSourceFile, ScriptTarget, ScriptKind, NewLineKind, createPrinter, EmitHint, type ClassElement } from 'typescript'

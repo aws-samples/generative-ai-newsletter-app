@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import type React from 'react'
 import { ArticleSummaryType } from '../../api'
 import { MultiSizeFormattedResponse } from '../../prompts/prompt-processing'

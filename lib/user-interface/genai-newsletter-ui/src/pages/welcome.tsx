@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { Container, Grid, Header, Link, SpaceBetween } from '@cloudscape-design/components'
 import { useEffect } from 'react'
 import BaseAppLayout from '../components/base-app-layout'

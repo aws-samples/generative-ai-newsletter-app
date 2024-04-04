@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { Box, Button, Container, Grid, Header, StatusIndicator } from "@cloudscape-design/components";
 import { AppConfig } from "../src/common/types";
 import { useCallback, useEffect, useState } from "react";

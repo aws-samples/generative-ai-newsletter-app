@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { Dispatch, SetStateAction } from 'react'
 import { AuthConfig, APIConfig } from '@aws-amplify/core'
 import { UIConfig } from '../../../../shared/common'

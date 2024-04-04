@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { AppLayout, AppLayoutProps } from '@cloudscape-design/components'
 import NavigationPanel from './navigation-panel'
 import { useNavigationPanelState } from '../common/hooks/use-navigation-panel-state'

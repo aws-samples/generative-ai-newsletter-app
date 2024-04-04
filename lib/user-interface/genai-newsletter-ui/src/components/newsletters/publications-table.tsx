@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 import { useParams } from 'react-router-dom'

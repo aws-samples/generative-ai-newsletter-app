@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 export class ArticleIngestorPromptConfiguration {
   private static readonly BASE_PROMPT =

@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { type EntityItem, type AttributeValue } from '@aws-sdk/client-verifiedpermissions'
 
 import { Logger } from '@aws-lambda-powertools/logger'

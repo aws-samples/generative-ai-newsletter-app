@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 // import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import '@aws-amplify/ui-react/styles.css'

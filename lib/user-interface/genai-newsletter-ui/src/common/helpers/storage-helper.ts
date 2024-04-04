@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { Mode, applyMode } from '@cloudscape-design/global-styles'
 import { NavigationPanelState } from '../types'
 

@@ -1,3 +1,8 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
 import { ArticleSummaryType } from '../../../../../shared/api'
 import { NewsletterEmailProps } from '../../../../../shared/common'
 import { ArticleData, MultiSizeFormattedResponse } from '../../../../../shared/prompts'

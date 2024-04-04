@@ -1,3 +1,9 @@
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
 import path from 'path'
 import { type DeployConfig } from '../lib/shared/common/deploy-config'
 import { existsSync, readFileSync } from 'fs'

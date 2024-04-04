@@ -1,3 +1,15 @@
+## **1.0.0**&emsp;<sub><sup>2024-04-04 (2fa39380d025729852d5d2708675d8b1bf674a74...4313411db83166666926d23275bd6fa810c9699f)</sup></sub>
+
+### Bug Fixes
+
+- fixed bug with CfnOutputs not able to exist in more than one stack (a1ece298e883de02c1dfe07b8e0b70d7abe701b5)
+
+### Merges
+
+- pull request \#1 from aws\-samples/workflow\-updates (4313411db83166666926d23275bd6fa810c9699f)
+
+<br>
+
 ## **0.9.2**&emsp;<sub><sup>2024-04-03 (2fa39380d025729852d5d2708675d8b1bf674a74...a8bd1237094005a739aa6606e43ddc55d967c7ef)</sup></sub>
 
 ### Bug Fixes

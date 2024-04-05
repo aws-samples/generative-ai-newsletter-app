@@ -91,7 +91,7 @@
     "@aws-sdk/client-ssm": "^3.519.0",
     "@aws-sdk/lib-storage": "^3.472.0",
     "@aws-sdk/util-dynamodb": "^3.473.0",
-    "@cloudscape-design/global-styles": "^1.0.26",
+    "@cloudscape-design/global-styles": "^1.0.27",
     "@types/cheerio": "^0.22.35",
     "aws-cdk-lib": "^2.134.0",
     "aws-lambda": "^1.0.7",

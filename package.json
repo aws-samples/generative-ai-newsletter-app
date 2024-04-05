@@ -76,7 +76,7 @@
     "vite": "^5.0.12"
   },
   "dependencies": {
-    "@anthropic-ai/bedrock-sdk": "^0.9.1",
+    "@anthropic-ai/bedrock-sdk": "^0.9.5",
     "@aws-amplify/ui-react": "^6.1.6",
     "@aws-cdk/aws-cognito-identitypool-alpha": "^2.134.0-alpha.0",
     "@aws-lambda-powertools/logger": "^1.17.0",

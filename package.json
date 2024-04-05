@@ -81,7 +81,7 @@
     "@aws-cdk/aws-cognito-identitypool-alpha": "^2.134.0-alpha.0",
     "@aws-lambda-powertools/logger": "^1.17.0",
     "@aws-lambda-powertools/metrics": "^1.17.0",
-    "@aws-lambda-powertools/tracer": "^1.17.0",
+    "@aws-lambda-powertools/tracer": "^2.0.3",
     "@aws-sdk/client-bedrock-runtime": "^3.474.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.478.0",
     "@aws-sdk/client-dynamodb": "^3.473.0",

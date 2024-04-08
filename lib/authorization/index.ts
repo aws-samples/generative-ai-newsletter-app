@@ -48,7 +48,7 @@ export class Authorization extends Construct {
       {
         schema: {
           cedarJson: fs
-            .readFileSync(path.join(__dirname, 'AVPSchema.json'))
+            .readFileSync(path.join(__dirname, 'cedarschema.json'))
             .toString('utf-8')
         },
         validationSettings

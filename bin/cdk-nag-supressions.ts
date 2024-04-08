@@ -13,7 +13,7 @@ export const addNagSuppressions = (stack: Stack): void => {
   NagSuppressions.addStackSuppressions(stack, [
     {
       id: 'AwsSolutions-IAM4',
-      reason: 'Allowing managed policys'
+      reason: 'Allowing managed polices'
     },
     {
       id: 'AwsSolutions-IAM5',

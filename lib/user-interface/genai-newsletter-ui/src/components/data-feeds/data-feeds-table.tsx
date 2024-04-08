@@ -91,7 +91,7 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
     }
   )
 
-  const dataFeedsTableColumnDefiniton = [
+  const dataFeedsTableColumnDefinition = [
     {
       id: 'dataFeedId',
       cell: (item: DataFeed) => item.dataFeedId,
@@ -147,7 +147,7 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
   return (
     <Table
       {...collectionProps}
-      columnDefinitions={dataFeedsTableColumnDefiniton}
+      columnDefinitions={dataFeedsTableColumnDefinition}
       columnDisplay={DataFeedsTableColumnDisplay()}
       items={items}
       resizableColumns

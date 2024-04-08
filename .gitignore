@@ -15,7 +15,6 @@ dist-ui/
 # CDK asset staging directory
 .cdk.staging
 cdk.out
-.vscode/settings.json
 bin/config.json
 
 cdk.context.json

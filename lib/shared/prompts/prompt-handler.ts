@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT-0
  */
 import {
-  type FormattedRespone,
+  type FormattedResponse,
   type MultiSizeFormattedResponse
 } from './prompt-processing'
 
@@ -66,5 +66,5 @@ export abstract class PromptHandler {
   }
 
   abstract getCompiledPrompt (): string
-  abstract getProcessedResponse (): MultiSizeFormattedResponse | FormattedRespone
+  abstract getProcessedResponse (): MultiSizeFormattedResponse | FormattedResponse
 }

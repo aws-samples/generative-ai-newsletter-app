@@ -63,7 +63,7 @@ export const DataFeedsTableColumnDisplay = () => {
   ]
 }
 
-export const ArticlesTableColumnDefiniton = (
+export const ArticlesTableColumnDefinition = (
   flaggedContentHandler: (
     articleId: string,
     flaggedContent: boolean

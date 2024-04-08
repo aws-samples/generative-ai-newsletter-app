@@ -17,7 +17,7 @@ import { AppContext } from '../../common/app-context'
 import { Article } from '../../../../../shared/api/API'
 import { ApiClient } from '../../common/api'
 import {
-  ArticlesTableColumnDefiniton,
+  ArticlesTableColumnDefinition,
   DataFeedArticlesTableColumnDisplay
 } from '../newsletters/definitions'
 
@@ -120,7 +120,7 @@ export default function DataFeedArticleTable() {
         <></>
       )}
       <Table
-        columnDefinitions={ArticlesTableColumnDefiniton(
+        columnDefinitions={ArticlesTableColumnDefinition(
           flagDataFeedArticle
         )}
         columnDisplay={DataFeedArticlesTableColumnDisplay()}

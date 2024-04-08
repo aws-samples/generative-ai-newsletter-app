@@ -1,6 +1,2 @@
-permit (
-    principal,
-    action,
-    resource
-)
+permit (principal, action, resource)
 when { resource.account == principal.account };

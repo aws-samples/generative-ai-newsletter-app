@@ -1,0 +1,10 @@
+{
+  "[cedar]": {
+    "editor.tabSize": 4,
+    "editor.wordWrapColumn": 80,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "cedar-policy.vscode-cedar",
+  },
+  "cedar.schemaFile": "lib/authorization/cedarschema.json",
+  "cedar.autodetectSchemaFile": false,
+}

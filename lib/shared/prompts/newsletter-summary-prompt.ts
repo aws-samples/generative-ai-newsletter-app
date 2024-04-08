@@ -11,11 +11,11 @@ import { PromptHandler } from './prompt-handler'
 import { type ArticleData } from './types'
 
 export class NewsletterSummaryBuilder extends PromptHandler {
-  private readonly newletterArticles: ArticleData[]
+  private readonly newsletterArticles: ArticleData[]
   private readonly newsletterIntroPrompt = new TaggedElement('tone')
   private readonly articles = new TaggedElement('articles')
   constructor (
-    newletterArticles: ArticleData[],
+    newsletterArticles: ArticleData[],
     newsletterIntroPrompt?: string
   ) {
     super({})
@@ -30,7 +30,7 @@ export class NewsletterSummaryBuilder extends PromptHandler {
         this.newsletterIntroPrompt.wrappedElement +
         '\n'
     }
-    this.newletterArticles = newletterArticles
+    this.newsletterArticles = newsletterArticles
     this.generatePromptFormattedArticles()
     this.data =
       'Here are the articles you should use for reference:\n' +
@@ -83,7 +83,7 @@ export class NewsletterSummaryBuilder extends PromptHandler {
 
   private generatePromptFormattedArticles (): void {
     let formattedArticles = ''
-    for (const article of this.newletterArticles) {
+    for (const article of this.newsletterArticles) {
       const articleTag = new TaggedElement('article')
       const articleSummary = new TaggedElement('articleSummary')
       const articleTitle = new TaggedElement('articleTitle')

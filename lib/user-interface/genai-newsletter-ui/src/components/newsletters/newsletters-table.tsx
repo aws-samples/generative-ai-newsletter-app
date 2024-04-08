@@ -99,7 +99,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
     }
   }
 
-  const newslettersTableColumnDefinitons = [
+  const newslettersTableColumnDefinitions = [
     {
       id: 'accountId',
       header: 'Account ID',
@@ -187,7 +187,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
       <Table
         {...collectionProps}
         columnDisplay={newslettersTableColumnDisplay}
-        columnDefinitions={newslettersTableColumnDefinitons}
+        columnDefinitions={newslettersTableColumnDefinitions}
         items={items}
         loadingText="Loading"
         resizableColumns

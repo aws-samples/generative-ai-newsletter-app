@@ -25,7 +25,7 @@ To create your data feed:
 1. Click **Add** to create the Data Feed. 
 You will be navigated to the Data Feed Details page. 
 
-Once a Data Feed is created, the first run of ingestion will begin. Generally within 5 minutes, all articles currently on the RSS feed will have been ingested and summarized. You can revist the Data Feed page or simply refresh the page if you haven't navigated away. 
+Once a Data Feed is created, the first run of ingestion will begin. Generally within 5 minutes, all articles currently on the RSS feed will have been ingested and summarized. You can revisit the Data Feed page or simply refresh the page if you haven't navigated away. 
 
 ### Creating Newsletters
 
@@ -50,10 +50,10 @@ Subscribing to a newsletter allows you to receive the newsletter automatically i
 
 To subscribe to a Newsletter:
 
-1. Go to the Newsletter Dashboard. The Dashbaord shows newsletters that you have access to, including your private and non-private newsletters, and newsletters created by others that are non-private. 
+1. Go to the Newsletter Dashboard. The Dashboard shows newsletters that you have access to, including your private and non-private newsletters, and newsletters created by others that are non-private. 
 1. *Optionally,* you can use the *Filter Newsletters* search box to filter the table results. 
 1. Click the Newsletter Name of the Newsletter you'd like to view or subscribe to.
-1. Below the Newsletter details, the number of subscribes and your current suibscription status will be shown. If you are not subscribed, you can click the **Subscribe** button. If you are already subscribed, the button will show **Unsubscribe**.
+1. Below the Newsletter details, the number of subscribes and your current subscription status will be shown. If you are not subscribed, you can click the **Subscribe** button. If you are already subscribed, the button will show **Unsubscribe**.
 
 *All emails include a footer unique to the recipient that allows them to unsubscribe from the newsletter without having to login to the application*
 
@@ -71,7 +71,7 @@ Alternatively, users can unsubscribe from any Newsletter using the **Unsubscribe
 > *Note: In the event that a newsletter is no longer visible, but you are still subscribed, the unsubscribe link in the email is the only way to unsubscribe. If you unsubscribe from a Newsletter you no can view, you will not be able to resubscribe to the Newsletter unless the owner updates the privacy.*
 
 ### Flagging Bad Data
-Occassionally, a summary may not be generated in a way that is deemed accurate. To create transparency that data has been deemed inaccurate, users can opt to flag a summary. Below are the ways to flag data.
+Occasionally, a summary may not be generated in a way that is deemed accurate. To create transparency that data has been deemed inaccurate, users can opt to flag a summary. Below are the ways to flag data.
 
 - Data Feed Article Summary
   - From the Data Feed Details page, click the flag on the row of the article summary that is incorrect

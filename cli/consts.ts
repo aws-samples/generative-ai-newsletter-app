@@ -15,15 +15,15 @@ export const bigHeader = (text: string): string => {
   const lines = []
   const endLine = '#'.repeat(maxLineLength)
   const blankLine = '#' + ' '.repeat(maxLineLength - 2) + '#'
-  const generateSpacedLine = (subtext: string, legnth: number): string => {
+  const generateSpacedLine = (subtext: string, length: number): string => {
     return (
       '#' +
       ' '.repeat(
-        (legnth - subtext.length) / 2 - ((legnth - subtext.length) % 2)
+        (length - subtext.length) / 2 - ((length - subtext.length) % 2)
       ) +
       subtext +
       ' '.repeat(
-        (legnth - subtext.length) / 2 - ((legnth - subtext.length) % 2)
+        (length - subtext.length) / 2 - ((length - subtext.length) % 2)
       ) +
       '#'
     )

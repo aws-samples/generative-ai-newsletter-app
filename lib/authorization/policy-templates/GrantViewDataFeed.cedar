@@ -1,5 +1,5 @@
 permit (
-	principal == ?principal,
-	action in [GenAINewsletterApp::Action::"viewDataFeed"],
-	resource == ?resource
+    principal == ?principal,
+    action in [GenAINewsletterApp::Action::"viewDataFeed"],
+    resource == ?resource
 );

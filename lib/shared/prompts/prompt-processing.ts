@@ -59,7 +59,7 @@ export class TaggedElement {
   }
 }
 
-export class FormattedRespone {
+export class FormattedResponse {
   summary: TaggedElement
   error: TaggedElement
   constructor (values?: { summary?: string, error?: string }) {

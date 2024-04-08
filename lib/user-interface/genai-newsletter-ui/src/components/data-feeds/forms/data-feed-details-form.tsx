@@ -208,7 +208,7 @@ export default function DataFeedDetailsForm() {
               description="A prompt to add guidance for how you'd like the summarization."
             >
               <Textarea
-                placeholder="Example: The target auidence for reading the articles have little background knowledge on GenAI technology"
+                placeholder="Example: The target audience for reading the articles have little background knowledge on GenAI technology"
                 value={summarizationPrompt}
                 onChange={(e) => setSummarizationPrompt(e.detail.value)}
               />

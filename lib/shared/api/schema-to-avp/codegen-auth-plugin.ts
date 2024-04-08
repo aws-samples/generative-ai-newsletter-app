@@ -18,7 +18,7 @@ export const plugin: PluginFunction = async (schema: GraphQLSchema): Promise<str
       resolvers.push(resolver)
       allResolvers.push(resolver)
     }
-    declarations.push(...generateReadDecalarations(resolvers))
+    declarations.push(...generateReadDeclarations(resolvers))
   } else {
     console.log('No Query Types to Need Permissions')
   }
@@ -41,7 +41,7 @@ export const plugin: PluginFunction = async (schema: GraphQLSchema): Promise<str
       resolvers.push(resolver)
       allResolvers.push(resolver)
     }
-    declarations.push(...generateReadDecalarations(resolvers))
+    declarations.push(...generateReadDeclarations(resolvers))
   } else {
     console.log('No Subscription Types to Need Permissions')
   }
@@ -54,11 +54,11 @@ export const plugin: PluginFunction = async (schema: GraphQLSchema): Promise<str
     false,
     ScriptKind.TS
   )
-  return printer.printNode(EmitHint.Unspecified, importDefiniton(), sourceFile) +
+  return printer.printNode(EmitHint.Unspecified, importDefinition(), sourceFile) +
   printer.printNode(EmitHint.Unspecified, generateTypescript(declarations), sourceFile)
 }
 
-const generateReadDecalarations = (resolvers: string[]): PropertyDeclaration[] => {
+const generateReadDeclarations = (resolvers: string[]): PropertyDeclaration[] => {
   const declarations = []
   for (const resolver of resolvers) {
     declarations.push(factory.createPropertyDeclaration(
@@ -181,7 +181,7 @@ const generateTypescript = (declarations: ClassElement[]): ClassDeclaration => {
   )
 }
 
-const importDefiniton = (): ImportDeclaration => {
+const importDefinition = (): ImportDeclaration => {
   return factory.createImportDeclaration(
     undefined,
     factory.createImportClause(

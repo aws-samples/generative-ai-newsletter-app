@@ -170,7 +170,7 @@ export class NewsletterGenerator extends Construct {
         EMAIL_BUCKET: emailBucket.bucketName,
         NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION:
           newsletterCampaignCreatorFunction.functionName,
-        APP_HOST_NAME: uiConfig.hostName ?? ''
+        APP_HOST_NAME: uiConfig?.hostName ?? ''
       }
     })
     props.dataFeedTable.grantReadData(emailGeneratorFunction)

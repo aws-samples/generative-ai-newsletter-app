@@ -87,7 +87,7 @@
     "@aws-sdk/client-dynamodb": "^3.473.0",
     "@aws-sdk/client-pinpoint": "^3.478.0",
     "@aws-sdk/client-scheduler": "^3.478.0",
-    "@aws-sdk/client-sfn": "^3.478.0",
+    "@aws-sdk/client-sfn": "^3.554.0",
     "@aws-sdk/client-ssm": "^3.519.0",
     "@aws-sdk/lib-storage": "^3.472.0",
     "@aws-sdk/util-dynamodb": "^3.473.0",

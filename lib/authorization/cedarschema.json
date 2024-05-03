@@ -1,339 +1,432 @@
 {
   "GenAINewsletter": {
-    "actions": {
-      "viewPublications": {
-        "appliesTo": {
-          "resourceTypes": [
-            "publication"
-          ],
-          "principalTypes": [
-            "user"
-          ],
-          "context": {
-            "attributes": {},
-            "type": "Record"
+    "entityTypes": {
+      "Publication": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "Newsletter": {
+              "required": true,
+              "type": "Entity",
+              "name": "Newsletter"
+            },
+            "id": {
+              "required": true,
+              "type": "String"
+            }
           }
         },
-        "memberOf": []
+        "memberOfTypes": [
+          "Newsletter"
+        ]
       },
-      "viewNewsletter": {
-        "appliesTo": {
-          "resourceTypes": [
-            "newsletter"
-          ],
-          "context": {
-            "type": "Record",
-            "attributes": {}
-          },
-          "principalTypes": [
-            "user"
-          ]
-        },
-        "memberOf": []
-      },
-      "flagArticle": {
-        "appliesTo": {
-          "context": {
-            "type": "Record",
-            "attributes": {}
-          },
-          "resourceTypes": [
-            "article"
-          ],
-          "principalTypes": [
-            "user"
-          ]
-        },
-        "memberOf": []
-      },
-      "manageUserSubscription": {
-        "memberOf": [],
-        "appliesTo": {
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "principalTypes": [
-            "user"
-          ],
-          "resourceTypes": [
-            "userSubscription"
-          ]
-        }
-      },
-      "viewDataFeed": {
-        "memberOf": [],
-        "appliesTo": {
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "resourceTypes": [
-            "dataFeed"
-          ],
-          "principalTypes": [
-            "user"
-          ]
-        }
-      },
-      "canCallAPI": {
-        "memberOf": [],
-        "appliesTo": {
-          "principalTypes": [
-            "user"
-          ],
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "resourceTypes": []
-        }
-      },
-      "viewArticles": {
-        "memberOf": [],
-        "appliesTo": {
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "resourceTypes": [
-            "article"
-          ],
-          "principalTypes": [
-            "user"
-          ]
-        }
-      },
-      "createDataFeed": {
-        "memberOf": [],
-        "appliesTo": {
-          "context": {
-            "type": "Record",
-            "attributes": {}
-          },
-          "principalTypes": [
-            "user"
-          ],
-          "resourceTypes": [
-            "dataFeed"
-          ]
-        }
-      },
-      "manageNewsletter": {
-        "memberOf": [],
-        "appliesTo": {
-          "resourceTypes": [
-            "newsletter"
-          ],
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "principalTypes": [
-            "user"
-          ]
-        }
-      },
-      "createNewsletter": {
-        "appliesTo": {
-          "resourceTypes": [
-            "newsletter"
-          ],
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "principalTypes": [
-            "user"
-          ]
-        },
-        "memberOf": []
-      },
-      "manageDataFeed": {
-        "appliesTo": {
-          "principalTypes": [
-            "user"
-          ],
-          "context": {
-            "attributes": {},
-            "type": "Record"
-          },
-          "resourceTypes": [
-            "dataFeed"
-          ]
-        },
-        "memberOf": []
-      },
-      "flagPublication": {
-        "memberOf": [],
-        "appliesTo": {
-          "context": {
-            "type": "Record",
-            "attributes": {}
-          },
-          "principalTypes": [
-            "user"
-          ],
-          "resourceTypes": [
-            "publication"
-          ]
-        }
-      }
-    },
-    "entityTypes": {
-      "account": {
+      "Account": {
         "memberOfTypes": [],
         "shape": {
           "type": "Record",
-          "attributes": {}
+          "attributes": {
+            "id": {
+              "type": "String",
+              "required": true
+            }
+          }
         }
       },
-      "newsletter": {
-        "memberOfTypes": [
-          "account"
-        ],
+      "Operation": {
         "shape": {
-          "attributes": {
-            "isPrivate": {
-              "type": "Boolean",
-              "required": true
-            },
-            "sharedAccess": {
-              "required": false,
-              "element": {
-                "name": "account",
-                "type": "Entity"
-              },
-              "type": "Set"
-            },
-            "account": {
-              "required": true,
-              "type": "Entity",
-              "name": "account"
-            }
-          },
+          "attributes": {},
           "type": "Record"
-        }
+        },
+        "memberOfTypes": []
       },
-      "userSubscription": {
-        "memberOfTypes": [
-          "account",
-          "newsletter"
-        ],
+      "DataFeed": {
+        "memberOfTypes": [],
         "shape": {
           "type": "Record",
           "attributes": {
-            "account": {
+            "Account": {
+              "name": "Account",
               "type": "Entity",
-              "name": "account",
               "required": true
             },
-            "newsletter": {
+            "id": {
               "required": true,
-              "type": "Entity",
-              "name": "newsletter"
-            }
-          }
-        }
-      },
-      "user": {
-        "shape": {
-          "type": "Record",
-          "attributes": {
-            "account": {
-              "type": "Entity",
-              "required": true,
-              "name": "account"
-            }
-          }
-        },
-        "memberOfTypes": [
-          "account"
-        ]
-      },
-      "dataFeed": {
-        "memberOfTypes": [
-          "account",
-          "newsletter"
-        ],
-        "shape": {
-          "attributes": {
-            "account": {
-              "type": "Entity",
-              "required": true,
-              "name": "account"
-            },
-            "sharedAccess": {
-              "element": {
-                "type": "Entity",
-                "name": "account"
-              },
-              "required": false,
-              "type": "Set"
+              "type": "String"
             },
             "isPrivate": {
               "type": "Boolean",
               "required": true
             }
-          },
-          "type": "Record"
+          }
         }
       },
-      "publication": {
+      "User": {
+        "memberOfTypes": [],
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "Account": {
+              "required": true,
+              "name": "Account",
+              "type": "Entity"
+            }
+          }
+        }
+      },
+      "Newsletter": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "id": {
+              "required": true,
+              "type": "String"
+            },
+            "isPrivate": {
+              "required": true,
+              "type": "Boolean"
+            },
+            "Account": {
+              "type": "Entity",
+              "name": "Account",
+              "required": true
+            }
+          }
+        },
+        "memberOfTypes": []
+      },
+      "Article": {
         "shape": {
           "attributes": {
-            "newsletter": {
-              "required": true,
-              "type": "Entity",
-              "name": "newsletter"
-            },
-            "account": {
-              "name": "account",
-              "type": "Entity",
+            "id": {
+              "type": "String",
               "required": true
             },
-            "sharedAccess": {
-              "required": false,
-              "type": "Set",
-              "element": {
-                "type": "Entity",
-                "name": "account"
-              }
-            }
-          },
-          "type": "Record"
-        },
-        "memberOfTypes": [
-          "newsletter"
-        ]
-      },
-      "article": {
-        "shape": {
-          "attributes": {
-            "dataFeed": {
-              "type": "Entity",
+            "DataFeed": {
               "required": true,
-              "name": "dataFeed"
-            },
-            "sharedAccess": {
-              "required": false,
-              "type": "Set",
-              "element": {
-                "type": "Entity",
-                "name": "account"
-              }
-            },
-            "account": {
-              "name": "account",
-              "required": true,
+              "name": "DataFeed",
               "type": "Entity"
             }
           },
           "type": "Record"
         },
         "memberOfTypes": [
-          "dataFeed"
+          "DataFeed"
         ]
+      }
+    },
+    "actions": {
+      "unsubscribeFromNewsletter": {
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        },
+        "memberOf": []
+      },
+      "getArticle": {
+        "appliesTo": {
+          "resourceTypes": [
+            "DataFeed"
+          ],
+          "principalTypes": [
+            "User"
+          ],
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          }
+        },
+        "memberOf": []
+      },
+      "graphqlOperation": {
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Operation"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        },
+        "memberOf": []
+      },
+      "getDataFeed": {
+        "memberOf": [],
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "DataFeed"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        }
+      },
+      "listNewsletters": {
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "Newsletter"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          }
+        },
+        "memberOf": [
+          {
+            "id": "getNewsletter"
+          }
+        ]
+      },
+      "flagArticle": {
+        "memberOf": [],
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "Article"
+          ],
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          }
+        }
+      },
+      "listUserSubscriptions": {
+        "memberOf": [
+          {
+            "id": "getNewsletter"
+          }
+        ],
+        "appliesTo": {
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          },
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        }
+      },
+      "updateNewsletter": {
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        },
+        "memberOf": []
+      },
+      "createNewsletter": {
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        },
+        "memberOf": []
+      },
+      "listArticles": {
+        "appliesTo": {
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          },
+          "resourceTypes": [
+            "DataFeed"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        },
+        "memberOf": [
+          {
+            "id": "getArticle"
+          }
+        ]
+      },
+      "createDataFeed": {
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "DataFeed"
+          ],
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          }
+        },
+        "memberOf": []
+      },
+      "getNewsletter": {
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        },
+        "memberOf": []
+      },
+      "listDataFeeds": {
+        "memberOf": [
+          {
+            "id": "getDataFeed"
+          }
+        ],
+        "appliesTo": {
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          },
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "DataFeed"
+          ]
+        }
+      },
+      "getPublication": {
+        "appliesTo": {
+          "resourceTypes": [
+            "Newsletter"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "principalTypes": [
+            "User"
+          ]
+        },
+        "memberOf": []
+      },
+      "checkSubscriptionToNewsletter": {
+        "memberOf": [],
+        "appliesTo": {
+          "context": {
+            "attributes": {},
+            "type": "Record"
+          },
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        }
+      },
+      "listPublications": {
+        "appliesTo": {
+          "principalTypes": [
+            "User"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        },
+        "memberOf": [
+          {
+            "id": "getPublication"
+          }
+        ]
+      },
+      "subscribeToNewsletter": {
+        "memberOf": [
+          {
+            "id": "getNewsletter"
+          }
+        ],
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "resourceTypes": [
+            "Newsletter"
+          ],
+          "principalTypes": [
+            "User"
+          ]
+        }
+      },
+      "updateDataFeed": {
+        "appliesTo": {
+          "resourceTypes": [
+            "DataFeed"
+          ],
+          "principalTypes": [
+            "User"
+          ],
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          }
+        },
+        "memberOf": []
+      },
+      "getNewsletterSubscriberStats": {
+        "memberOf": [
+          {
+            "id": "getNewsletter"
+          }
+        ],
+        "appliesTo": {
+          "context": {
+            "type": "Record",
+            "attributes": {}
+          },
+          "principalTypes": [
+            "User"
+          ],
+          "resourceTypes": [
+            "Newsletter"
+          ]
+        }
       }
     }
   }

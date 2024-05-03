@@ -21,15 +21,16 @@ interface FeedReaderInput {
   url: string
   id: string
   feedType: 'RSS' | 'ATOM'
+  accountId: string
 }
 
 const lambdaHandler = async (
   event: FeedReaderInput
 ): Promise<Article[]> => {
-  const url = event.url
+  const { url, id, feedType, accountId } = event
   const feed = await getFeed(url)
   metrics.addMetric('FeedReader', MetricUnits.Count, 1)
-  const articles = await parseArticlesFromFeed(feed, event.id, event.feedType)
+  const articles = await parseArticlesFromFeed(feed, id, feedType, accountId)
   console.debug(articles.length + ' articles parsed from feed')
   return articles
 }
@@ -42,20 +43,22 @@ const getFeed = async (url: string): Promise<string> => {
 const parseArticlesFromFeed = async (
   feedContents: string,
   dataFeedId: string,
-  feedType: 'ATOM' | 'RSS'
+  feedType: 'ATOM' | 'RSS',
+  accountId: string
 ): Promise<Article[]> => {
   return feedType === 'RSS'
-    ? await parseRssFeed(feedContents, dataFeedId)
-    : await parseAtomFeed(feedContents, dataFeedId)
+    ? await parseRssFeed(feedContents, dataFeedId, accountId)
+    : await parseAtomFeed(feedContents, dataFeedId, accountId)
 }
 
 const parseRssFeed = async (
   feedContents: string,
-  dataFeedId: string
-): Promise<Article[]> => {
+  dataFeedId: string,
+  accountId: string
+): Promise<any[]> => {
   logger.debug('Parsing Articles from RSS Feed')
   const $ = cheerio.load(feedContents, { xmlMode: true })
-  const articles: Article[] = []
+  const articles = []
   for (const article of $('item')) {
     try {
       logger.debug('Parsing RSS article: ' + $(article).html())
@@ -67,13 +70,17 @@ const parseRssFeed = async (
       const providedCategories = $(article).find('category').text()
       if (url !== null && url.length > 0) {
         articles.push({
-          articleId,
+          id: articleId,
+          account: {
+            id: accountId,
+            __typename: 'Account'
+          },
           title,
           url,
           providedDescription,
           publishDate,
           providedCategories,
-          dataFeedId,
+          dataFeed: { id: dataFeedId },
           createdAt: new Date().toISOString(),
           __typename: 'Article'
         })
@@ -95,7 +102,8 @@ const parseRssFeed = async (
 
 const parseAtomFeed = async (
   feedContents: string,
-  dataFeedId: string
+  dataFeedId: string,
+  accountId: string
 ): Promise<Article[]> => {
   logger.debug('Parsing Articles from Atom Feed')
   const $ = cheerio.load(feedContents, { xmlMode: true })
@@ -110,12 +118,16 @@ const parseAtomFeed = async (
       const publishDate = $(article).find('updated').text()
       if (url !== null && url.length > 0) {
         articles.push({
+          id: articleId,
+          account: {
+            id: accountId,
+            __typename: 'Account'
+          },
           title,
           createdAt: new Date().toISOString(),
           url,
           providedDescription,
           publishDate,
-          articleId,
           dataFeedId,
           __typename: 'Article'
         })

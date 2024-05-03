@@ -6,10 +6,10 @@ import {
 } from '@aws-appsync/utils'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
-  const { newsletterId } = ctx.args.input
+  const { id } = ctx.args.input
   return ddb.query({
     query: {
-      newsletterId: { eq: newsletterId },
+      newsletterId: { eq: id },
       sk: { beginsWith: 'subscriber#' }
     },
     consistentRead: false
@@ -26,13 +26,13 @@ export function response (ctx: Context): any {
     ctx.result.items.length < 1
   ) {
     return {
-      newsletterId: ctx.args.input.newsletterId,
-      subscriberCount: 0
+      id: ctx.args.input.id,
+      count: 0
     }
   } else {
     return {
-      newsletterId: ctx.args.input.newsletterId,
-      subscriberCount: ctx.result.items.length
+      id: ctx.args.input.id,
+      count: ctx.result.items.length
     }
   }
 }

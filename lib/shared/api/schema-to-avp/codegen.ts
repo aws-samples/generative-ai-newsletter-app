@@ -11,13 +11,8 @@ import './codegen-auth-plugin'
 const config: CodegenConfig = {
   schema: [path.join(__dirname, '..', 'schema.graphql'), path.join(__dirname, '..', 'appsync.graphql')],
   generates: {
-    'action-authorizor.ts': {
-      plugins: [{
-        add: {
-          content: '/* eslint-disable */'
-        }
-      }, 'codegen-auth-plugin.ts', 'typescript-operations'
-      ]
+    '../types.json': {
+      plugins: ['introspection']
     }
   },
   hooks: {

@@ -9,11 +9,12 @@ import {
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { DataFeed, ListDataFeedsInput } from '../../../../../../shared/api/API'
 import { AppContext } from '../../../common/app-context'
-import { ApiClient } from '../../../common/api'
 import {
   NewsletterWizardDataFeedsTableColumnDefinition,
   NewsletterWizardNewsFeedsTableColumnDisplay
 } from '../definitions'
+import { listDataFeeds } from '../../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../../common/helpers'
 
 export interface NewsletterNewsFeedFormProps extends ListDataFeedsInput {
   selectedDataFeeds: DataFeed[]
@@ -35,13 +36,20 @@ export default function NewsletterDataFeedsSelectionForm(
     if (!appContext) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const results = await apiClient.dataFeeds.listDataFeeds(
-      { includeOwned, includeShared }
-    )
+    const apiClient = await generateAuthorizedClient()
+    const results = await apiClient.graphql({
+      query: listDataFeeds,
+      variables: {
+        input: {
+          includeOwned,
+          includeShared
+        }
+      }
+    })
+    
 
-    if (results?.data?.listDataFeeds?.dataFeeds !== null) {
-      setDataFeeds(results.data.listDataFeeds.dataFeeds as DataFeed[])
+    if (results?.data?.listDataFeeds?.items !== null) {
+      setDataFeeds(results.data.listDataFeeds?.items as DataFeed[])
     }
     setLoading(false)
   }, [appContext, includeOwned, includeShared])
@@ -60,12 +68,11 @@ export default function NewsletterDataFeedsSelectionForm(
       selectedItems={selectedDataFeeds}
       onSelectionChange={
         ({ detail }) => {
-          console.log('SELECTION CHANGE ===>' + JSON.stringify(detail))
           setSelectedDataFeeds(detail.selectedItems)
         }
 
       }
-      trackBy="dataFeedId"
+      trackBy="id"
       loading={loading}
       selectionType="multi"
       columnDefinitions={NewsletterWizardDataFeedsTableColumnDefinition()}

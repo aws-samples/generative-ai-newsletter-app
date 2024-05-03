@@ -6,7 +6,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 import { useParams } from 'react-router-dom'
-import { ApiClient } from '../../common/api'
 import {
   Box,
   Button,
@@ -15,6 +14,9 @@ import {
   SpaceBetween,
   StatusIndicator
 } from '@cloudscape-design/components'
+import { checkSubscriptionToNewsletter, getNewsletterSubscriberStats } from '../../../../../shared/api/graphql/queries'
+import { subscribeToNewsletter, unsubscribeFromNewsletter } from '../../../../../shared/api/graphql/mutations'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function UserSubscriberData() {
   const appContext = useContext(AppContext)
@@ -22,8 +24,7 @@ export default function UserSubscriberData() {
   const [userSubscriberCount, setUserSubscriberCount] = useState<number>(0)
   const [isCurrentUserSubscribed, setIsCurrentUserSubscribed] =
     useState<boolean>(false)
-  const [subscriberCountLoading, setSubscriberCountLoading] =
-    useState<boolean>(true)
+  const [subscriberCountLoading, setSubscriberCountLoading] = useState<boolean>(true)
   const [subscriptionStatusLoading, setSubscriptionStatusLoading] =
     useState<boolean>(true)
 
@@ -35,16 +36,19 @@ export default function UserSubscriberData() {
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.getNewsletterSubscriberStats({
-      newsletterId
+    const client = await generateAuthorizedClient()
+    const result = await client.graphql({
+      query: getNewsletterSubscriberStats,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
     })
-    if (result.errors) {
-      return
+
+    if (result.data.getNewsletterSubscriberStats?.count){
+      setUserSubscriberCount(result.data.getNewsletterSubscriberStats?.count)
     }
-    setUserSubscriberCount(
-      result.data.getNewsletterSubscriberStats?.subscriberCount ?? 0
-    )
     setSubscriberCountLoading(false)
   }, [appContext, newsletterId])
 
@@ -56,20 +60,21 @@ export default function UserSubscriberData() {
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result =
-      await apiClient.newsletters.getUserSubscriptionStatus({ newsletterId })
-    if (result.errors) {
-      return
-    }
-    setIsCurrentUserSubscribed(
-      result.data.getUserSubscriptionStatus ?? false
-    )
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: checkSubscriptionToNewsletter,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
+    })
+    setIsCurrentUserSubscribed(result.data.checkSubscriptionToNewsletter ?? false)
     setSubscriptionStatusLoading(false)
   }, [appContext, newsletterId])
 
   const subscribeUserToNewsletter = useCallback(async () => {
-    setSubscriberCountLoading(true)
+    // setSubscriberCountLoading(true)
     setSubscriptionStatusLoading(true)
     if (!appContext) {
       return
@@ -77,9 +82,14 @@ export default function UserSubscriberData() {
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.subscribeToNewsletter({
-      newsletterId
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: subscribeToNewsletter,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
     })
     if (result.errors) {
       return
@@ -91,7 +101,7 @@ export default function UserSubscriberData() {
   }, [appContext, getSubscriberStats, newsletterId])
 
   const unsubscribeUserFromNewsletter = useCallback(async () => {
-    setSubscriberCountLoading(true)
+    // setSubscriberCountLoading(true)
     setSubscriptionStatusLoading(true)
     if (!appContext) {
       return
@@ -99,10 +109,16 @@ export default function UserSubscriberData() {
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.unsubscribeFromNewsletter({
-      newsletterId
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: unsubscribeFromNewsletter,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
     })
+
     if (result.errors) {
       return
     } else {

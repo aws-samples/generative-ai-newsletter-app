@@ -1,34 +1,39 @@
 import {
   type DynamoDBQueryRequest,
   type Context,
-  type AppSyncIdentityCognito
+  type AppSyncIdentityLambda
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
+import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
-  const identity = ctx.identity as AppSyncIdentityCognito
+  const identity = ctx.identity as AppSyncIdentityLambda
   const { NEWSLETTER_TABLE_ITEM_TYPE_GSI } = ctx.env
   return ddb.query({
     index: NEWSLETTER_TABLE_ITEM_TYPE_GSI,
     query: {
-      sk: { eq: 'subscriber#' + identity.sub }
+      sk: { eq: 'subscriber#' + identity.resolverContext.userId }
     },
     consistentRead: false
   })
 }
 
 export const response = (ctx: Context): any => {
-  if (ctx.result.items === undefined || ctx.result.items === null) {
+  let { result } = ctx
+  if (result.items === undefined || result.items === null) {
     runtime.earlyReturn([])
   }
-  ctx.stash.subscribedCount = ctx.result.items.length
-  ctx.result.newsletterIds = ctx.result.items.map(
-    (newsletter: { newsletterId: string }) => newsletter.newsletterId
-  )
-  console.log(ctx.result)
-
+  result = addAccountToItems(result)
+  result = convertFieldIdsToObjectIds(result, 'newsletterId')
+  if (ctx.prev?.result?.items !== undefined && result.items !== undefined) {
+    result.items.push(...ctx.prev.result.items)
+  } else if (ctx.prev?.result?.items !== undefined) {
+    result.items = [...ctx.prev.result.items]
+  }
+  if (result.items !== undefined) {
+    result = filterForDuplicatesById(result)
+  }
   return {
-    subscribedCount: ctx.result.items.length,
-    newsletterIds: ctx.result.items.map((item: { newsletterId: string }) => item.newsletterId)
+    items: result.items ?? []
   }
 }

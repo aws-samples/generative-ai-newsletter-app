@@ -64,7 +64,15 @@ export default function NewsletterDetailsForm(
       >
         <Input
           value={numberOfDaysToInclude.toString()}
-          onChange={(e) => setNumberOfDaysToInclude(parseInt(e.detail.value))}
+          onChange={(e) => {
+            if (e.detail.value.length < 1) {
+              setNumberOfDaysToInclude(0)
+            } else {
+              setNumberOfDaysToInclude(parseInt(e.detail.value))
+            }
+
+
+          }}
         />
       </FormField>
       <FormField

@@ -7,4 +7,7 @@
   },
   "cedar.schemaFile": "lib/authorization/cedarschema.json",
   "cedar.autodetectSchemaFile": false,
+  "cSpell.enableFiletypes": [
+    "cedarschema"
+  ],
 }

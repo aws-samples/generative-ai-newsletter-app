@@ -18,7 +18,7 @@ export const NewsletterWizardDataFeedsTableColumnDefinition = () => {
   return [
     {
       id: 'dataFeedId',
-      cell: (item: DataFeed) => item.dataFeedId,
+      cell: (item: DataFeed) => item.id,
       header: 'Data Feed ID',
       isHeaderRow: false
     },
@@ -72,7 +72,7 @@ export const ArticlesTableColumnDefinition = (
   return [
     {
       id: 'articleId',
-      cell: (item: Article) => item.articleId,
+      cell: (item: Article) => item.id,
       header: 'Article ID',
       isHeaderRow: false
     },
@@ -85,7 +85,7 @@ export const ArticlesTableColumnDefinition = (
     {
       id: 'url',
       cell: (item: Article) => (
-        <Link variant="primary" external href={item.url}>
+        <Link variant="primary" external href={item.url ?? ""}>
           {item.url}
         </Link>
       ),
@@ -95,19 +95,11 @@ export const ArticlesTableColumnDefinition = (
     {
       id: 'summary',
       cell: (item: Article) =>
-        item.shortSummary !== null ? (
-          <Popover content={<Box>{item.longSummary}</Box>}>
-            {item.shortSummary}
-          </Popover>
-        ) : (
-          <Popover content={<Box>{item.articleSummary}</Box>}>
-            {item.articleSummary !== undefined &&
-              item.articleSummary &&
-              item.articleSummary.length > 75
-              ? item.articleSummary?.substring(0, 75) + '...'
-              : item.articleSummary}
-          </Popover>
-        ),
+      (
+        <Popover content={<Box>{item.longSummary}</Box>}>
+          {item.shortSummary}
+        </Popover>
+      ),
       header: 'Article Summary',
       isHeaderRow: true
     },
@@ -137,7 +129,7 @@ export const ArticlesTableColumnDefinition = (
           variant="link"
           onClick={() => {
             flaggedContentHandler(
-              item.articleId,
+              item.id,
               item.flaggedContent !== undefined ? !item.flaggedContent : false
             )
           }}

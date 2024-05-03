@@ -1,13 +1,13 @@
 import { type DynamoDBGetItemRequest, type Context } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { type DataFeed } from 'lib/shared/api'
+import { addAccountToItem, convertFieldIdToObjectId } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
-  const { dataFeedId } = ctx.args.input
+  const { id } = ctx.args.input
   console.log(ctx.identity)
   return ddb.get({
     key: {
-      dataFeedId,
+      dataFeedId: id,
       sk: 'dataFeed'
     }
   })
@@ -25,5 +25,9 @@ export const response = (ctx: Context): any => {
       ctx.result.isPrivate = true
     }
   }
-  return ctx.result satisfies DataFeed
+  let result = ctx.result
+  result = addAccountToItem(result)
+  result = convertFieldIdToObjectId(result, 'dataFeedId')
+
+  return result
 }

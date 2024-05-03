@@ -73,14 +73,17 @@ const lambdaHander = async (event: {
     const dataFeed: DataFeed = {
       feedType,
       title,
-      accountId,
+      account: {
+        __typename: 'Account',
+        id: accountId
+      },
       url,
       enabled,
       description,
       summarizationPrompt,
       isPrivate,
       __typename: 'DataFeed',
-      dataFeedId
+      id: dataFeedId
     }
     await storeDataFeed(dataFeed)
     await startIngestionStepFunction(dataFeedId)
@@ -98,13 +101,13 @@ const storeDataFeed = async (
   dataFeed: DataFeed
 ): Promise<void> => {
   const {
-    dataFeedId,
+    id: dataFeedId,
     url,
     feedType,
     summarizationPrompt,
     title,
     description,
-    accountId,
+    account: { id: accountId },
     isPrivate
   } = dataFeed
   logger.debug('Storing data feed', { dataFeed })

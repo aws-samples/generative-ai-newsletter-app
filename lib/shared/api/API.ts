@@ -13,9 +13,9 @@ export type CreateDataFeedInput = {
 
 export type DataFeed = {
   __typename: "DataFeed",
-  dataFeedId: string,
-  accountId?: string | null,
-  url: string,
+  id: string,
+  account: Account,
+  url?: string | null,
   feedType: DataFeedType,
   createdAt?: string | null,
   enabled?: boolean | null,
@@ -24,6 +24,12 @@ export type DataFeed = {
   description?: string | null,
   summarizationPrompt?: string | null,
   isPrivate: boolean,
+  authGranted?: AuthGranted | null,
+};
+
+export type Account = {
+  __typename: "Account",
+  id: string,
 };
 
 export enum DataFeedType {
@@ -34,27 +40,35 @@ export enum DataFeedType {
 
 export type Article = {
   __typename: "Article",
+  id: string,
   dataFeedId: string,
-  articleId: string,
-  accountId?: string | null,
-  url: string,
-  createdAt: string,
+  dataFeed?: DataFeed | null,
+  account: Account,
+  url?: string | null,
+  createdAt?: string | null,
   title: string,
   providedDescription?: string | null,
   providedCategories?: string | null,
   publishDate?: string | null,
   summarizationPrompt?: string | null,
   flaggedContent?: boolean | null,
-  articleSummary?: string | null,
   keywords?: string | null,
   shortSummary?: string | null,
   longSummary?: string | null,
+  authGranted?: AuthGranted | null,
 };
+
+export enum AuthGranted {
+  READ_ONLY = "READ_ONLY",
+  SUBSCRIBE = "SUBSCRIBE",
+  MANAGE = "MANAGE",
+}
+
 
 export type CreateNewsletterInput = {
   title: string,
   numberOfDaysToInclude: number,
-  dataFeedIds: Array< string >,
+  dataFeeds: Array< string >,
   isPrivate?: boolean | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: ArticleSummaryType | null,
@@ -70,38 +84,43 @@ export enum ArticleSummaryType {
 
 export type Newsletter = {
   __typename: "Newsletter",
-  newsletterId: string,
-  accountId: string,
-  title: string,
-  numberOfDaysToInclude: number,
+  id: string,
+  account?: Account | null,
+  title?: string | null,
+  numberOfDaysToInclude?: number | null,
+  subscriberCount?: number | null,
   dataFeedIds?: Array< string > | null,
   dataFeeds?:  Array<DataFeed | null > | null,
-  isPrivate: boolean,
-  scheduleId: string,
-  createdAt: string,
+  isPrivate?: boolean | null,
+  createdAt?: string | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: ArticleSummaryType | null,
   newsletterStyle?: string | null,
+  subscribers?:  Array<User | null > | null,
+  currentUserSubscribed?: boolean | null,
+  authGranted?: AuthGranted | null,
+  scheduleId?: string | null,
+};
+
+export type User = {
+  __typename: "User",
+  id: string,
+  account?: Account | null,
 };
 
 export type SubscribeToNewsletterInput = {
-  newsletterId: string,
+  id: string,
 };
 
 export type UnsubscribeFromNewsletterInput = {
-  newsletterId: string,
-};
-
-export type ExternalUnsubscribeFromNewsletter = {
-  newsletterId: string,
-  userId: string,
+  id: string,
 };
 
 export type UpdateNewsletterInput = {
-  newsletterId: string,
+  id: string,
   title?: string | null,
   numberOfDaysToInclude?: number | null,
-  dataFeedIds?: Array< string | null > | null,
+  dataFeeds?: Array< string | null > | null,
   isPrivate?: boolean | null,
   newsletterIntroPrompt?: string | null,
   articleSummaryType?: string | null,
@@ -109,19 +128,24 @@ export type UpdateNewsletterInput = {
 };
 
 export type UpdateDataFeedInput = {
-  dataFeedId: string,
+  id: string,
   url?: string | null,
   enabled?: boolean | null,
-  title: string,
+  title?: string | null,
   description?: string | null,
   summarizationPrompt?: string | null,
   isPrivate?: boolean | null,
 };
 
 export type FlagArticleInput = {
+  id: string,
   dataFeedId: string,
-  articleId: string,
   flaggedContent: boolean,
+};
+
+export type ExternalUnsubscribeFromNewsletter = {
+  id: string,
+  userId: string,
 };
 
 export type ListNewslettersInput = {
@@ -132,12 +156,12 @@ export type ListNewslettersInput = {
 
 export type Newsletters = {
   __typename: "Newsletters",
-  newsletters:  Array<Newsletter >,
+  items:  Array<Newsletter | null >,
   nextToken?: string | null,
 };
 
 export type GetNewsletterInput = {
-  newsletterId: string,
+  id: string,
 };
 
 export type ListDataFeedsInput = {
@@ -148,42 +172,41 @@ export type ListDataFeedsInput = {
 
 export type DataFeeds = {
   __typename: "DataFeeds",
-  dataFeeds?:  Array<DataFeed | null > | null,
+  items?:  Array<DataFeed | null > | null,
   nextToken?: string | null,
 };
 
 export type GetDataFeedInput = {
-  dataFeedId: string,
+  id: string,
 };
 
 export type ListArticlesInput = {
-  dataFeedId: string,
+  id: string,
 };
 
 export type Articles = {
   __typename: "Articles",
-  articles?:  Array<Article | null > | null,
+  items:  Array<Article | null >,
   nextToken?: string | null,
 };
 
 export type GetPublicationInput = {
+  id: string,
   newsletterId: string,
-  publicationId: string,
 };
 
 export type Publication = {
   __typename: "Publication",
+  id: string,
   newsletterId?: string | null,
-  publicationId: string,
-  accountId?: string | null,
-  campaignId?: string | null,
-  createdAt: string,
+  account?: Account | null,
+  createdAt?: string | null,
   htmlPath?: string | null,
   textPath?: string | null,
 };
 
 export type ListPublicationsInput = {
-  newsletterId: string,
+  id: string,
 };
 
 export type Publications = {
@@ -192,31 +215,26 @@ export type Publications = {
   nextToken?: string | null,
 };
 
-export type GetUserSubscriptionStatusInput = {
-  newsletterId: string,
+export type CheckSubscriptionToNewsletterInput = {
+  id: string,
 };
 
-export type NewsletterSubscriptions = {
-  __typename: "NewsletterSubscriptions",
-  newsletters:  Array<Newsletter | null >,
-  subscribedCount: number,
+export type CanUpdateNewsletterInput = {
+  id: string,
+};
+
+export type CanUpdateDataFeedInput = {
+  id: string,
 };
 
 export type GetNewsletterSubscriberStatsInput = {
-  newsletterId: string,
+  id: string,
 };
 
-export type NewsletterUserSubscriberStats = {
-  __typename: "NewsletterUserSubscriberStats",
-  subscriberCount: number,
-};
-
-export type CanManageNewsletterInput = {
-  newsletterId: string,
-};
-
-export type CanManageDataFeedInput = {
-  dataFeedId: string,
+export type NewsletterSubscriberStats = {
+  __typename: "NewsletterSubscriberStats",
+  id: string,
+  count?: number | null,
 };
 
 export type CreateDataFeedMutationVariables = {
@@ -226,34 +244,37 @@ export type CreateDataFeedMutationVariables = {
 export type CreateDataFeedMutation = {
   createDataFeed?:  {
     __typename: "DataFeed",
-    dataFeedId: string,
-    accountId?: string | null,
-    url: string,
+    id: string,
+    account:  {
+      __typename: "Account",
+      id: string,
+    },
+    url?: string | null,
     feedType: DataFeedType,
     createdAt?: string | null,
     enabled?: boolean | null,
     articles?:  Array< {
       __typename: "Article",
+      id: string,
       dataFeedId: string,
-      articleId: string,
-      accountId?: string | null,
-      url: string,
-      createdAt: string,
+      url?: string | null,
+      createdAt?: string | null,
       title: string,
       providedDescription?: string | null,
       providedCategories?: string | null,
       publishDate?: string | null,
       summarizationPrompt?: string | null,
       flaggedContent?: boolean | null,
-      articleSummary?: string | null,
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
+      authGranted?: AuthGranted | null,
     } | null > | null,
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
     isPrivate: boolean,
+    authGranted?: AuthGranted | null,
   } | null,
 };
 
@@ -264,16 +285,19 @@ export type CreateNewsletterMutationVariables = {
 export type CreateNewsletterMutation = {
   createNewsletter?:  {
     __typename: "Newsletter",
-    newsletterId: string,
-    accountId: string,
-    title: string,
-    numberOfDaysToInclude: number,
+    id: string,
+    account?:  {
+      __typename: "Account",
+      id: string,
+    } | null,
+    title?: string | null,
+    numberOfDaysToInclude?: number | null,
+    subscriberCount?: number | null,
     dataFeedIds?: Array< string > | null,
     dataFeeds?:  Array< {
       __typename: "DataFeed",
-      dataFeedId: string,
-      accountId?: string | null,
-      url: string,
+      id: string,
+      url?: string | null,
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
@@ -281,13 +305,20 @@ export type CreateNewsletterMutation = {
       description?: string | null,
       summarizationPrompt?: string | null,
       isPrivate: boolean,
+      authGranted?: AuthGranted | null,
     } | null > | null,
-    isPrivate: boolean,
-    scheduleId: string,
-    createdAt: string,
+    isPrivate?: boolean | null,
+    createdAt?: string | null,
     newsletterIntroPrompt?: string | null,
     articleSummaryType?: ArticleSummaryType | null,
     newsletterStyle?: string | null,
+    subscribers?:  Array< {
+      __typename: "User",
+      id: string,
+    } | null > | null,
+    currentUserSubscribed?: boolean | null,
+    authGranted?: AuthGranted | null,
+    scheduleId?: string | null,
   } | null,
 };
 
@@ -305,14 +336,6 @@ export type UnsubscribeFromNewsletterMutationVariables = {
 
 export type UnsubscribeFromNewsletterMutation = {
   unsubscribeFromNewsletter?: boolean | null,
-};
-
-export type ExternalUnsubscribeFromNewsletterMutationVariables = {
-  input?: ExternalUnsubscribeFromNewsletter | null,
-};
-
-export type ExternalUnsubscribeFromNewsletterMutation = {
-  externalUnsubscribeFromNewsletter: boolean,
 };
 
 export type UpdateNewsletterMutationVariables = {
@@ -339,6 +362,14 @@ export type FlagArticleMutation = {
   flagArticle?: boolean | null,
 };
 
+export type ExternalUnsubscribeFromNewsletterMutationVariables = {
+  input?: ExternalUnsubscribeFromNewsletter | null,
+};
+
+export type ExternalUnsubscribeFromNewsletterMutation = {
+  externalUnsubscribeFromNewsletter?: boolean | null,
+};
+
 export type ListNewslettersQueryVariables = {
   input?: ListNewslettersInput | null,
   nextToken?: string | null,
@@ -346,24 +377,26 @@ export type ListNewslettersQueryVariables = {
 };
 
 export type ListNewslettersQuery = {
-  listNewsletters:  {
+  listNewsletters?:  {
     __typename: "Newsletters",
-    newsletters:  Array< {
+    items:  Array< {
       __typename: "Newsletter",
-      newsletterId: string,
-      accountId: string,
-      title: string,
-      numberOfDaysToInclude: number,
+      id: string,
+      title?: string | null,
+      numberOfDaysToInclude?: number | null,
+      subscriberCount?: number | null,
       dataFeedIds?: Array< string > | null,
-      isPrivate: boolean,
-      scheduleId: string,
-      createdAt: string,
+      isPrivate?: boolean | null,
+      createdAt?: string | null,
       newsletterIntroPrompt?: string | null,
       articleSummaryType?: ArticleSummaryType | null,
       newsletterStyle?: string | null,
-    } >,
+      currentUserSubscribed?: boolean | null,
+      authGranted?: AuthGranted | null,
+      scheduleId?: string | null,
+    } | null >,
     nextToken?: string | null,
-  },
+  } | null,
 };
 
 export type GetNewsletterQueryVariables = {
@@ -371,18 +404,21 @@ export type GetNewsletterQueryVariables = {
 };
 
 export type GetNewsletterQuery = {
-  getNewsletter:  {
+  getNewsletter?:  {
     __typename: "Newsletter",
-    newsletterId: string,
-    accountId: string,
-    title: string,
-    numberOfDaysToInclude: number,
+    id: string,
+    account?:  {
+      __typename: "Account",
+      id: string,
+    } | null,
+    title?: string | null,
+    numberOfDaysToInclude?: number | null,
+    subscriberCount?: number | null,
     dataFeedIds?: Array< string > | null,
     dataFeeds?:  Array< {
       __typename: "DataFeed",
-      dataFeedId: string,
-      accountId?: string | null,
-      url: string,
+      id: string,
+      url?: string | null,
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
@@ -390,14 +426,21 @@ export type GetNewsletterQuery = {
       description?: string | null,
       summarizationPrompt?: string | null,
       isPrivate: boolean,
+      authGranted?: AuthGranted | null,
     } | null > | null,
-    isPrivate: boolean,
-    scheduleId: string,
-    createdAt: string,
+    isPrivate?: boolean | null,
+    createdAt?: string | null,
     newsletterIntroPrompt?: string | null,
     articleSummaryType?: ArticleSummaryType | null,
     newsletterStyle?: string | null,
-  },
+    subscribers?:  Array< {
+      __typename: "User",
+      id: string,
+    } | null > | null,
+    currentUserSubscribed?: boolean | null,
+    authGranted?: AuthGranted | null,
+    scheduleId?: string | null,
+  } | null,
 };
 
 export type ListDataFeedsQueryVariables = {
@@ -407,13 +450,12 @@ export type ListDataFeedsQueryVariables = {
 };
 
 export type ListDataFeedsQuery = {
-  listDataFeeds:  {
+  listDataFeeds?:  {
     __typename: "DataFeeds",
-    dataFeeds?:  Array< {
+    items?:  Array< {
       __typename: "DataFeed",
-      dataFeedId: string,
-      accountId?: string | null,
-      url: string,
+      id: string,
+      url?: string | null,
       feedType: DataFeedType,
       createdAt?: string | null,
       enabled?: boolean | null,
@@ -421,9 +463,10 @@ export type ListDataFeedsQuery = {
       description?: string | null,
       summarizationPrompt?: string | null,
       isPrivate: boolean,
+      authGranted?: AuthGranted | null,
     } | null > | null,
     nextToken?: string | null,
-  },
+  } | null,
 };
 
 export type GetDataFeedQueryVariables = {
@@ -433,34 +476,37 @@ export type GetDataFeedQueryVariables = {
 export type GetDataFeedQuery = {
   getDataFeed?:  {
     __typename: "DataFeed",
-    dataFeedId: string,
-    accountId?: string | null,
-    url: string,
+    id: string,
+    account:  {
+      __typename: "Account",
+      id: string,
+    },
+    url?: string | null,
     feedType: DataFeedType,
     createdAt?: string | null,
     enabled?: boolean | null,
     articles?:  Array< {
       __typename: "Article",
+      id: string,
       dataFeedId: string,
-      articleId: string,
-      accountId?: string | null,
-      url: string,
-      createdAt: string,
+      url?: string | null,
+      createdAt?: string | null,
       title: string,
       providedDescription?: string | null,
       providedCategories?: string | null,
       publishDate?: string | null,
       summarizationPrompt?: string | null,
       flaggedContent?: boolean | null,
-      articleSummary?: string | null,
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
+      authGranted?: AuthGranted | null,
     } | null > | null,
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
     isPrivate: boolean,
+    authGranted?: AuthGranted | null,
   } | null,
 };
 
@@ -473,24 +519,23 @@ export type ListArticlesQueryVariables = {
 export type ListArticlesQuery = {
   listArticles?:  {
     __typename: "Articles",
-    articles?:  Array< {
+    items:  Array< {
       __typename: "Article",
+      id: string,
       dataFeedId: string,
-      articleId: string,
-      accountId?: string | null,
-      url: string,
-      createdAt: string,
+      url?: string | null,
+      createdAt?: string | null,
       title: string,
       providedDescription?: string | null,
       providedCategories?: string | null,
       publishDate?: string | null,
       summarizationPrompt?: string | null,
       flaggedContent?: boolean | null,
-      articleSummary?: string | null,
       keywords?: string | null,
       shortSummary?: string | null,
       longSummary?: string | null,
-    } | null > | null,
+      authGranted?: AuthGranted | null,
+    } | null >,
     nextToken?: string | null,
   } | null,
 };
@@ -500,16 +545,18 @@ export type GetPublicationQueryVariables = {
 };
 
 export type GetPublicationQuery = {
-  getPublication:  {
+  getPublication?:  {
     __typename: "Publication",
+    id: string,
     newsletterId?: string | null,
-    publicationId: string,
-    accountId?: string | null,
-    campaignId?: string | null,
-    createdAt: string,
+    account?:  {
+      __typename: "Account",
+      id: string,
+    } | null,
+    createdAt?: string | null,
     htmlPath?: string | null,
     textPath?: string | null,
-  },
+  } | null,
 };
 
 export type ListPublicationsQueryVariables = {
@@ -523,11 +570,9 @@ export type ListPublicationsQuery = {
     __typename: "Publications",
     items?:  Array< {
       __typename: "Publication",
+      id: string,
       newsletterId?: string | null,
-      publicationId: string,
-      accountId?: string | null,
-      campaignId?: string | null,
-      createdAt: string,
+      createdAt?: string | null,
       htmlPath?: string | null,
       textPath?: string | null,
     } | null > | null,
@@ -535,12 +580,12 @@ export type ListPublicationsQuery = {
   } | null,
 };
 
-export type GetUserSubscriptionStatusQueryVariables = {
-  input?: GetUserSubscriptionStatusInput | null,
+export type CheckSubscriptionToNewsletterQueryVariables = {
+  input?: CheckSubscriptionToNewsletterInput | null,
 };
 
-export type GetUserSubscriptionStatusQuery = {
-  getUserSubscriptionStatus?: boolean | null,
+export type CheckSubscriptionToNewsletterQuery = {
+  checkSubscriptionToNewsletter?: boolean | null,
 };
 
 export type ListUserSubscriptionsQueryVariables = {
@@ -549,24 +594,42 @@ export type ListUserSubscriptionsQueryVariables = {
 };
 
 export type ListUserSubscriptionsQuery = {
-  listUserSubscriptions:  {
-    __typename: "NewsletterSubscriptions",
-    newsletters:  Array< {
+  listUserSubscriptions?:  {
+    __typename: "Newsletters",
+    items:  Array< {
       __typename: "Newsletter",
-      newsletterId: string,
-      accountId: string,
-      title: string,
-      numberOfDaysToInclude: number,
+      id: string,
+      title?: string | null,
+      numberOfDaysToInclude?: number | null,
+      subscriberCount?: number | null,
       dataFeedIds?: Array< string > | null,
-      isPrivate: boolean,
-      scheduleId: string,
-      createdAt: string,
+      isPrivate?: boolean | null,
+      createdAt?: string | null,
       newsletterIntroPrompt?: string | null,
       articleSummaryType?: ArticleSummaryType | null,
       newsletterStyle?: string | null,
+      currentUserSubscribed?: boolean | null,
+      authGranted?: AuthGranted | null,
+      scheduleId?: string | null,
     } | null >,
-    subscribedCount: number,
-  },
+    nextToken?: string | null,
+  } | null,
+};
+
+export type CanUpdateNewsletterQueryVariables = {
+  input?: CanUpdateNewsletterInput | null,
+};
+
+export type CanUpdateNewsletterQuery = {
+  canUpdateNewsletter?: boolean | null,
+};
+
+export type CanUpdateDataFeedQueryVariables = {
+  input?: CanUpdateDataFeedInput | null,
+};
+
+export type CanUpdateDataFeedQuery = {
+  canUpdateDataFeed?: boolean | null,
 };
 
 export type GetNewsletterSubscriberStatsQueryVariables = {
@@ -575,23 +638,8 @@ export type GetNewsletterSubscriberStatsQueryVariables = {
 
 export type GetNewsletterSubscriberStatsQuery = {
   getNewsletterSubscriberStats?:  {
-    __typename: "NewsletterUserSubscriberStats",
-    subscriberCount: number,
+    __typename: "NewsletterSubscriberStats",
+    id: string,
+    count?: number | null,
   } | null,
-};
-
-export type CanManageNewsletterQueryVariables = {
-  input?: CanManageNewsletterInput | null,
-};
-
-export type CanManageNewsletterQuery = {
-  canManageNewsletter: boolean,
-};
-
-export type CanManageDataFeedQueryVariables = {
-  input?: CanManageDataFeedInput | null,
-};
-
-export type CanManageDataFeedQuery = {
-  canManageDataFeed: boolean,
 };

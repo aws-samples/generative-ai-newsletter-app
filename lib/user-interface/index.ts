@@ -164,7 +164,7 @@ export class UserInterface extends Construct {
         GraphQL: {
           endpoint: props.graphqlApiUrl,
           region: Aws.REGION,
-          defaultAuthMode: 'userPool'
+          defaultAuthMode: 'lambda'
         }
       },
       appConfig: {

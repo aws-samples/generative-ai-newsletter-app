@@ -7,7 +7,6 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { DataFeed } from '../../../../../shared/api/API'
 import { AppContext } from '../../common/app-context'
-import { ApiClient } from '../../common/api'
 import {
   Container,
   FormField,
@@ -15,6 +14,8 @@ import {
   Spinner,
   Toggle
 } from '@cloudscape-design/components'
+import { getDataFeed } from '../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function DataFeedDetail() {
   const { dataFeedId } = useParams()
@@ -22,15 +23,22 @@ export default function DataFeedDetail() {
   const [setDataFeedId, setDataFeed] = useState<DataFeed | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const getDataFeed = useCallback(async () => {
+  const getDataFeedData = useCallback(async () => {
     if (!appContext) {
       return
     }
     if (!dataFeedId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+        query: getDataFeed,
+        variables: {
+          input: {
+            id: dataFeedId
+          }
+        }
+    })
     if (result.errors) {
       console.error(result.errors)
       return
@@ -40,8 +48,8 @@ export default function DataFeedDetail() {
   }, [appContext, dataFeedId])
 
   useEffect(() => {
-    getDataFeed()
-  }, [getDataFeed, dataFeedId])
+    getDataFeedData()
+  }, [getDataFeedData, dataFeedId])
 
   return (
     <Container
@@ -61,7 +69,7 @@ export default function DataFeedDetail() {
           </FormField>
 
           <FormField label="Feed URL">{setDataFeedId?.url}</FormField>
-          <FormField label="DataFeedId">{setDataFeedId?.dataFeedId}</FormField>
+          <FormField label="DataFeedId">{setDataFeedId?.id}</FormField>
           <FormField label="Enabled">
             <Toggle checked={setDataFeedId?.enabled ?? false} disabled>
               Data Feed {setDataFeedId?.enabled ? 'Enabled' : 'Disabled'}

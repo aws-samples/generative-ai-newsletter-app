@@ -15,11 +15,13 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { AppContext } from '../../common/app-context'
 import { Article } from '../../../../../shared/api/API'
-import { ApiClient } from '../../common/api'
 import {
   ArticlesTableColumnDefinition,
   DataFeedArticlesTableColumnDisplay
 } from '../newsletters/definitions'
+import { listArticles } from '../../../../../shared/api/graphql/queries'
+import { flagArticle } from '../../../../../shared/api/graphql/mutations'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function DataFeedArticleTable() {
   const { dataFeedId } = useParams()
@@ -37,15 +39,22 @@ export default function DataFeedArticleTable() {
     if (!dataFeedId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.listArticles({ dataFeedId })
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: listArticles,
+      variables: {
+        input: {
+          id: dataFeedId
+        }
+      }
+    })
     if (result.errors) {
       console.log(result.errors)
       return
     }
-    if (result.data.listArticles?.articles !== null) {
+    if (result.data.listArticles?.items !== null) {
       setArticles(
-        result.data.listArticles?.articles as Article[]
+        result.data.listArticles?.items as Article[]
       )
     }
 
@@ -61,20 +70,23 @@ export default function DataFeedArticleTable() {
       if (!dataFeedId) {
         return
       }
-      const apiClient = new ApiClient(appContext)
-      const result = await apiClient.dataFeeds.flagArticle(
-        {
-          dataFeedId,
-          articleId,
-          flaggedContent
+      const apiClient = await generateAuthorizedClient()
+      const result = await apiClient.graphql({
+        query: flagArticle,
+        variables: {
+          input: {
+            id: articleId,
+            dataFeedId: dataFeedId,
+            flaggedContent
+          }
         }
-      )
+      })
       if (result.errors) {
         console.log(result.errors)
         return
       }
       const updatedFeedArticles = articles.map((article) => {
-        if (article.articleId === articleId) {
+        if (article.id === articleId) {
           article.flaggedContent = flaggedContent
         }
         return article

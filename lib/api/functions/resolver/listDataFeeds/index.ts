@@ -1,12 +1,9 @@
-import { type Context, util, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+import { type Context, util } from '@aws-appsync/utils'
 import { type ListDataFeedsInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
-  const identity = ctx.identity as AppSyncIdentityCognito
   const input = ctx.args.input as ListDataFeedsInput
-  if (identity?.sub === undefined) {
-    util.unauthorized()
-  }
+  ctx.stash.root = 'DataFeeds'
   if (input === undefined || (input.includeOwned === undefined && input.includeShared === undefined && input.includeDiscoverable === undefined)) {
     ctx.stash.lookupDefinition = {
       includeOwned: true,
@@ -28,6 +25,6 @@ export function response (ctx: Context): any {
   }
   return {
     nextToken: ctx.result?.nextToken,
-    dataFeeds: ctx.result?.items
+    items: ctx.result?.items ?? []
   }
 }

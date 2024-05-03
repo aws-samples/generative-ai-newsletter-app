@@ -15,9 +15,8 @@ import * as path from 'path'
 import { ApiResolvers } from './resolvers'
 import { type ITable, type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { type NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { Stack } from 'aws-cdk-lib'
+import { Duration, Stack } from 'aws-cdk-lib'
 import { type CfnPolicyStore } from 'aws-cdk-lib/aws-verifiedpermissions'
-import { UserPool } from 'aws-cdk-lib/aws-cognito'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { type IRole } from 'aws-cdk-lib/aws-iam'
@@ -34,11 +33,11 @@ export interface ApiProps {
   accountTableUserIndex: string
   avpPolicyStore: CfnPolicyStore
   loggingBucket: Bucket
+  avpAuthorizerValidationRegex: string
   functions: {
-    readActionAuthCheckFunction: NodejsFunction
-    createActionAuthCheckFunction: NodejsFunction
-    listAuthFilterFunction: NodejsFunction
-    updateActionAuthCheckFunction: NodejsFunction
+    graphqlActionAuthorizerFunction: NodejsFunction
+    graphqlReadAuthorizerFunction: NodejsFunction
+    graphqlFilterReadAuthorizerFunction: NodejsFunction
     createNewsletterFunction: NodejsFunction
     userSubscriberFunction: NodejsFunction
     userUnsubscriberFunction: NodejsFunction
@@ -58,12 +57,17 @@ export class API extends Construct {
         path.join(__dirname, '..', 'shared', 'api', 'schema.graphql')
       ),
       authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AuthorizationType.LAMBDA,
+          lambdaAuthorizerConfig: {
+            handler: props.functions.graphqlActionAuthorizerFunction,
+            resultsCacheTtl: Duration.seconds(0),
+            validationRegex: props.avpAuthorizerValidationRegex
+          }
+        },
         additionalAuthorizationModes: [
           {
-            authorizationType: AuthorizationType.USER_POOL,
-            userPoolConfig: {
-              userPool: UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId)
-            }
+            authorizationType: AuthorizationType.IAM
           }
         ]
       },

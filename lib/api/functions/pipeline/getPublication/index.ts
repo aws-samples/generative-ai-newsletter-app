@@ -4,6 +4,7 @@ import {
   type DynamoDBGetItemRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
+import { addAccountToItem, convertFieldIdToObjectId } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
   const { newsletterId, publicationId } = ctx.args.input
@@ -37,7 +38,7 @@ export const response = (ctx: Context): any => {
   }
   const htmlPath = path + '.html'
   const textPath = path + '.txt'
-  return {
+  let result = {
     newsletterId,
     publicationId,
     accountId,
@@ -45,4 +46,7 @@ export const response = (ctx: Context): any => {
     htmlPath,
     textPath
   }
+  result = addAccountToItem(result)
+  result = convertFieldIdToObjectId(result, 'publicationId')
+  return result
 }

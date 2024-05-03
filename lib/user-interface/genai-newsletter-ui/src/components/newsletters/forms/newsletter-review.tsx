@@ -114,16 +114,16 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
               : 'Keywords'}
         </Badge>
       </FormField>
-      {canManageNewsletter ?
+      
         <FormField
           label="Data Feeds"
           description="The feeds that provide the content for the newsletter"
         >
           <ul>
             {selectedDataFeeds.map((dataFeed) => (
-              <li key={`selected-datafeed-${dataFeed.dataFeedId}`}>
+              <li key={`selected-datafeed-${dataFeed.id}`}>
                 <Link
-                  href={`/feeds/${dataFeed.dataFeedId}`}
+                  href={`/feeds/${dataFeed.id}`}
                   target="_blank"
                 >
                   {dataFeed.title}
@@ -135,7 +135,6 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
             )}
           </ul>
         </FormField>
-        : null}
       <FormField
         label="Newsletter Intro Summary Prompt"
         description="This prompt helps influence how the Newsletter summary will be written."

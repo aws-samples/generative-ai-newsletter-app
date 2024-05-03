@@ -17,7 +17,9 @@ import {
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../../../common/app-context'
-import { ApiClient } from '../../../common/api'
+import { getDataFeed } from '../../../../../../shared/api/graphql/queries'
+import { createDataFeed, updateDataFeed } from '../../../../../../shared/api/graphql/mutations'
+import { generateAuthorizedClient } from '../../../common/helpers'
 
 export default function DataFeedDetailsForm() {
   const { dataFeedId } = useParams()
@@ -33,15 +35,24 @@ export default function DataFeedDetailsForm() {
   const [summarizationPrompt, setSummarizationPrompt] = useState<string>('')
   const [isPrivate, setIsPrivate] = useState<boolean>(true)
 
-  const getDataFeed = useCallback(async () => {
+  const getDataFeedData = useCallback(async () => {
     if (!appContext) {
       return
     }
     if (!dataFeedId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
+
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: getDataFeed,
+      variables: {
+        input: {
+          id: dataFeedId,
+        },
+      },
+    })
+    
     if (result.errors) {
       console.log(result.errors)
       return
@@ -57,7 +68,7 @@ export default function DataFeedDetailsForm() {
     setLoading(false)
   }, [appContext, dataFeedId])
 
-  const updateDataFeed = useCallback(async () => {
+  const updateDataFeedAction = useCallback(async () => {
     setLoading(true)
     if (!appContext) {
       return
@@ -65,10 +76,21 @@ export default function DataFeedDetailsForm() {
     if (!dataFeedId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.updateDataFeed(
-      { dataFeedId, url, enabled, title, description, summarizationPrompt, isPrivate },
-    )
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: updateDataFeed,
+      variables: {
+        input: {
+          id: dataFeedId,
+          url,
+          enabled,
+          title,
+          description,
+          summarizationPrompt,
+          isPrivate
+        }
+      }
+    })
     if (result.errors) {
       console.log(result.errors)
       return
@@ -86,34 +108,39 @@ export default function DataFeedDetailsForm() {
     isPrivate
   ])
 
-  const createDataFeed = useCallback(async () => {
+  const createDataFeedAction = useCallback(async () => {
     setLoading(true)
     if (!appContext) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.dataFeeds.createDataFeed({
-      url,
-      enabled,
-      title,
-      description,
-      summarizationPrompt,
-      isPrivate
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: createDataFeed,
+      variables: {
+        input: {
+          url,
+          enabled,
+          title,
+          description,
+          summarizationPrompt,
+          isPrivate
+        }
+      }
     })
     if (result.errors) {
       console.log(result.errors)
       return
     }
-    navigate(`/feeds/${result.data.createDataFeed?.dataFeedId}`)
+    navigate(`/feeds/${result.data.createDataFeed?.id}`)
   }, [appContext, description, enabled, isPrivate, navigate, summarizationPrompt, title, url])
 
   useEffect(() => {
     if (dataFeedId) {
-      getDataFeed()
+      getDataFeedData()
     } else {
       setLoading(false)
     }
-  }, [dataFeedId, getDataFeed])
+  }, [dataFeedId, getDataFeedData])
   return (
     <Container>
       {loading ? (
@@ -138,7 +165,7 @@ export default function DataFeedDetailsForm() {
               </Button>
               <Button
                 variant="primary"
-                onClick={dataFeedId ? updateDataFeed : createDataFeed}
+                onClick={dataFeedId ? updateDataFeedAction : createDataFeedAction}
               >
                 {dataFeedId ? 'Update' : 'Add'}
               </Button>

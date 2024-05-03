@@ -1,11 +1,10 @@
-import { type Context, util, type AppSyncIdentityCognito, type LambdaRequest } from '@aws-appsync/utils'
-import { type CreateNewsletterInput } from 'lib/shared/api'
+import { type Context, util, type LambdaRequest, type AppSyncIdentityLambda } from '@aws-appsync/utils'
+import { type CreateNewsletterInput } from '../../../../shared/api'
 
 export function request (ctx: Context): LambdaRequest {
   const { args } = ctx
-  const identity = ctx.identity as AppSyncIdentityCognito
+  const identity = ctx.identity as AppSyncIdentityLambda
   const input = args.input as CreateNewsletterInput
-  const accountId = identity.claims['custom:Account'] ?? null
   if (input.isPrivate === undefined || input.isPrivate === null) {
     input.isPrivate = true
   }
@@ -13,8 +12,8 @@ export function request (ctx: Context): LambdaRequest {
     operation: 'Invoke',
     payload: {
       createdBy: {
-        accountId,
-        userId: identity.sub
+        accountId: identity.resolverContext.accountId,
+        userId: identity.resolverContext.userId
       },
       input
     }

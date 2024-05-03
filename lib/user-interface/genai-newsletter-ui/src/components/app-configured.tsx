@@ -11,7 +11,6 @@ import { AppContext } from '../common/app-context'
 import App from '../app'
 import { Alert } from '@cloudscape-design/components'
 import Authenticator from './auth/custom-authenticator'
-import { generateClient } from 'aws-amplify/api'
 import { StorageHelper } from '../common/helpers/storage-helper'
 import { Mode } from '@cloudscape-design/global-styles'
 
@@ -27,9 +26,6 @@ export default function AppConfigured() {
         Amplify.configure({
           ...awsExports
         })
-        if (awsExports !== null) {
-          awsExports.apiClient = generateClient()
-        }
         setConfig(awsExports)
       } catch (e) {
         setError(true)
@@ -82,8 +78,8 @@ export default function AppConfigured() {
         >
           <Alert header="Configuration error" type="error">
             Error loading configuration from "
-            <a href="/aws-exports.json" style={{ fontWeight: '600' }}>
-              /aws-exports.json
+            <a href="/amplifyconfiguration.json" style={{ fontWeight: '600' }}>
+              /amplifyconfiguration.json
             </a>
             "
           </Alert>

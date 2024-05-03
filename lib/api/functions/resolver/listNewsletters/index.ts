@@ -1,13 +1,16 @@
-import { type Context, util, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
+import { type Context, util } from '@aws-appsync/utils'
 import { type ListNewslettersInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
+  ctx.stash.root = 'Newsletters'
   console.log('[listNewslettersResolverRequest]', { ctx })
-  const identity = ctx.identity as AppSyncIdentityCognito
   const input = ctx.args.input as ListNewslettersInput
-  if (identity?.sub === undefined) {
-    util.unauthorized()
-  }
   if (input === undefined || (input.includeDiscoverable === undefined && input.includeOwned === undefined && input.includeShared === undefined)) {
     ctx.stash.lookupDefinition = {
       includeOwned: true,
@@ -26,12 +29,11 @@ export function request (ctx: Context): any {
 }
 
 export function response (ctx: Context): any {
-  console.log('[listNewslettersResolverResponse]', { ctx })
   if (ctx.error !== undefined) {
     util.error(ctx.error.message, ctx.error.type)
   }
   return {
     nextToken: ctx.result.nextToken,
-    newsletters: ctx.result.items
+    items: ctx.result.items ?? []
   }
 }

@@ -7,7 +7,6 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 import { useParams } from 'react-router-dom'
 import { Publication } from '../../../../../shared/api/API'
-import { ApiClient } from '../../common/api'
 import {
   Button,
   Container,
@@ -15,6 +14,8 @@ import {
   SpaceBetween,
   StatusIndicator
 } from '@cloudscape-design/components'
+import { listPublications } from '../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function PublicationsTable() {
   const appContext = useContext(AppContext)
@@ -25,15 +26,29 @@ export default function PublicationsTable() {
   const [newsletterContent, setNewsletterContent] = useState<{
     [key: string]: string
   }>({})
-  const [nextToken, setNextToken] = useState<string | undefined>()
+
   // const [loading, setLoading] = useState(false)
 
   const getPublicationContent = useCallback(
     async (path: string, publicationId: string) => {
-      const content = await (await fetch(path)).text()
-      const publicationsContent = newsletterContent
-      publicationsContent[publicationId] = content
-      setNewsletterContent(publicationsContent)
+      try {
+        const response = await fetch(path, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'text/html'
+          }
+        })
+        if (response.ok) {
+          const content = await response.text()
+          const publicationsContent = newsletterContent
+          publicationsContent[publicationId] = content
+          setNewsletterContent(publicationsContent)
+        }
+
+      } catch (error) {
+        console.error('Error getting publication content', error)
+      }
+
     },
     [newsletterContent]
   )
@@ -46,11 +61,16 @@ export default function PublicationsTable() {
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.listPublications(
-      { newsletterId },
-      nextToken
-    )
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: listPublications,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
+    })
+
     if (result.errors) {
       console.error(result.errors)
     } else {
@@ -58,23 +78,26 @@ export default function PublicationsTable() {
         ...(result.data.listPublications
           ?.items as Publication[])
       ])
-      if (result.data.listPublications?.nextToken) {
-        setNextToken(result.data.listPublications?.nextToken)
-      }
-      for (const publication of result.data.listPublications
-        ?.items as Publication[]) {
-        if (publication.htmlPath) {
-          getPublicationContent(publication.htmlPath, publication.publicationId)
+
+      for (const publication of result.data.listPublications?.items as Publication[]) {
+        if (publication.textPath) {
+          getPublicationContent(publication.textPath, publication.id)
         }
       }
     }
     // setLoading(false)
-  }, [appContext, getPublicationContent, newsletterId, nextToken])
+  }, [appContext, getPublicationContent, newsletterId])
 
   const renderHtml = (html: string): { __html: string } => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    return { __html: doc.body.innerHTML }
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+      return { __html: doc.body.innerHTML }
+    } catch (error) {
+      console.error(error)
+      return { __html: '' }
+    }
+
   }
 
   useEffect(() => {
@@ -87,7 +110,7 @@ export default function PublicationsTable() {
           if (publication.htmlPath) {
             return (
               <ExpandableSection
-                key={'newsletterPublicationSection' + publication.publicationId}
+                key={'newsletterPublicationSection' + publication.id}
                 headerText={publication.createdAt}
                 headerActions={
                   publication.htmlPath !== null &&
@@ -109,17 +132,17 @@ export default function PublicationsTable() {
                 variant="stacked"
               >
                 <Container>
-                  {newsletterContent[publication.publicationId] ? (
+                  {newsletterContent[publication.id] ? (
                     <>
                       <div
                         dangerouslySetInnerHTML={renderHtml(
-                          newsletterContent[publication.publicationId]
+                          newsletterContent[publication.id]
                         )}
                       />
                     </>
                   ) : (
                     <StatusIndicator
-                      key={'status-publication-' + publication.publicationId}
+                      key={'status-publication-' + publication.id}
                       type="loading"
                     >
                       Loading...
@@ -132,8 +155,8 @@ export default function PublicationsTable() {
             return <></>
           }
         })
-      : <p>No Publications Available</p>
-    }
+        : <p>No Publications Available</p>
+      }
     </SpaceBetween>
   )
 }

@@ -68,12 +68,16 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
   })
   logger.debug('Base App Hostname = ' + APP_HOST_NAME)
   const newsletter = await getNewsletterDetails(newsletterId)
-  const accountId = newsletter.accountId
+  const accountId = newsletter.account?.id
+  if (accountId === undefined) {
+    logger.error('No account id found')
+    throw new Error('No account id found')
+  }
   tracer.putMetadata('numberOfDaysToInclude', newsletter.numberOfDaysToInclude)
   if (newsletter.dataFeedIds !== undefined && newsletter.dataFeedIds !== null && newsletter.dataFeedIds.length > 0) {
     const articles = await getArticlesForDataFeeds(
       newsletter.dataFeedIds,
-      newsletter.numberOfDaysToInclude
+      newsletter.numberOfDaysToInclude ?? 7
     )
     if (articles.length === 0) {
       logger.debug('No articles found')
@@ -87,7 +91,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
       const emailContents = await generateEmail(
         articles,
         newsletterSummary,
-        newsletter.title,
+        newsletter.title ?? 'Generative AI Newsletter Sample',
         newsletterId,
         newsletter.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY,
         newsletter.newsletterStyle !== null ? newsletter.newsletterStyle as unknown as NewsletterStyle : undefined
@@ -103,7 +107,7 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
 const getNewsletterDetails = async (
   newsletterId: string
 ): Promise<Newsletter> => {
-  console.debug('Getting newsletter details', { newsletterId })
+  logger.debug('Getting newsletter details', { newsletterId })
   const input: GetItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
     Key: {
@@ -113,13 +117,20 @@ const getNewsletterDetails = async (
   }
   const command = new GetItemCommand(input)
   const response = await dynamodb.send(command)
-  console.debug('Newsletter details', { response })
+  logger.debug('Newsletter details', { response })
   if (response.Item === undefined) {
-    console.debug('No newsletter found')
+    logger.debug('No newsletter found')
     throw new Error('No newsletter found')
   }
-  const newsletterItem = unmarshall(response.Item) as Newsletter
-  return { ...newsletterItem, __typename: 'Newsletter' }
+  const newsletterItem = unmarshall(response.Item)
+  newsletterItem.id = newsletterItem.newsletterId
+  newsletterItem.account = {
+    id: newsletterItem.accountId,
+    __typename: 'Account'
+  }
+  newsletterItem.__typename = 'Newsletter'
+  logger.debug('returning newsletter item', { newsletterId })
+  return newsletterItem as Newsletter
 }
 
 const getArticlesForDataFeeds = async (
@@ -131,7 +142,7 @@ const getArticlesForDataFeeds = async (
   const calculatedDate = new Date(
     Date.now() - numberOfDaysToInclude * 24 * 60 * 60 * 1000
   ).toISOString()
-  console.debug('Articles included starting after date ' + calculatedDate)
+  logger.debug('Articles included starting after date ' + calculatedDate)
   for (const dataFeedId of dataFeedIds) {
     const input: QueryCommandInput = {
       TableName: DATA_FEED_TABLE,
@@ -193,7 +204,7 @@ const getArticlesForDataFeeds = async (
       logger.warn('Result does not contain items', { result })
     }
   }
-  console.debug('Articles found', articlesData)
+  logger.debug('Articles found', { articlesData })
   return articlesData
 }
 
@@ -201,14 +212,14 @@ const generateNewsletterSummary = async (
   articles: ArticleData[],
   newsletterIntroPrompt?: string
 ): Promise<MultiSizeFormattedResponse> => {
-  console.debug('Generating newsletter summary')
+  logger.debug('Generating newsletter summary')
   tracer.putAnnotation('Newsletter has summary prompt', true)
   const summaryBuilder = new NewsletterSummaryBuilder(
     articles,
     newsletterIntroPrompt
   )
   const prompt = summaryBuilder.getCompiledPrompt()
-  console.debug('Prompt generated', { prompt })
+  logger.debug('Prompt generated', { prompt })
   const response = await anthropic.messages.create({
     model: BEDROCK_MODEL_ID,
     max_tokens: 500,
@@ -235,7 +246,7 @@ const generateEmail = async (
   articleSummaryType: ArticleSummaryType,
   newsletterStyle?: NewsletterStyle
 ): Promise<GeneratedEmailContents> => {
-  console.debug('Starting email generation')
+  logger.debug('Starting email generation')
   const html = render(
     NewsletterEmail({
       articles,
@@ -248,8 +259,8 @@ const generateEmail = async (
     })
   )
   metrics.addMetric('HTMLEmailsGenerated', MetricUnits.Count, 1)
-  console.debug('HTML email generated', { html })
-  console.debug('Starting plantext email generation')
+  logger.debug('HTML email generated', { html })
+  logger.debug('Starting plantext email generation')
   const text = render(
     NewsletterEmail({
       title,
@@ -264,7 +275,7 @@ const generateEmail = async (
     }
   )
   metrics.addMetric('TextEmailsGenerated', MetricUnits.Count, 1)
-  console.debug('Plaintext email generated', { text })
+  logger.debug('Plaintext email generated', { text })
   return { html, text }
 }
 
@@ -340,7 +351,7 @@ const recordEmailDetails = async (
   emailKey: string,
   accountId: string
 ): Promise<void> => {
-  console.debug('Recording email details')
+  logger.debug('Recording email details')
   const input: PutItemCommandInput = {
     TableName: NEWSLETTER_TABLE,
     Item: {
@@ -368,7 +379,7 @@ const sendNewsletter = async (
   emailId: string,
   emailKey: string
 ): Promise<void> => {
-  console.debug('Sending Newsletter')
+  logger.debug('Sending Newsletter')
   const command = new InvokeCommand({
     FunctionName: NEWSLETTER_CAMPAIGN_CREATOR_FUNCTION,
     Payload: JSON.stringify({

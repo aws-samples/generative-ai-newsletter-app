@@ -19,10 +19,11 @@ import {
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 import { DataFeed, ListDataFeedsInput } from '../../../../../shared/api/API'
-import { ApiClient } from '../../common/api'
 import { DataFeedsTableColumnDisplay } from '../newsletters/definitions'
 import { useNavigate } from 'react-router-dom'
 import useOnFollow from '../../common/hooks/use-on-follow'
+import { listDataFeeds } from '../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function DataFeedsTable(input?: ListDataFeedsInput) {
   const appContext = useContext(AppContext)
@@ -38,14 +39,21 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
     if (!appContext) {
       return
     }
-    const apiClient = new ApiClient(appContext)
+    const apiClient = await generateAuthorizedClient()
     try {
-      const result = await apiClient.dataFeeds.listDataFeeds({includeOwned,includeShared,includeDiscoverable})
-      if (result.data !== undefined && result.errors === undefined) {
-        setDataFeeds(
-          result.data.listDataFeeds
-            .dataFeeds as DataFeed[]
-        )
+      const result = await apiClient.graphql({
+        query: listDataFeeds,
+        variables: {
+          input: {
+            includeDiscoverable,
+            includeOwned,
+            includeShared
+          }
+        }
+      })
+    
+      if (result.data?.listDataFeeds?.items !== undefined && result.data.listDataFeeds.items !== null) {
+        setDataFeeds(result.data.listDataFeeds.items as DataFeed[])
         setLoadingDataFeeds(false)
       }
     } catch (e) {
@@ -63,7 +71,7 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
         if (!selectedDataFeed) {
           return
         }
-        navigate(`/feeds/${selectedDataFeed?.dataFeedId}/edit`)
+        navigate(`/feeds/${selectedDataFeed?.id}/edit`)
         break
       default:
         break
@@ -94,14 +102,14 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
   const dataFeedsTableColumnDefinition = [
     {
       id: 'dataFeedId',
-      cell: (item: DataFeed) => item.dataFeedId,
+      cell: (item: DataFeed) => item.id,
       header: 'Data Feed ID',
       isHeaderRow: false
     },
     {
       id: 'title',
       cell: (item: DataFeed) => (
-        <Link onFollow={onFollow} href={`/feeds/${item.dataFeedId}`} key={"FEED-LINK-"+item.dataFeedId}>
+        <Link onFollow={onFollow} href={`/feeds/${item.id}`} key={"FEED-LINK-" + item.id}>
           {item.title}
         </Link>
       ),

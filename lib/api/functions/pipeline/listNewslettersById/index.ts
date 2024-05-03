@@ -3,6 +3,7 @@ import {
   util,
   type DynamoDBBatchGetItemRequest
 } from '@aws-appsync/utils'
+import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBBatchGetItemRequest {
   const { NEWSLETTER_TABLE } = ctx.env
@@ -21,7 +22,13 @@ export function request (ctx: Context): DynamoDBBatchGetItemRequest {
 
 export function response (ctx: Context): any {
   const { NEWSLETTER_TABLE } = ctx.env
-  return {
+  let result = {
     items: ctx.result?.data[NEWSLETTER_TABLE] ?? []
   }
+  result = addAccountToItems(result)
+  result = convertFieldIdsToObjectIds(result, 'newsletterId')
+  if (result.items !== undefined) {
+    result = filterForDuplicatesById(result)
+  }
+  return result
 }

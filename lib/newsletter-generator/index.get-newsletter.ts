@@ -30,7 +30,7 @@ const lambdaHandler = async (
   event: GetNewsletterInput
 ): Promise<Newsletter | null> => {
   logger.debug('Starting get newsletter', { event })
-  const { newsletterId } = event
+  const { id: newsletterId } = event
   if (newsletterId !== null && newsletterId.length > 0) {
     try {
       const newsletter = await getNewsletterData(newsletterId)

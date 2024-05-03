@@ -23,7 +23,6 @@ import {
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArticleSummaryType, DataFeed } from '../../../../../../shared/api/API'
-import { ApiClient } from '../../../common/api'
 import { AppContext } from '../../../common/app-context'
 import NewsletterDataFeedsSelectionForm from './data-feeds-selection-table'
 import NewsletterDetailsForm from './newsletter-details'
@@ -31,6 +30,9 @@ import NewsletterReviewForm from './newsletter-review'
 import NewsletterIntroPrompt from './newsletter-intro-prompt'
 import { NewsletterStyle } from '../../../../../../shared/common/newsletter-style'
 import NewsletterDesignerForm from './newsletter-designer'
+import { createNewsletter, updateNewsletter } from '../../../../../../shared/api/graphql/mutations'
+import { getDataFeed, getNewsletter } from '../../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../../common/helpers'
 
 interface NewsletterWizardProps {
   newsletterId?: string
@@ -96,15 +98,20 @@ export default function NewsletterWizard({
     if (!appContext) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.createNewsletter({
-      title,
-      isPrivate,
-      numberOfDaysToInclude,
-      dataFeedIds: selectedDataFeeds.map((s) => s.dataFeedId),
-      newsletterIntroPrompt,
-      articleSummaryType,
-      newsletterStyle: JSON.stringify(newsletterStyle)
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: createNewsletter,
+      variables: {
+        input: {
+          title,
+          isPrivate,
+          numberOfDaysToInclude,
+          dataFeeds: selectedDataFeeds.map((s) => s.id),
+          newsletterIntroPrompt,
+          articleSummaryType,
+          newsletterStyle: JSON.stringify(newsletterStyle)
+        }
+      }
     })
     if (result.errors) {
       console.error(result.errors)
@@ -113,7 +120,7 @@ export default function NewsletterWizard({
       setWizardAlertType('error')
       setSaving(false)
     } else {
-      navigate(`/newsletters/${result.data.createNewsletter?.newsletterId}`)
+      navigate(`/newsletters/${result.data.createNewsletter?.id}`)
     }
   }, [
     appContext,
@@ -136,8 +143,15 @@ export default function NewsletterWizard({
       setLoading(false)
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.getNewsletter({ newsletterId })
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: getNewsletter,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
+    })
     if (result.errors) {
       console.error(result.errors)
       setWizardAlertHeader('There was an error loading your Newsletter.')
@@ -146,27 +160,42 @@ export default function NewsletterWizard({
       setLoading(false)
     } else {
       setTitle(result.data.getNewsletter?.title ?? '')
-      setIsPrivate(result.data.getNewsletter.isPrivate ?? true)
-      setNumberOfDaysToInclude(
-        result.data.getNewsletter?.numberOfDaysToInclude ?? 7
-      )
-      const dataFeedIds = result.data?.getNewsletter?.dataFeedIds ?? []
-      const selectedDataFeedItems: DataFeed[] = []
-      for (const dataFeedId of dataFeedIds) {
-        const dataFeedResult = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
-        if (dataFeedResult.data.getDataFeed !== undefined && dataFeedResult.data.getDataFeed !== null) {
-          selectedDataFeedItems.push(dataFeedResult.data.getDataFeed)
+      setIsPrivate(result.data.getNewsletter?.isPrivate ?? true)
+      setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
+
+      const filteredDataFeeds = result.data?.getNewsletter?.dataFeeds?.filter((feed) => {
+        return (feed?.id !== undefined && feed?.id !== null)
+      })
+      if (filteredDataFeeds !== undefined && filteredDataFeeds.length > 0) {
+        const selectedDataFeedItems: DataFeed[] = []
+        for (const dataFeed of filteredDataFeeds) {
+          if (dataFeed !== undefined && dataFeed !== null) {
+            const dataFeedResult = await apiClient.graphql({
+              query: getDataFeed,
+              variables: {
+                input: {
+                  id: dataFeed.id
+                }
+              }
+            })
+            if (dataFeedResult.data.getDataFeed?.articles !== undefined && dataFeedResult.data.getDataFeed?.articles !== null) {
+              selectedDataFeedItems.push(dataFeedResult.data.getDataFeed as DataFeed)
+            }
+          }
+
         }
+        setSelectedDataFeeds(selectedDataFeedItems)
+
       }
-      setSelectedDataFeeds(selectedDataFeedItems)
+
       setArticleSummaryType(
         result.data.getNewsletter?.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY)
       setNewsletterIntroPrompt(
         result.data.getNewsletter?.newsletterIntroPrompt ?? ''
       )
       if (
-        result.data.getNewsletter.newsletterStyle !== undefined &&
-        result.data.getNewsletter.newsletterStyle !== null
+        result.data.getNewsletter?.newsletterStyle !== undefined &&
+        result.data.getNewsletter?.newsletterStyle !== null
       ) {
         setNewsletterStyle(
           JSON.parse(result.data.getNewsletter.newsletterStyle)
@@ -182,25 +211,30 @@ export default function NewsletterWizard({
     }
   }, [appContext, newsletterId, previewPane, setNewsletterStyle])
 
-  const updateNewsletter = useCallback(async () => {
+  const updateNewsletterAction = useCallback(async () => {
     if (newsletterId !== undefined && newsletterId !== null) {
       setSaving(true)
       if (!appContext) {
         return
       }
-      const apiClient = new ApiClient(appContext)
-      const result = await apiClient.newsletters.updateNewsletter(
-        {
-          newsletterId,
-          title,
-          isPrivate,
-          numberOfDaysToInclude,
-          dataFeedIds: selectedDataFeeds.map((s) => s.dataFeedId),
-          newsletterIntroPrompt,
-          articleSummaryType,
-          newsletterStyle: JSON.stringify(newsletterStyle)
+      const apiClient = await generateAuthorizedClient()
+      const result = await apiClient.graphql({
+        query: updateNewsletter,
+        variables: {
+          input: {
+            id: newsletterId,
+            title,
+            isPrivate,
+            numberOfDaysToInclude,
+
+            dataFeeds: [...selectedDataFeeds.map((s) => s.id as string)],
+            newsletterIntroPrompt,
+            articleSummaryType,
+            newsletterStyle: JSON.stringify(newsletterStyle)
+          }
         }
-      )
+      })
+
       if (result.errors) {
         console.error(result.errors)
         setWizardAlertHeader('There was an error updating your Newsletter.')
@@ -275,7 +309,7 @@ export default function NewsletterWizard({
         newsletterId !== undefined &&
           newsletterId !== null &&
           newsletterId.length > 0
-          ? updateNewsletter
+          ? updateNewsletterAction
           : submitCreateNewsletter
       }
       isLoadingNextStep={saving}

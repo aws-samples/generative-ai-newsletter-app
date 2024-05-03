@@ -6,7 +6,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../../common/app-context'
-import { ApiClient } from '../../common/api'
+// import { ApiClient } from '../../common/api'
 import {
   ArticleSummaryType,
   DataFeed,
@@ -29,13 +29,15 @@ import UserSubscriberData from '../../components/newsletters/user-subscriber-dat
 import BaseContentLayout from '../../components/base-content-layout'
 import NewsletterPreview from '../../components/newsletters/preview'
 import { NewsletterStyle } from '../../../../../shared/common/newsletter-style'
+import { canUpdateNewsletter, getNewsletter } from '../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function NewsletterDetail() {
   const { newsletterId } = useParams()
   const navigate = useNavigate()
   const onFollow = useOnFollow()
   const appContext = useContext(AppContext)
-  const [canManageNewsletter, setCanManageNewsletter] = useState<boolean>(false)
+  const [canUpdateNewsletterVal, setCanUpdateNewsletterVal] = useState<boolean>(false)
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
   const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(
     new NewsletterStyle()
@@ -44,66 +46,58 @@ export default function NewsletterDetail() {
 
 
 
-  const getNewsletter = useCallback(async () => {
+  const getNewsletterCall = useCallback(async () => {
     if (!appContext) {
       return
     }
     if (!newsletterId) {
       return
     }
-    const apiClient = new ApiClient(appContext)
-    const result = await apiClient.newsletters.getNewsletter({ newsletterId })
+    const apiClient = await generateAuthorizedClient()
+    const result = await apiClient.graphql({
+      query: getNewsletter,
+      variables: {
+        input: {
+          id: newsletterId
+        }
+      }
+    })
     if (result.errors) {
       console.error(result.errors)
     } else {
-      setNewsletter(result.data.getNewsletter)
-      if (
-        result.data.getNewsletter.newsletterStyle !== null &&
-        result.data.getNewsletter.newsletterStyle !== undefined
-      ) {
-        setNewsletterStyle(
-          JSON.parse(result.data.getNewsletter.newsletterStyle)
-        )
-      }
-      let canManageNewsletterX = false
-      try {
-        const result = await apiClient.newsletters.canManageNewsletter({ newsletterId })
-        if (result.errors) {
-          canManageNewsletterX = false
-          setCanManageNewsletter(canManageNewsletterX)
-        } else {
-          canManageNewsletterX = result.data.canManageNewsletter
-          setCanManageNewsletter(canManageNewsletterX)
-        }
-      } catch (e) {
-        canManageNewsletterX = false
-        setCanManageNewsletter(canManageNewsletterX)
-      }
-      const feeds: DataFeed[] = []
-      if (canManageNewsletterX && result.data?.getNewsletter?.dataFeedIds !== null && result.data.getNewsletter.dataFeedIds !== undefined && result.data.getNewsletter.dataFeedIds.length > 0) {
-        for (const dataFeedId of result.data.getNewsletter.dataFeedIds) {
-          const dataFeedResult = await apiClient.dataFeeds.getDataFeed({ dataFeedId })
-          if (dataFeedResult.errors) {
-            console.error(dataFeedResult.errors)
-          }
-          const feed = dataFeedResult.data.getDataFeed
-          if (feed !== undefined && feed !== null) {
-            feeds.push(feed)
-          }
-
-        }
-        const fullNewsletter: Newsletter = {
-          ...result.data.getNewsletter,
-          dataFeeds: feeds
-        }
-        setNewsletter(fullNewsletter)
-      }
+      setNewsletter(result.data.getNewsletter as Newsletter)
     }
-  }, [appContext, setCanManageNewsletter, newsletterId])
+    if (
+      result.data.getNewsletter?.newsletterStyle !== null &&
+      result.data.getNewsletter?.newsletterStyle !== undefined
+    ) {
+      setNewsletterStyle(
+        JSON.parse(result.data.getNewsletter.newsletterStyle)
+      )
+    }
+    try {
+      const editResponse = await apiClient.graphql({
+        query: canUpdateNewsletter,
+        variables: {
+          input: {
+            id: newsletterId
+          }
+        }
+      })
+      if (editResponse.errors) {
+        console.error(editResponse.errors)
+      }
+      if (editResponse.data.canUpdateNewsletter) {
+        setCanUpdateNewsletterVal(true)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }, [appContext, newsletterId])
 
   useEffect(() => {
-    getNewsletter()
-  }, [newsletterId, getNewsletter])
+    getNewsletterCall()
+  }, [newsletterId, getNewsletterCall])
 
   return (
     <BaseAppLayout
@@ -147,14 +141,14 @@ export default function NewsletterDetail() {
             actions={
               <SpaceBetween size="xs" direction="horizontal">
                 <Button
-                  disabled={!canManageNewsletter}
+                  disabled={!canUpdateNewsletterVal}
                   onClick={() => {
                     navigate(`/newsletters/${newsletterId}/edit`)
                   }}
                 >
                   Edit
                 </Button>
-                <Button disabled>Delete (Not Yet Implemented)</Button>
+                {/* <Button disabled>Delete (Not Yet Implemented)</Button> */}
                 <Button
                   iconAlign="right"
                   variant="primary"
@@ -179,11 +173,11 @@ export default function NewsletterDetail() {
               {newsletter != undefined ? (
                 <NewsletterReviewForm
                   isPrivate={newsletter.isPrivate ?? true}
-                  numberOfDaysToInclude={newsletter.numberOfDaysToInclude}
+                  numberOfDaysToInclude={newsletter.numberOfDaysToInclude ?? 0}
                   selectedDataFeeds={
                     newsletter.dataFeeds !== null ? newsletter.dataFeeds as DataFeed[] : []
                   }
-                  title={newsletter.title}
+                  title={newsletter.title ?? ""}
                   formMode="detail"
                   newsletterIntroPrompt={
                     newsletter.newsletterIntroPrompt !== null &&

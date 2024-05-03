@@ -4,13 +4,14 @@ import {
   type DynamoDBQueryRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
+import { filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const { nextToken, limit = 250 } = ctx.args
-  const { newsletterId } = ctx.args.input
+  const { id } = ctx.args.input
   return ddb.query({
     query: {
-      newsletterId: { eq: newsletterId },
+      newsletterId: { eq: id },
       sk: { beginsWith: 'publication' }
     },
     limit,
@@ -55,16 +56,24 @@ export const response = (ctx: Context): any => {
       const textPath = path + '.txt'
       items.push({
         newsletterId,
-        publicationId,
-        accountId,
+        id: publicationId,
+        account: {
+          id: accountId
+        },
         createdAt,
         htmlPath,
         textPath
       })
     }
   }
+  let result = {
+    items
+  }
+  if (result.items !== undefined) {
+    result = filterForDuplicatesById(result)
+  }
   return {
-    items,
+    items: result.items,
     nextToken: ctx.result.nextToken
   }
 }

@@ -10,8 +10,6 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 import {
   DynamoDBClient,
-  GetItemCommand,
-  type GetItemCommandInput,
   PutItemCommand,
   type PutItemCommandInput
 } from '@aws-sdk/client-dynamodb'
@@ -42,16 +40,20 @@ interface ArticleIngestorInput {
   summarizationPrompt?: string
   input: {
     url: string
-    dataFeedId: string
-    articleId?: string
+    dataFeed: {
+      id: string
+    }
+    id?: string
     title: string
-    accountId?: string
+    account: {
+      id: string
+      __typename: 'Account'
+    }
   }
 }
 
 const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
-  const { dataFeedId, articleId: inputArticleId, url, title } = event.input
-  const accountId = event.input.accountId ?? await getAccountIdForDataFeed(dataFeedId)
+  const { dataFeed, account, id: inputArticleId, url, title } = event.input
   const summarizationPrompt = event.summarizationPrompt
   const subsegment = tracer.getSegment()?.addNewSubsegment('### ingestArticle')
   if (subsegment !== undefined) {
@@ -71,12 +73,12 @@ const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
     }
     if (articleText !== undefined) {
       try {
-        await storeSiteContent(articleText, dataFeedId, articleId)
+        await storeSiteContent(articleText, dataFeed.id, articleId)
       } catch (error) {
         logger.error('Failed to store site contents to s3 ', {
           error,
           url,
-          dataFeedId,
+          dataFeed,
           articleId,
           title,
           articleText
@@ -104,12 +106,12 @@ const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
           }
           if (articleText !== undefined && articleText.length > 255) {
             try {
-              await storeSiteContent(articleText, dataFeedId, articleId)
+              await storeSiteContent(articleText, dataFeed.id, articleId)
             } catch (error) {
               logger.error('Failed to store site contents to s3 ', {
                 error,
                 url,
-                dataFeedId,
+                dataFeed,
                 articleId,
                 title,
                 articleText
@@ -132,9 +134,9 @@ const lambdaHander = async (event: ArticleIngestorInput): Promise<void> => {
         if (response !== undefined && response !== null) {
           await saveArticleData(
             response,
-            dataFeedId,
+            dataFeed.id,
             articleId,
-            accountId,
+            account.id,
             url,
             title,
             summarizationPrompt
@@ -274,24 +276,6 @@ const saveArticleData = async (
   const response = await dynamodbClient.send(command)
   logger.debug(JSON.stringify(response))
   metrics.addMetric('ArticlesSavedToDDB', MetricUnits.Count, 1)
-}
-
-const getAccountIdForDataFeed = async (dataFeedId: string): Promise<string> => {
-  const input: GetItemCommandInput = {
-    Key: {
-      dataFeedId: { S: dataFeedId },
-      sk: { S: 'dataFeed' }
-    },
-    TableName: DATA_FEED_TABLE,
-    AttributesToGet: ['accountId']
-  }
-  const command = new GetItemCommand(input)
-  const response = await dynamodbClient.send(command)
-  if (response.Item?.accountId.S !== undefined) {
-    return response.Item.accountId.S
-  } else {
-    throw new Error('No account id found for data feed ' + dataFeedId)
-  }
 }
 
 const checkForRedirectFallback = ($: cheerio.Root): string | null => {

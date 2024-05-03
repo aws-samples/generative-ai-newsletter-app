@@ -131,14 +131,14 @@ const storeNewsletterData = async (
   accountId: string,
   scheduleId: string,
   input: CreateNewsletterInput
-): Promise<Newsletter> => {
+): Promise<any> => {
   logger.debug('Storing newsletter data', {
     newsletterId,
     sk: 'newsletter#' + newsletterId,
     input
   })
   const createdAt = new Date().toISOString()
-  const { title, dataFeedIds, numberOfDaysToInclude, newsletterIntroPrompt, newsletterStyle } = input
+  const { title, dataFeeds: dataFeedIds, numberOfDaysToInclude, newsletterIntroPrompt, newsletterStyle } = input
   const isPrivate: boolean = input.isPrivate ?? true
   const commandInput: PutItemCommandInput = {
     TableName: NEWSLETTER_DATA_TABLE,
@@ -166,7 +166,7 @@ const storeNewsletterData = async (
     throw new Error('Error storing newsletter data')
   }
   return {
-    newsletterId,
+    id: newsletterId,
     title,
     dataFeedIds,
     numberOfDaysToInclude,

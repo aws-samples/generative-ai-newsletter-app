@@ -1,10 +1,13 @@
-import { type Context, util, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
+import { type Context, util } from '@aws-appsync/utils'
 
 export function request (ctx: Context): any {
-  const identity = ctx.identity as AppSyncIdentityCognito
-  if (identity?.sub === undefined) {
-    util.unauthorized()
-  }
+  ctx.stash.root = 'Newsletter'
   return {}
 }
 

@@ -1,22 +1,25 @@
-import { type Context, util, type AppSyncIdentityCognito, type LambdaRequest } from '@aws-appsync/utils'
+/*
+ *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
+import { type Context, util, type LambdaRequest, type AppSyncIdentityLambda } from '@aws-appsync/utils'
 import { type CreateNewsletterInput } from 'lib/shared/api'
 
 export function request (ctx: Context): LambdaRequest {
+  ctx.stash.root = 'Newsletter'
   const { args } = ctx
-  const identity = ctx.identity as AppSyncIdentityCognito
+  const identity = ctx.identity as AppSyncIdentityLambda
   const input = args.input as CreateNewsletterInput
-  const accountId = identity.claims['custom:Account'] ?? ctx.stash.accountId
-  if (input.isPrivate === undefined || input.isPrivate === null) {
-    input.isPrivate = true
-  }
   return {
     operation: 'Invoke',
     payload: {
+      input,
       createdBy: {
-        accountId,
-        userId: identity.sub
-      },
-      input
+        accountId: identity.resolverContext.accountId,
+        userId: identity.resolverContext.userId
+      }
     }
   }
 }

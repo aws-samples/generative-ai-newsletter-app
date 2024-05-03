@@ -1,14 +1,11 @@
-import { type Context, util, type AppSyncIdentityCognito } from '@aws-appsync/utils'
+import { type Context, util } from '@aws-appsync/utils'
 import { type GetDataFeedInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
   const { args } = ctx
-  const identity = ctx.identity as AppSyncIdentityCognito
+  ctx.stash.root = 'DataFeed'
   const input = args.input as GetDataFeedInput
-  if (identity?.sub === undefined) {
-    util.unauthorized()
-  }
-  if (input.dataFeedId === undefined || input.dataFeedId === null) {
+  if (input.id === undefined || input.id === null) {
     util.error('DataFeedID is required', 'ValidationException')
   }
   return {}

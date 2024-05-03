@@ -17,7 +17,7 @@ import {
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { PolicyStatement, Effect, Policy, PolicyDocument } from 'aws-cdk-lib/aws-iam'
-import { CfnPolicyTemplate, type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions'
+import { type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions'
 import { NagSuppressions } from 'cdk-nag'
 
 interface PermissionsProps {
@@ -28,18 +28,17 @@ interface PermissionsProps {
 
 export class Authorization extends Construct {
   public readonly policyStore: verifiedpermissions.CfnPolicyStore
-  public readonly createActionAuthCheckFunction: NodejsFunction
-  public readonly readActionAuthCheckFunction: NodejsFunction
-  public readonly updateActionAuthCheckFunction: NodejsFunction
-  public readonly listAuthFilterFunction: NodejsFunction
+  public readonly graphqlActionAuthorizerFunction: NodejsFunction
+  public readonly graphqlReadAuthorizerFunction: NodejsFunction
+  public readonly graphqlFilterReadAuthorizerFunction: NodejsFunction
+  public readonly avpAuthorizerValidationRegex: string = '^Bearer AUTH(.*)'
   readonly policyDefinitions: CfnPolicy[]
-  readonly policyTemplateDefinitions: CfnPolicyTemplate[]
   constructor (scope: Construct, id: string, props: PermissionsProps) {
     const { userPoolId, userPoolClientId, userPoolArn } = props
     super(scope, id)
 
-    const validationSettings = {
-      mode: 'OFF'
+    const validationSettings: verifiedpermissions.CfnPolicyStore.ValidationSettingsProperty = {
+      mode: 'STRICT'
     }
 
     const policyStore = new verifiedpermissions.CfnPolicyStore(
@@ -58,27 +57,13 @@ export class Authorization extends Construct {
 
     new verifiedpermissions.CfnIdentitySource(this, 'IdentitySource', {
       policyStoreId: policyStore.ref,
-      principalEntityType: 'User',
+      principalEntityType: 'GenAINewsletter::User',
       configuration: {
         cognitoUserPoolConfiguration: {
           userPoolArn,
           clientIds: [userPoolClientId]
         }
       }
-    })
-    const policyTemplatesFolder = path.join(__dirname, 'policy-templates')
-    this.policyTemplateDefinitions = fs.readdirSync(policyTemplatesFolder).filter(p => {
-      const f = path.join(policyTemplatesFolder, p)
-      return fs.statSync(f).isFile() && p.endsWith('.cedar')
-    }).map((p) => {
-      const f = path.join(policyTemplatesFolder, p)
-      const policyTemplate = new CfnPolicyTemplate(this, p, {
-        policyStoreId: policyStore.ref,
-        statement: fs.readFileSync(f).toString('utf-8')
-
-      })
-      policyTemplate.applyRemovalPolicy(RemovalPolicy.DESTROY)
-      return policyTemplate
     })
 
     const policiesFolder = path.join(__dirname, 'policies')
@@ -112,7 +97,7 @@ export class Authorization extends Construct {
       })
     })
 
-    const createActionAuthCheckFunction = new NodejsFunction(this, 'create-auth-check', {
+    const graphqlActionAuthorizerFunction = new NodejsFunction(this, 'action-authorization', {
       description: 'Function responsible for checking if requests are authorized to create items using Amazon Verified Permissions',
       handler: 'handler',
       architecture: Architecture.ARM_64,
@@ -126,14 +111,35 @@ export class Authorization extends Construct {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         USER_POOL_CLIENT_ID: userPoolClientId,
         USER_POOL_ID: userPoolId,
-        POLICY_STORE_ID: policyStore.ref
+        POLICY_STORE_ID: policyStore.ref,
+        VALIDATION_REGEX: this.avpAuthorizerValidationRegex
       }
     })
 
-    createActionAuthCheckFunction.role?.attachInlinePolicy(avpAccessPolicy)
+    graphqlActionAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy)
 
-    const readActionAuthCheckFunction = new NodejsFunction(this, 'read-auth-check', {
-      description: 'Function responsible for checking if requests are authorized to read items using Amazon Verified Permissions',
+    const graphqlReadAuthorizerFunction = new NodejsFunction(this, 'read-authorization', {
+      description: 'Function responsible for checking if requests are authorized to read/view data items using Amazon Verified Permissions',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      timeout: Duration.minutes(5),
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        USER_POOL_CLIENT_ID: userPoolClientId,
+        USER_POOL_ID: userPoolId,
+        POLICY_STORE_ID: policyStore.ref,
+        VALIDATION_REGEX: this.avpAuthorizerValidationRegex
+      }
+    })
+    graphqlReadAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy)
+
+    const graphqlFilterReadAuthorizerFunction = new NodejsFunction(this, 'list-filter-authorization', {
+      description: 'Function responsible for checking if requested resources are authorized for viewing data and filtering out unauthorized data from the list.',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -149,68 +155,19 @@ export class Authorization extends Construct {
         POLICY_STORE_ID: policyStore.ref
       }
     })
-    readActionAuthCheckFunction.role?.attachInlinePolicy(avpAccessPolicy)
+    graphqlFilterReadAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy)
 
-    const listAuthFilterFunction = new NodejsFunction(this, 'list-auth-filter', {
-      description: 'Function responsible for filtering list requests using Amazon Verified Permissions',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        USER_POOL_CLIENT_ID: userPoolClientId,
-        USER_POOL_ID: userPoolId,
-        POLICY_STORE_ID: policyStore.ref
-      }
-    })
-    listAuthFilterFunction.role?.attachInlinePolicy(avpAccessPolicy)
+    this.graphqlActionAuthorizerFunction = graphqlActionAuthorizerFunction
+    this.graphqlReadAuthorizerFunction = graphqlReadAuthorizerFunction
+    this.graphqlFilterReadAuthorizerFunction = graphqlFilterReadAuthorizerFunction
 
-    const updateAuthCheckFunction = new NodejsFunction(this, 'update-auth-check', {
-      description: 'Function responsible for checking if requests are authorized to update items using Amazon Verified Permissions',
-      handler: 'handler',
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      timeout: Duration.minutes(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        USER_POOL_CLIENT_ID: userPoolClientId,
-        USER_POOL_ID: userPoolId,
-        POLICY_STORE_ID: policyStore.ref
-      }
-    })
-    updateAuthCheckFunction.role?.attachInlinePolicy(avpAccessPolicy)
-
-    this.readActionAuthCheckFunction = readActionAuthCheckFunction
-    this.createActionAuthCheckFunction = createActionAuthCheckFunction
-    this.listAuthFilterFunction = listAuthFilterFunction
-    this.updateActionAuthCheckFunction = updateAuthCheckFunction
-
-    /**
-     * cdk_nag suppressions
-     */
     NagSuppressions.addResourceSuppressions(
-      [
-        createActionAuthCheckFunction,
-        readActionAuthCheckFunction,
-        listAuthFilterFunction,
-        updateAuthCheckFunction
-      ],
-      [
+      [graphqlActionAuthorizerFunction, graphqlReadAuthorizerFunction, graphqlFilterReadAuthorizerFunction], [
         {
           id: 'AwsSolutions-IAM5',
-          reason: 'Allowing CloudWatch & X-Ray to Operate'
+          reason: 'The policy is restricted to the verifiedpermissions:IsAuthorized and verifiedpermissions:GetSchema actions'
         }
-      ],
-      true
+      ], true
     )
   }
 }

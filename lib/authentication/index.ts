@@ -14,7 +14,8 @@ import {
   UserPool,
   UserPoolClient,
   StringAttribute,
-  type IUserPoolClient
+  type IUserPoolClient,
+  ClientAttributes
 } from 'aws-cdk-lib/aws-cognito'
 import { Construct } from 'constructs'
 import { Role, type IRole, PolicyStatement, Effect, Policy, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam'
@@ -116,8 +117,16 @@ export class Authentication extends Construct {
           postAuthentication: preTokenGenerationHookFunction
         }
       })
+      const clientWriteAttributes = new ClientAttributes().withStandardAttributes({
+        familyName: true,
+        givenName: true,
+        email: true
+      })
+      const clientReadAttributes = clientWriteAttributes.withCustomAttributes('Account')
       const userPoolClient = userPool.addClient('UserPoolClient', {
         generateSecret: false,
+        readAttributes: clientReadAttributes,
+        writeAttributes: clientWriteAttributes,
         authFlows: {
           adminUserPassword: true,
           userPassword: true,

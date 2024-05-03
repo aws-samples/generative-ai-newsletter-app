@@ -15,35 +15,34 @@ import DataFeedDetail from '../../components/data-feeds/data-feed-detail'
 import { useNavigate, useParams } from 'react-router-dom'
 import DataFeedArticleTable from '../../components/data-feeds/article-table'
 import BaseContentLayout from '../../components/base-content-layout'
-import { useCallback, useContext, useEffect, useState } from 'react'
-import { AppContext } from '../../common/app-context'
-import { ApiClient } from '../../common/api'
+// import { useCallback, useContext, useEffect, useState } from 'react'
+// import { AppContext } from '../../common/app-context'
 
 export default function DataFeedDetails() {
   const navigate = useNavigate()
-  const appContext = useContext(AppContext)
+  // const appContext = useContext(AppContext)
   const { dataFeedId } = useParams()
   const onFollow = useOnFollow()
-  const [canManageDataFeed, setCanManageDataFeed] = useState<boolean>(false)
-  const checkManagePermission = useCallback(async () => {
-    if (!appContext) {
-      return
-    }
-    if (!dataFeedId) {
-      return
-    }
-    const apiClient = new ApiClient(appContext)
-    try {
-      const canManageDataFeed = await apiClient.dataFeeds.canManageDataFeed({ dataFeedId })
-      setCanManageDataFeed(canManageDataFeed.data.canManageDataFeed)
-    } catch (e) {
-      setCanManageDataFeed(false)
-    }
-  }, [appContext, dataFeedId])
+  // const [canManageDataFeed, setCanManageDataFeed] = useState<boolean>(false)
+  // const checkManagePermission = useCallback(async () => {
+  //   if (!appContext) {
+  //     return
+  //   }
+  //   if (!dataFeedId) {
+  //     return
+  //   }
+  //   const apiClient = new ApiClient(appContext)
+  //   try {
+  //     const canManageDataFeed = await apiClient.dataFeeds.canManageDataFeed({ dataFeedId })
+  //     setCanManageDataFeed(canManageDataFeed.data.canManageDataFeed)
+  //   } catch (e) {
+  //     setCanManageDataFeed(false)
+  //   }
+  // }, [appContext, dataFeedId])
 
-  useEffect(() => {
-    checkManagePermission()
-  },[checkManagePermission, dataFeedId])
+  // useEffect(() => {
+  //   checkManagePermission()
+  // },[checkManagePermission, dataFeedId])
 
   return (
     <BaseAppLayout
@@ -75,7 +74,7 @@ export default function DataFeedDetails() {
               actions={
                 <SpaceBetween size="xs" direction="horizontal">
                   <Button
-                    disabled={!canManageDataFeed}
+                    // disabled={!canManageDataFeed}
                     onClick={() => {
                       navigate(`/feeds/${dataFeedId}/edit`)
                     }}

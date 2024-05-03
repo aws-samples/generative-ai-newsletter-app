@@ -23,11 +23,11 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 
 1. Clone the repository
 	```
-	git clone https://gitlab.aws.dev/awsrudy/genai-newsletter/
+	git clone https://github.com/aws-samples/generative-ai-newsletter-app/
 	```
 1. Change directory into the cloned repository
 	```
-	cd genai-newsletter
+	cd generative-ai-newsletter-app
 	```
 1. Install the project dependencies & build the project
 	```

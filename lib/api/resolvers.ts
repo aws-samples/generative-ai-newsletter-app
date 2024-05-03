@@ -26,7 +26,7 @@ interface ApiResolversProps extends ApiProps {
 export class ApiResolvers extends Construct {
   constructor (scope: Construct, id: string, props: ApiResolversProps) {
     super(scope, id)
-    const { api, dataFeedTable, newsletterTable, accountTable, unauthenticatedUserRole } = props
+    const { api, dataFeedTable, newsletterTable, unauthenticatedUserRole } = props
 
     const functionsPath = path.join(__dirname, 'functions')
     const getFunctionBundlingOptions = (
@@ -149,139 +149,6 @@ export class ApiResolvers extends Construct {
       name: 'DataFeedTableSource'
     })
 
-    const accountTableSourceRole = new Role(this, 'AccountTableSourceRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      inlinePolicies: {
-        AccountTableSourceRolePolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              actions: [
-                'dynamodb:Query'
-              ],
-              resources: [
-                accountTable.tableArn,
-                `${accountTable.tableArn}/index/${props.accountTableUserIndex}`
-              ]
-            })
-          ]
-        })
-      }
-    })
-
-    const accountTableSource = new DynamoDbDataSource(this, 'AccountTableSource', {
-      api,
-      table: accountTable,
-      serviceRole: accountTableSourceRole.withoutPolicyUpdates(),
-      name: 'AccountTableSource',
-      description: 'DynamoDB data source for account table'
-    })
-
-    const isAuthorizedReadDataSourceRole = new Role(this, 'IsAuthorizedReadDataSourceRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      inlinePolicies: {
-        IsAuthorizedReadDataSourceRolePolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              actions: [
-                'lambda:InvokeFunction'
-              ],
-              resources: [
-                props.functions.readActionAuthCheckFunction.functionArn
-              ]
-            })
-          ]
-        })
-      }
-    }
-    )
-
-    const isAuthorizedToReadLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedReadDataSource', {
-      api,
-      lambdaFunction: props.functions.readActionAuthCheckFunction,
-      name: 'isAuthorizedReadDataSource',
-      description: 'Lambda data source for isAuthorizedRead function',
-      serviceRole: isAuthorizedReadDataSourceRole.withoutPolicyUpdates()
-    })
-
-    const isAuthorizedCreateDataSourceRole = new Role(this, 'IsAuthorizedCreateDataSourceRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      inlinePolicies: {
-        IsAuthorizedCreateDataSourceRolePolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              actions: [
-                'lambda:InvokeFunction'
-              ],
-              resources: [
-                props.functions.createActionAuthCheckFunction.functionArn
-              ]
-            })
-          ]
-        })
-      }
-    }
-    )
-
-    const isAuthorizedToCreateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedCreateDataSource', {
-      api,
-      lambdaFunction: props.functions.createActionAuthCheckFunction,
-      name: 'isAuthorizedCreateDataSource',
-      description: 'Lambda data source for isAuthorizedCreate function',
-      serviceRole: isAuthorizedCreateDataSourceRole.withoutPolicyUpdates()
-    })
-
-    const listAuthFilterLambdaDataSourceRole = new Role(this, 'ListAuthFilterLambdaDataSourceRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      inlinePolicies: {
-        ListAuthFilterLambdaDataSourceRolePolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              actions: [
-                'lambda:InvokeFunction'
-              ],
-              resources: [
-                props.functions.listAuthFilterFunction.functionArn
-              ]
-            })
-          ]
-        })
-      }
-    })
-
-    const listAuthFilterLambdaDataSource = new LambdaDataSource(this, 'listAuthFilterDataSource', {
-      api,
-      lambdaFunction: props.functions.listAuthFilterFunction,
-      name: 'listAuthFilterDataSource',
-      description: 'Lambda data source for listAuthFilter function',
-      serviceRole: listAuthFilterLambdaDataSourceRole.withoutPolicyUpdates()
-    })
-
-    const isAuthorizedToUpdateLambdaDataSourceRole = new Role(this, 'IsAuthorizedToUpdateLambdaDataSourceRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-      inlinePolicies: {
-        IsAuthorizedToUpdateLambdaDataSourceRolePolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              actions: [
-                'lambda:InvokeFunction'
-              ],
-              resources: [
-                props.functions.updateActionAuthCheckFunction.functionArn
-              ]
-            })
-          ]
-        })
-      }
-    })
-
-    const isAuthorizedToUpdateLambdaDataSource = new LambdaDataSource(this, 'isAuthorizedUpdateDataSource', {
-      api,
-      lambdaFunction: props.functions.updateActionAuthCheckFunction,
-      name: 'isAuthorizedUpdateDataSource',
-      description: 'Lambda data source for isAuthorizedUpdate function',
-      serviceRole: isAuthorizedToUpdateLambdaDataSourceRole.withoutPolicyUpdates()
-    })
-
     const dataFeedSubscriberLambdaSourceRole = new Role(this, 'DataFeedSubscriberLambdaSourceRole', {
       assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
       inlinePolicies: {
@@ -388,52 +255,59 @@ export class ApiResolvers extends Construct {
       serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates()
     })
 
-    /** AppSync Resolver Pipeline Functions */
-
-    const isAuthorizedToReadFunction = new AppsyncFunction(this,
-      'IsAuthorizedFunction',
-      {
-        name: 'isAuthorizedToRead',
-        api,
-        dataSource: isAuthorizedToReadLambdaDataSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('isAuthorizedToRead', 'pipeline')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      })
-
-    const isAuthorizedToCreateFunction = new AppsyncFunction(this,
-      'IsAuthorizedToCreate', {
-        name: 'isAuthorizedToCreate',
-        api,
-        dataSource: isAuthorizedToCreateLambdaDataSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('isAuthorizedToCreate', 'pipeline')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      })
-
-    const filterListByAuthorization = new AppsyncFunction(this,
-      'FilterListByAuthorization', {
-        name: 'filterListByAuthorization',
-        api,
-        dataSource: listAuthFilterLambdaDataSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('filterListByAuthorization', 'pipeline')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      })
-
-    const isAuthorizedToUpdateFunction = new AppsyncFunction(this,
-      'IsAuthorizedToUpdate', {
-        name: 'isAuthorizedToUpdate',
-        api,
-        dataSource: isAuthorizedToUpdateLambdaDataSource,
-        runtime: FunctionRuntime.JS_1_0_0,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('isAuthorizedToUpdate', 'pipeline')
+    const isAuthorizedFunctionSourceRole = new Role(this, 'IsAuthorizedFunctionSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        IsAuthInvokePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.graphqlReadAuthorizerFunction.functionArn
+              ]
+            })
+          ]
         })
-      })
+      }
+    })
+
+    const isAuthorizedFunctionSource = new LambdaDataSource(this, 'IsAuthorizedFunctionSource', {
+      api,
+      lambdaFunction: props.functions.graphqlReadAuthorizerFunction,
+      name: 'isAuthorizedFunctionSource',
+      description: 'Lambda data source for isAuthorized function',
+      serviceRole: isAuthorizedFunctionSourceRole.withoutPolicyUpdates()
+    })
+
+    const filterListByAuthorizationFunctionSourceRole = new Role(this, 'FilterListByAuthFunctionSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        FilterIsAuthInvokePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.graphqlFilterReadAuthorizerFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    })
+
+    const filterListByAuthorizationSource = new LambdaDataSource(this, 'FilterIsAuthorizedFunctionSource', {
+      api,
+      lambdaFunction: props.functions.graphqlFilterReadAuthorizerFunction,
+      name: 'filterIsAuthorizedFunctionSource',
+      description: 'Lambda data source for isAuthorized function',
+      serviceRole: filterListByAuthorizationFunctionSourceRole.withoutPolicyUpdates()
+    })
+
+    /** AppSync Resolver Pipeline Functions */
 
     const getNewsletterFunction = new AppsyncFunction(
       this,
@@ -491,19 +365,19 @@ export class ApiResolvers extends Construct {
       }
     )
 
-    const listNewslettersById = new AppsyncFunction(
-      this,
-      'ListNewslettersById',
-      {
-        name: 'listNewslettersById',
-        api,
-        dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listNewslettersById', 'pipeline')
-        }),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+    // const listNewslettersById = new AppsyncFunction(
+    //   this,
+    //   'ListNewslettersById',
+    //   {
+    //     name: 'listNewslettersById',
+    //     api,
+    //     dataSource: newsletterTableSource,
+    //     code: Code.fromAsset(functionsPath, {
+    //       bundling: getFunctionBundlingOptions('listNewslettersById', 'pipeline')
+    //     }),
+    //     runtime: FunctionRuntime.JS_1_0_0
+    //   }
+    // )
 
     const listPublicationsFunction = new AppsyncFunction(
       this,
@@ -670,16 +544,16 @@ export class ApiResolvers extends Construct {
       }
     )
 
-    const getUserSubscriptionStatusFunction = new AppsyncFunction(
+    const checkSubscriptionToNewsletterFunction = new AppsyncFunction(
       this,
-      'GetUserSubscriptionStatusFunction',
+      'checkSubscriptionToNewsletterFunction',
       {
-        name: 'getUserSubscriptionStatus',
+        name: 'checkSubscriptionToNewsletter',
         api,
         dataSource: newsletterTableSource,
         code: Code.fromAsset(functionsPath, {
           bundling: getFunctionBundlingOptions(
-            'getUserSubscriptionStatus', 'pipeline'
+            'checkSubscriptionToNewsletter', 'pipeline'
           )
         }),
         runtime: FunctionRuntime.JS_1_0_0
@@ -728,19 +602,25 @@ export class ApiResolvers extends Construct {
       }
     )
 
-    const getAccountIdForUser = new AppsyncFunction(
-      this,
-      'GetAccountIdforUserFunction',
-      {
-        name: 'getAccountIdforUser',
-        api,
-        dataSource: accountTableSource,
-        runtime: FunctionRuntime.JS_1_0_0,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getAccountIdForUser', 'pipeline')
-        })
-      }
-    )
+    const isAuthorized = new AppsyncFunction(this, 'isAuthorized', {
+      name: 'isAuthorized',
+      api,
+      dataSource: isAuthorizedFunctionSource,
+      runtime: FunctionRuntime.JS_1_0_0,
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('isAuthorized', 'pipeline')
+      })
+    })
+
+    const filterListByAuthorization = new AppsyncFunction(this, 'filterListByAuthorization', {
+      name: 'filterListByAuthorization',
+      api,
+      dataSource: filterListByAuthorizationSource,
+      runtime: FunctionRuntime.JS_1_0_0,
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('filterListByAuthorization', 'pipeline')
+      })
+    })
 
     /** AppSync GraphQL API Resolvers */
 
@@ -752,7 +632,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction]
+      pipelineConfig: [getNewsletterFunction, isAuthorized]
     })
 
     new Resolver(this, 'ListNewslettersResolver', {
@@ -763,7 +643,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listNewsletters', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
+      pipelineConfig: [listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
     })
 
     new Resolver(this, 'ListPublicationsResolver', {
@@ -774,7 +654,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listPublications', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, listPublicationsFunction]
+      pipelineConfig: [getNewsletterFunction, listPublicationsFunction, filterListByAuthorization]
     })
 
     new Resolver(this, 'getPublicationResolverFunction', {
@@ -785,7 +665,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getPublication', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getPublication, isAuthorizedToReadFunction]
+      pipelineConfig: [getPublication]
     })
 
     new Resolver(this, 'UpdateNewsletterResolver', {
@@ -796,7 +676,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('updateNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction, updateNewsletterResolverFunction]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, updateNewsletterResolverFunction]
     })
 
     new Resolver(this, 'ListDataFeedsResolver', {
@@ -807,7 +687,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listDataFeeds', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
+      pipelineConfig: [listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
     })
 
     new Resolver(this, 'GetDataFeedResolver', {
@@ -818,10 +698,9 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getDataFeed', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction]
+      pipelineConfig: [getDataFeedFunction, isAuthorized]
     })
 
-    // TODO - Review authorizations around this.
     new Resolver(this, 'UpdateDataFeedResolver', {
       api,
       typeName: 'Mutation',
@@ -830,7 +709,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('updateDataFeed', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction, updateDataFeedFunction]
+      pipelineConfig: [getDataFeedFunction, isAuthorized, updateDataFeedFunction]
     })
 
     new Resolver(this, 'ListArticlesResolver', {
@@ -841,7 +720,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('listArticles', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToReadFunction, listArticlesFunction]
+      pipelineConfig: [getDataFeedFunction, isAuthorized, listArticlesFunction]
     })
 
     new Resolver(this, 'FlagArticleResolver', {
@@ -866,7 +745,7 @@ export class ApiResolvers extends Construct {
       code: Code.fromAsset(functionsPath, {
         bundling: getFunctionBundlingOptions('createDataFeed', 'resolver')
       }),
-      pipelineConfig: [getAccountIdForUser, isAuthorizedToCreateFunction, createDataFeedFunction],
+      pipelineConfig: [createDataFeedFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -888,7 +767,7 @@ export class ApiResolvers extends Construct {
       code: Code.fromAsset(functionsPath, {
         bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'resolver')
       }),
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction, subscribeToNewsletterFunction],
+      pipelineConfig: [getNewsletterFunction, isAuthorized, subscribeToNewsletterFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -900,7 +779,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, unsubscribeFromNewsletter]
+      pipelineConfig: [unsubscribeFromNewsletter]
     })
 
     const externalUnsubscribeResolver = new Resolver(this, 'ExternalUnsubscriberResolver', {
@@ -923,15 +802,15 @@ export class ApiResolvers extends Construct {
       ]
     }))
 
-    new Resolver(this, 'GetSubscriptionStatusResolver', {
+    new Resolver(this, 'CheckSubscriptionToNewsletterResolver', {
       api,
       typeName: 'Query',
-      fieldName: 'getUserSubscriptionStatus',
+      fieldName: 'checkSubscriptionToNewsletter',
       code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('getUserSubscriptionStatus', 'resolver')
+        bundling: getFunctionBundlingOptions('checkSubscriptionToNewsletter', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, getUserSubscriptionStatusFunction]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, checkSubscriptionToNewsletterFunction]
     })
 
     new Resolver(this, 'ListUserSubscriptionsResolver', {
@@ -943,11 +822,31 @@ export class ApiResolvers extends Construct {
       }),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
-        getAccountIdForUser,
         listUserSubscriptionsFunction,
-        listNewslettersById,
         filterListByAuthorization
       ]
+    })
+
+    new Resolver(this, 'CanUpdateNewsletterResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'canUpdateNewsletter',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('canUpdateNewsletter', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getNewsletterFunction, isAuthorized]
+    })
+
+    new Resolver(this, 'CanUpdateDataFeedResolver', {
+      api,
+      typeName: 'Query',
+      fieldName: 'canUpdateDataFeed',
+      code: Code.fromAsset(functionsPath, {
+        bundling: getFunctionBundlingOptions('canUpdateDataFeed', 'resolver')
+      }),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [getDataFeedFunction, isAuthorized]
     })
 
     new Resolver(this, 'getNewsletterSubscriberStatsResolver', {
@@ -958,29 +857,7 @@ export class ApiResolvers extends Construct {
         bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'resolver')
       }),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToReadFunction, getNewsletterSubscriberStatsFunction]
-    })
-
-    new Resolver(this, 'canManageNewsletterResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'canManageNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('canManageNewsletter', 'resolver')
-      }),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getNewsletterFunction, isAuthorizedToUpdateFunction]
-    })
-
-    new Resolver(this, 'canManageDataFeedResolver', {
-      api,
-      typeName: 'Query',
-      fieldName: 'canManageDataFeed',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('canManageDataFeed', 'resolver')
-      }),
-      runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getAccountIdForUser, getDataFeedFunction, isAuthorizedToUpdateFunction]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, getNewsletterSubscriberStatsFunction]
     })
   }
 }

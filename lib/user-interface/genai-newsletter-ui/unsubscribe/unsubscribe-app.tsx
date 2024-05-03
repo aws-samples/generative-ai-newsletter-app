@@ -7,9 +7,9 @@ import { Box, Button, Container, Grid, Header, StatusIndicator } from "@cloudsca
 import { AppConfig } from "../src/common/types";
 import { useCallback, useEffect, useState } from "react";
 import { Amplify } from "aws-amplify";
-import { generateClient } from "@aws-amplify/api";
-import { ApiClient } from "../src/common/api";
 import { useSearchParams } from "react-router-dom";
+import { externalUnsubscribeFromNewsletter } from "../../../../lib/shared/api/graphql/mutations";
+import { generateAuthorizedClient } from "../src/common/helpers";
 
 export function UnsubscribeApp() {
 	const [searchParams] = useSearchParams()
@@ -23,8 +23,16 @@ export function UnsubscribeApp() {
 		const newsletterId = searchParams.get('newsletterId')
 		const userId = searchParams.get('userId')
 		if (config !== null && newsletterId !== null && userId !== null) {
-			const apiClient = new ApiClient(config)
-			const success = await apiClient.newsletters.externalUnsubscribeFromNewsletter({ newsletterId, userId })
+			const client = await generateAuthorizedClient()
+			const success = await client.graphql({
+				query: externalUnsubscribeFromNewsletter,
+				variables: {
+					input: {
+						id: newsletterId,
+						userId: userId
+					}
+				}
+			})
 			if (success) {
 				setSuccess(true)
 			} else {
@@ -44,7 +52,7 @@ export function UnsubscribeApp() {
 					...awsExports
 				})
 				if (awsExports !== null) {
-					awsExports.apiClient = generateClient()
+					awsExports.apiClient = await generateAuthorizedClient()
 				}
 				setConfig(awsExports)
 				console.debug('configuration loaded')

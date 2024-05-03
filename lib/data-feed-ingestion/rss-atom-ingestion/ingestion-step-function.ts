@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT-0
  */
 import * as cdk from 'aws-cdk-lib'
-import { type StackProps } from 'aws-cdk-lib'
+import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import {
@@ -126,6 +126,7 @@ export class IngestionStepFunction extends Construct {
         resultSelector: {
           url: JsonPath.stringAt('$.Item.url.S'),
           id: JsonPath.stringAt('$.Item.dataFeedId.S'),
+          accountId: JsonPath.stringAt('$.Item.accountId.S'),
           feedType: JsonPath.stringAt('$.Item.feedType.S'),
           summarizationPrompt: JsonPath.stringAt('$.Item.summarizationPrompt.S')
         },
@@ -188,7 +189,10 @@ export class IngestionStepFunction extends Construct {
         'State machine responsible for ingesting data from RSS feeds, summarizing the data, and storing the data',
       definitionBody: DefinitionBody.fromChainable(definition),
       logs: {
-        destination: new LogGroup(this, 'IngestionStateMachineLogGroup'),
+        destination: new LogGroup(this, 'IngestionStateMachineLogGroup', {
+          logGroupName: `/aws/vendedlogs/states/${Stack.of(this).stackName}-ingestion-state-machine-log-group`,
+          removalPolicy: RemovalPolicy.DESTROY
+        }),
         includeExecutionData: true,
         level: LogLevel.ALL
       },

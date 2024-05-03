@@ -2,18 +2,17 @@ import {
   type Context,
   util,
   type DynamoDBGetItemRequest,
-  type AppSyncIdentityCognito
+  type AppSyncIdentityLambda
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
-  const identity = ctx.identity as AppSyncIdentityCognito
-  const { newsletterId } = ctx.args.input
-  // const accountId = identity.claims['custom:Account'] ?? ctx.stash.accountId
+  const identity = ctx.identity as AppSyncIdentityLambda
+  const { id } = ctx.args.input
   return ddb.get({
     key: {
-      newsletterId,
-      sk: 'subscriber#' + identity.sub
+      newsletterId: id,
+      sk: 'subscriber#' + identity.resolverContext.userId
     }
   })
 }

@@ -1,6 +1,7 @@
  #Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  # SPDX-License-Identifier: MIT-0
  
+ 
 
 # ENUMS
 enum DataFeedType {
@@ -13,38 +14,51 @@ enum ArticleSummaryType {
   KEYWORDS
 }
 
+enum AuthGranted {
+  READ_ONLY,
+  SUBSCRIBE,
+  MANAGE
+}
 
 # TYPES
 
-type Newsletter @aws_cognito_user_pools {
-  newsletterId: String!
-  accountId: String!
-  title: String!
-  numberOfDaysToInclude: Int!
-  dataFeedIds: [String!]
+type Account {
+  id: ID!
+}
+
+type User {
+  id: ID!
+  account: Account
+}
+
+type Newsletter {
+  id: ID!
+  account: Account
+  title: String
+  numberOfDaysToInclude: Int
+  subscriberCount: Int
+  dataFeedIds: [ID!]
   dataFeeds: [DataFeed]
-  isPrivate: Boolean!
-  scheduleId: String!
-  createdAt: AWSDateTime!
+  isPrivate: Boolean
+  createdAt: AWSDateTime
   newsletterIntroPrompt: String
   articleSummaryType: ArticleSummaryType
   newsletterStyle: AWSJSON
+  subscribers: [User]
+  currentUserSubscribed: Boolean
+  authGranted: AuthGranted
+  scheduleId: String
 }
 
-type Newsletters @aws_cognito_user_pools {
-  newsletters: [Newsletter!]!
+type Newsletters {
+  items: [Newsletter]!
   nextToken: String
 }
 
-type NewsletterSubscriptions @aws_cognito_user_pools {
-  newsletters: [Newsletter]!
-  subscribedCount: Int!
-}
-
-type DataFeed @aws_cognito_user_pools {
-  dataFeedId: String!
-  accountId: String
-  url: String!
+type DataFeed  {
+  id: ID!
+  account: Account!
+  url: String
   feedType: DataFeedType!
   createdAt: AWSDateTime
   enabled: Boolean
@@ -53,62 +67,59 @@ type DataFeed @aws_cognito_user_pools {
   description: String
   summarizationPrompt: String
   isPrivate: Boolean!
+  authGranted: AuthGranted
 }
 
-type DataFeeds @aws_cognito_user_pools {
-  dataFeeds: [DataFeed]
+type DataFeeds {
+  items: [DataFeed]
   nextToken: String
 }
 
-type Publication @aws_cognito_user_pools {
+type Publication {
+  id: ID!
   newsletterId: String
-  publicationId: String!
-  accountId: String
-  campaignId: String
-  createdAt: AWSDateTime!
+  account: Account
+  createdAt: AWSDateTime
   htmlPath: String
   textPath: String
 }
 
-type Publications @aws_cognito_user_pools {
+type Publications {
   items: [Publication]
   nextToken: String
 }
 
-type Article @aws_cognito_user_pools {
-  dataFeedId: String!
-  articleId: String!
-  accountId: String
-  url: String!
-  createdAt: AWSDateTime!
+type Article {
+  id: ID!
+  dataFeedId: ID!
+  dataFeed: DataFeed
+  account: Account!
+  url: String
+  createdAt: AWSDateTime
   title: String!
   providedDescription: String
   providedCategories: String
   publishDate: AWSDateTime
   summarizationPrompt: String
   flaggedContent: Boolean
-  articleSummary: String @deprecated
   keywords: String
   shortSummary: String
   longSummary: String
+  authGranted: AuthGranted
 }
 
-type Articles @aws_cognito_user_pools {
-  articles: [Article]
+type Articles {
+  items: [Article]!
   nextToken: String
 }
 
-type Subscriber @aws_cognito_user_pools {
-  newsletterId: String!
-}
-
-type NewsletterUserSubscriberStats @aws_cognito_user_pools {
-  subscriberCount: Int!
+type NewsletterSubscriberStats {
+  id: ID!
+  count: Int
 }
 
 
 # INPUTS
-
 input CreateDataFeedInput {
   url: String!
   title: String!
@@ -118,15 +129,12 @@ input CreateDataFeedInput {
   isPrivate: Boolean
 }
 
-input CanManageDataFeedInput {
-  dataFeedId: String!
-}
 
 input UpdateDataFeedInput {
-  dataFeedId: String!
+  id: ID!
   url: String
   enabled: Boolean
-  title: String!
+  title: String
   description: String
   summarizationPrompt: String
   isPrivate: Boolean
@@ -135,22 +143,18 @@ input UpdateDataFeedInput {
 input CreateNewsletterInput {
   title: String!
   numberOfDaysToInclude: Int!
-  dataFeedIds: [String!]!
+  dataFeeds: [ID!]!
   isPrivate: Boolean
   newsletterIntroPrompt: String
   articleSummaryType: ArticleSummaryType
   newsletterStyle: AWSJSON
 }
 
-input CanManageNewsletterInput {
-  newsletterId: String!
-}
-
 input UpdateNewsletterInput {
-  newsletterId: String!
+  id: ID!
   title: String
   numberOfDaysToInclude: Int
-  dataFeedIds: [String]
+  dataFeeds: [ID]
   isPrivate: Boolean
   newsletterIntroPrompt: String
   articleSummaryType: String
@@ -160,7 +164,7 @@ input UpdateNewsletterInput {
 input ListNewslettersInput {
   includeDiscoverable: Boolean
   includeOwned: Boolean
-  includeShared: Boolean
+  includeShared: Boolean 
 }
 
 input ListDataFeedsInput {
@@ -170,74 +174,73 @@ input ListDataFeedsInput {
 }
 
 input SubscribeToNewsletterInput {
-  newsletterId: String!
+  id: ID!
 }
 
 input UnsubscribeFromNewsletterInput {
-  newsletterId: String!
+  id: ID!
 }
 
 input ExternalUnsubscribeFromNewsletter {
-  newsletterId: String!
-  userId: String!
+  id: ID!
+  userId: ID!
 }
 
-
+input GetNewsletterSubscriberStatsInput {
+  id: ID!
+}
 
 input GetNewsletterInput {
-  newsletterId: String!
+  id: ID!
 }
 
 input GetDataFeedInput {
-  dataFeedId: String!
+  id: ID!
 }
 
 input ListPublicationsInput {
-  newsletterId: String!
+  id: ID!
 }
 
 input ListArticlesInput {
-  dataFeedId: String!
+  id: ID!
 }
 
 input GetPublicationInput {
-  newsletterId: String!
-  publicationId: String!
+  id: ID!
+  newsletterId: ID!
 }
 
 
 input FlagArticleInput {
-  dataFeedId: String!
-  articleId: String!
+  id: ID!
+  dataFeedId: ID!
   flaggedContent: Boolean!
 }
 
-input GetUserSubscriptionStatusInput {
-  newsletterId: String!
+input CheckSubscriptionToNewsletterInput {
+  id: ID!
 }
 
-input GetNewsletterSubscriberStatsInput {
-  newsletterId: String!
+input CanUpdateNewsletterInput {
+  id: ID!
 }
+
+input CanUpdateDataFeedInput {
+  id: ID!
+}
+
+
 
 type Mutation {
-  createDataFeed(
-    input: CreateDataFeedInput!
-  ): DataFeed @aws_cognito_user_pools
-  createNewsletter(input: CreateNewsletterInput!): Newsletter @aws_cognito_user_pools 
-  subscribeToNewsletter(input: SubscribeToNewsletterInput!): Boolean 
-    @aws_cognito_user_pools
-  unsubscribeFromNewsletter(input: UnsubscribeFromNewsletterInput): Boolean
-    @aws_cognito_user_pools
-  externalUnsubscribeFromNewsletter(input: ExternalUnsubscribeFromNewsletter): Boolean! @aws_cognito_user_pools 
-  updateNewsletter(
-    input: UpdateNewsletterInput!
-  ): Boolean @aws_cognito_user_pools
-  updateDataFeed(
-    input: UpdateDataFeedInput!
-  ): Boolean @aws_cognito_user_pools
-  flagArticle(input: FlagArticleInput!): Boolean 
-    @aws_cognito_user_pools 
+  createDataFeed(input: CreateDataFeedInput!): DataFeed @aws_lambda
+  createNewsletter(input: CreateNewsletterInput!): Newsletter @aws_lambda
+  subscribeToNewsletter(input: SubscribeToNewsletterInput!): Boolean @aws_lambda
+  unsubscribeFromNewsletter(input: UnsubscribeFromNewsletterInput): Boolean @aws_lambda
+  updateNewsletter(input: UpdateNewsletterInput!): Boolean @aws_lambda
+  updateDataFeed(input: UpdateDataFeedInput!): Boolean @aws_lambda
+  flagArticle(input: FlagArticleInput!): Boolean @aws_lambda
+  externalUnsubscribeFromNewsletter(input: ExternalUnsubscribeFromNewsletter): Boolean @aws_lambda
 }
 
 type Query {
@@ -245,42 +248,36 @@ type Query {
     input: ListNewslettersInput
     nextToken: String
     limit: Int
-  ): Newsletters! @aws_cognito_user_pools 
-  getNewsletter(input: GetNewsletterInput): Newsletter! @aws_cognito_user_pools
+  ): Newsletters @aws_lambda 
+  getNewsletter(input: GetNewsletterInput): Newsletter @aws_lambda
   listDataFeeds(
     input: ListDataFeedsInput
     nextToken: String
     limit: Int
-  ): DataFeeds! @aws_cognito_user_pools
+  ): DataFeeds @aws_lambda
   getDataFeed(
     input: GetDataFeedInput
-  ): DataFeed @aws_cognito_user_pools 
+  ): DataFeed @aws_lambda 
   listArticles(
     input: ListArticlesInput
     nextToken: String
     limit: Int
-  ): Articles @aws_cognito_user_pools 
-  getPublication(input: GetPublicationInput): Publication!
-    @aws_cognito_user_pools 
+  ): Articles @aws_lambda 
+  getPublication(input: GetPublicationInput): Publication
+    @aws_lambda
   listPublications(
     input: ListPublicationsInput
     nextToken: String
     limit: Int
-  ): Publications @aws_cognito_user_pools
-  getUserSubscriptionStatus(
-    input: GetUserSubscriptionStatusInput
-  ): Boolean @aws_cognito_user_pools 
-  listUserSubscriptions(nextToken: String, limit: Int): NewsletterSubscriptions!
-    @aws_cognito_user_pools 
-  getNewsletterSubscriberStats(
-    input: GetNewsletterSubscriberStatsInput
-  ): NewsletterUserSubscriberStats @aws_cognito_user_pools
-  canManageNewsletter(
-    input: CanManageNewsletterInput
-  ): Boolean! @aws_cognito_user_pools
-  canManageDataFeed(
-    input: CanManageDataFeedInput
-  ): Boolean! @aws_cognito_user_pools
+  ): Publications @aws_lambda
+  checkSubscriptionToNewsletter(
+    input: CheckSubscriptionToNewsletterInput
+  ): Boolean @aws_lambda 
+  listUserSubscriptions(nextToken: String, limit: Int): Newsletters
+    @aws_lambda
+  canUpdateNewsletter(input: CanUpdateNewsletterInput): Boolean @aws_lambda
+  canUpdateDataFeed(input: CanUpdateDataFeedInput): Boolean @aws_lambda
+  getNewsletterSubscriberStats(input: GetNewsletterSubscriberStatsInput): NewsletterSubscriberStats @aws_lambda
 }
 
 schema {

@@ -7,7 +7,6 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useCollection } from '@cloudscape-design/collection-hooks'
 import { Newsletter } from '../../../../../shared/api/API'
 import { AppContext } from '../../common/app-context'
-import { ApiClient } from '../../common/api'
 import {
   Alert,
   Box,
@@ -23,6 +22,8 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useOnFollow from '../../common/hooks/use-on-follow'
 import { UserContext } from '../../common/user-context'
+import { listNewsletters, listUserSubscriptions } from '../../../../../shared/api/graphql/queries'
+import { generateAuthorizedClient } from '../../common/helpers'
 
 export interface ListableNewslettersTableProps {
   title?: string
@@ -57,21 +58,32 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
     if (!appContext) {
       return
     }
-    const apiClient = new ApiClient(appContext)
+    const apiClient = await generateAuthorizedClient()
     try {
       setSubscribedCount(0)
       if (includeSubscriptions === true) {
         const result =
-          await apiClient.newsletters.listUserSubscriptions()
+          await apiClient.graphql({
+            query: listUserSubscriptions
+          })
         if (result.data !== undefined && result.errors === undefined) {
-          setNewsletters(result.data.listUserSubscriptions.newsletters as Newsletter[])
-          setSubscribedCount(result.data.listUserSubscriptions.subscribedCount)
+          setNewsletters(result.data.listUserSubscriptions.items as Newsletter[])
+          setSubscribedCount(result.data.listUserSubscriptions.items.length)
         }
       } else {
         const result =
-          await apiClient.newsletters.listNewsletters({ includeDiscoverable, includeOwned, includeShared })
+          await apiClient.graphql({
+            query: listNewsletters,
+            variables: {
+              input: {
+                includeDiscoverable,
+                includeOwned,
+                includeShared
+              }
+            }
+          })
         if (result.data !== undefined && result.errors === undefined) {
-          setNewsletters(result.data.listNewsletters.newsletters)
+          setNewsletters(result.data.listNewsletters.items as Newsletter[])
         }
       }
 
@@ -92,7 +104,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
         if (!selectedNewsletter) {
           return
         }
-        navigate(`/newsletters/${selectedNewsletter?.newsletterId}/edit`)
+        navigate(`/newsletters/${selectedNewsletter?.id}/edit`)
         break
       default:
         break
@@ -103,14 +115,14 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
     {
       id: 'accountId',
       header: 'Account ID',
-      cell: (item: Newsletter) => item.accountId,
+      cell: (item: Newsletter) => item.account?.id,
       isHeaderRow: true
     },
     {
       id: 'name',
       header: 'Newsletter Name',
       cell: (item: Newsletter) => (
-        <Link onFollow={onFollow} href={`/newsletters/${item.newsletterId}`}>
+        <Link onFollow={onFollow} href={`/newsletters/${item.id}`}>
           {item.title}
         </Link>
       ),
@@ -136,7 +148,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
     {
       id: 'Newsletter Created',
       header: 'Newsletter Created',
-      cell: (item: Newsletter) => new Date(item.createdAt).toUTCString()
+      cell: (item: Newsletter) => new Date(item.createdAt ?? "").toUTCString()
     }
   ]
   const newslettersTableColumnDisplay = [
@@ -211,7 +223,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
         selectedItems={selectedNewsletter ? [selectedNewsletter] : []}
         onSelectionChange={({ detail }) => {
           setSelectedNewsletter(detail.selectedItems[0] as Newsletter)
-          setEditDisabled(detail.selectedItems[0]?.accountId !== userContext?.accountId)
+          setEditDisabled(detail.selectedItems[0]?.account?.id !== userContext?.accountId)
         }}
         header={
           <Header

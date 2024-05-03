@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT-0
  */
 import * as cdk from 'aws-cdk-lib'
-import { type StackProps } from 'aws-cdk-lib'
+import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib'
 import { type Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import {
@@ -104,7 +104,10 @@ export class DataFeedPollStepFunction extends Construct {
         "State machine responsible for starting each feed's ingestion process",
       definitionBody: DefinitionBody.fromChainable(definition),
       logs: {
-        destination: new LogGroup(this, 'DataFeedPollStepFunction'),
+        destination: new LogGroup(this, 'DataFeedPollStepFunction', {
+          logGroupName: `/aws/vendedlogs/states/${Stack.of(this).stackName}-data-feed-poll-step-function`,
+          removalPolicy: RemovalPolicy.DESTROY
+        }),
         level: LogLevel.ALL,
         includeExecutionData: true
       },

@@ -28,11 +28,11 @@ export function request (ctx: Context): DynamoDBUpdateItemRequest {
     )
     updates = updates + 1
   }
-  if (input.dataFeedIds != null) {
+  if (input.dataFeeds != null) {
     expression += '#dataFeedIds = :dataFeedIds, '
     expressionNames['#dataFeedIds'] = 'dataFeedIds'
     expressionValues[':dataFeedIds'] = util.dynamodb.toDynamoDB(
-      input.dataFeedIds
+      [...input.dataFeeds]
     )
     updates = updates + 1
   }
@@ -72,7 +72,7 @@ export function request (ctx: Context): DynamoDBUpdateItemRequest {
     return {
       operation: 'UpdateItem',
       key: {
-        newsletterId: util.dynamodb.toDynamoDB(input.newsletterId),
+        newsletterId: util.dynamodb.toDynamoDB(input.id),
         sk: util.dynamodb.toDynamoDB('newsletter')
       },
       update: {
@@ -82,7 +82,7 @@ export function request (ctx: Context): DynamoDBUpdateItemRequest {
       }
     }
   }
-  util.error(`No updates to perform for newsletter ${input.newsletterId}`)
+  util.error(`No updates to perform for newsletter ${input.id}`)
 }
 
 export function response (ctx: Context): unknown {

@@ -6,6 +6,7 @@ import {
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
 import { type ListDataFeedsInput } from 'lib/shared/api'
+import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const dataFeedTypeIndex = 'type-index' // TODO - Make ENV variable
@@ -31,9 +32,16 @@ export function response (ctx: Context): any {
   if (ctx.error !== undefined && ctx.error !== null) {
     util.error(ctx.error.message, ctx.error.type)
   }
-  if (ctx.prev?.result?.items !== undefined) {
-    ctx.result.items.push(...ctx.prev.result.items)
+  let result = ctx.result
+  result = addAccountToItems(result)
+  result = convertFieldIdsToObjectIds(result, 'dataFeedId')
+  if (ctx.prev?.result?.items !== undefined && result.items !== undefined) {
+    result.items.push(...ctx.prev.result.items)
+  } else if (ctx.prev?.result?.items !== undefined) {
+    result.items = [...ctx.prev.result.items]
   }
-
-  return ctx.result
+  if (result.items !== undefined) {
+    result = filterForDuplicatesById(result)
+  }
+  return result
 }

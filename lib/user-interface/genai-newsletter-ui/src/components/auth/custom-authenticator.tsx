@@ -73,7 +73,6 @@ export default function Authenticator(props: PropsWithChildren) {
       setUserFamilyName('')
     }
     if (appContext.Auth.Cognito.loginWith?.oauth) {
-      console.log('CUSTOM HUB IS SET TO LISTEN')
       setUser()
       Hub.listen('auth', ({ payload }) => {
         switch (payload.event) {
@@ -92,7 +91,6 @@ export default function Authenticator(props: PropsWithChildren) {
         }
         if (payload.event === 'signedIn') {
           try {
-            console.log('SIGNED IN')
             setUser()
           } catch (error) {
             console.log(error)

@@ -10,16 +10,18 @@ type GeneratedMutation<InputType, OutputType> = string & {
 
 export const createDataFeed = /* GraphQL */ `mutation CreateDataFeed($input: CreateDataFeedInput!) {
   createDataFeed(input: $input) {
-    dataFeedId
-    accountId
+    id
+    account {
+      id
+      __typename
+    }
     url
     feedType
     createdAt
     enabled
     articles {
+      id
       dataFeedId
-      articleId
-      accountId
       url
       createdAt
       title
@@ -28,16 +30,17 @@ export const createDataFeed = /* GraphQL */ `mutation CreateDataFeed($input: Cre
       publishDate
       summarizationPrompt
       flaggedContent
-      articleSummary
       keywords
       shortSummary
       longSummary
+      authGranted
       __typename
     }
     title
     description
     summarizationPrompt
     isPrivate
+    authGranted
     __typename
   }
 }
@@ -47,14 +50,17 @@ export const createDataFeed = /* GraphQL */ `mutation CreateDataFeed($input: Cre
 >;
 export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input: CreateNewsletterInput!) {
   createNewsletter(input: $input) {
-    newsletterId
-    accountId
+    id
+    account {
+      id
+      __typename
+    }
     title
     numberOfDaysToInclude
+    subscriberCount
     dataFeedIds
     dataFeeds {
-      dataFeedId
-      accountId
+      id
       url
       feedType
       createdAt
@@ -63,14 +69,21 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       description
       summarizationPrompt
       isPrivate
+      authGranted
       __typename
     }
     isPrivate
-    scheduleId
     createdAt
     newsletterIntroPrompt
     articleSummaryType
     newsletterStyle
+    subscribers {
+      id
+      __typename
+    }
+    currentUserSubscribed
+    authGranted
+    scheduleId
     __typename
   }
 }
@@ -92,15 +105,6 @@ export const unsubscribeFromNewsletter = /* GraphQL */ `mutation UnsubscribeFrom
   APITypes.UnsubscribeFromNewsletterMutationVariables,
   APITypes.UnsubscribeFromNewsletterMutation
 >;
-export const externalUnsubscribeFromNewsletter = /* GraphQL */ `mutation ExternalUnsubscribeFromNewsletter(
-  $input: ExternalUnsubscribeFromNewsletter
-) {
-  externalUnsubscribeFromNewsletter(input: $input)
-}
-` as GeneratedMutation<
-  APITypes.ExternalUnsubscribeFromNewsletterMutationVariables,
-  APITypes.ExternalUnsubscribeFromNewsletterMutation
->;
 export const updateNewsletter = /* GraphQL */ `mutation UpdateNewsletter($input: UpdateNewsletterInput!) {
   updateNewsletter(input: $input)
 }
@@ -121,4 +125,13 @@ export const flagArticle = /* GraphQL */ `mutation FlagArticle($input: FlagArtic
 ` as GeneratedMutation<
   APITypes.FlagArticleMutationVariables,
   APITypes.FlagArticleMutation
+>;
+export const externalUnsubscribeFromNewsletter = /* GraphQL */ `mutation ExternalUnsubscribeFromNewsletter(
+  $input: ExternalUnsubscribeFromNewsletter
+) {
+  externalUnsubscribeFromNewsletter(input: $input)
+}
+` as GeneratedMutation<
+  APITypes.ExternalUnsubscribeFromNewsletterMutationVariables,
+  APITypes.ExternalUnsubscribeFromNewsletterMutation
 >;

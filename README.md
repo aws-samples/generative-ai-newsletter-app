@@ -15,7 +15,7 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 
 * Either an [IAM User](https://console.aws.amazon.com/iamv2/home?#/users/create) or [IAM Identity Center User](https://aws.amazon.com/iam/identity-center/) with `AdministratorAccess` policy granted to your user. *Not recommended for a production environment.*
 * [AWS CLI](https://aws.amazon.com/cli/) installed and configured to use with your AWS account.
-* [NodeJS 16 or 18](https://nodejs.org/en/download/) installed
+* [NodeJS 20](https://nodejs.org/en/download/) installed
 * The `ARN` of your [verified email identity](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-email-manage-verify.html) that you will send newsletter emails from. You will also be asked to provide an email address that will be the sender, which must be associated with the verified email identity.
 
 

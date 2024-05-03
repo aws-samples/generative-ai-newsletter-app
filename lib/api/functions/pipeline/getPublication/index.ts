@@ -21,11 +21,11 @@ export const response = (ctx: Context): any => {
     util.error(ctx.error.message, ctx.error.type)
   }
   const { emailKey, createdAt, newsletterId, publicationId, accountId } = ctx.result
-  let filePath = ''
+  let path = ''
   if (emailKey !== undefined) {
-    filePath = emailKey
-    if (filePath.indexOf('/') !== 0) {
-      filePath = '/' + filePath
+    path = emailKey
+    if (path.indexOf('/') !== 0) {
+      path = '/' + path
     }
   } else {
     const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(
@@ -34,14 +34,17 @@ export const response = (ctx: Context): any => {
     const year = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'YYYY')
     const month = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'MM')
     const day = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'DD')
-    filePath = `/newsletter-content/${year}/${month}/${day}/${publicationId}`
+    path = `/newsletter-content/${year}/${month}/${day}/${publicationId}`
   }
+  const htmlPath = path + '.html'
+  const textPath = path + '.txt'
   let result = {
     newsletterId,
     publicationId,
     accountId,
     createdAt,
-    filePath
+    htmlPath,
+    textPath
   }
   result = addAccountToItem(result)
   result = convertFieldIdToObjectId(result, 'publicationId')

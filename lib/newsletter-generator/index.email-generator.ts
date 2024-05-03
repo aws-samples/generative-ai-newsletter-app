@@ -30,6 +30,7 @@ import { type ArticleData } from '../shared/prompts/types'
 import { MultiSizeFormattedResponse } from '../shared/prompts/prompt-processing'
 import { ArticleSummaryType, type Newsletter } from '../shared/api/API'
 import { type NewsletterStyle } from '../shared/common/newsletter-style'
+import { generateNewsletterJSON } from 'lib/shared/email-generator/newsletter-json-data'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -59,6 +60,7 @@ interface EmailGeneratorInput {
 interface GeneratedEmailContents {
   html: string
   text: string
+  json: string
 }
 
 const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
@@ -222,7 +224,7 @@ const generateNewsletterSummary = async (
   logger.debug('Prompt generated', { prompt })
   const response = await anthropic.messages.create({
     model: BEDROCK_MODEL_ID,
-    max_tokens: 500,
+    max_tokens: 1000,
     messages: [{ role: 'user', content: prompt }]
   })
   logger.debug('GenAI Output', { response })
@@ -276,7 +278,14 @@ const generateEmail = async (
   )
   metrics.addMetric('TextEmailsGenerated', MetricUnits.Count, 1)
   logger.debug('Plaintext email generated', { text })
-  return { html, text }
+  const json = generateNewsletterJSON({
+    title,
+    newsletterId,
+    newsletterSummary,
+    articles,
+    articleSummaryType
+  })
+  return { html, text, json }
 }
 
 const storeEmailInS3 = async (
@@ -312,6 +321,15 @@ const storeEmailInS3 = async (
       ContentType: 'text/plain'
     }
   })
+  const jsonUpload = new Upload({
+    client: s3,
+    params: {
+      Bucket: EMAIL_BUCKET,
+      Key: `${emailKey}.json`,
+      Body: Buffer.from(email.json),
+      ContentType: 'application/json'
+    }
+  })
   logger.debug('Starting HTML Upload')
   try {
     await htmlUpload.done()
@@ -340,6 +358,20 @@ const storeEmailInS3 = async (
     logger.error('Error uploading text email', { error })
     tracer.addErrorAsMetadata(error as Error)
     tracer.putAnnotation('textUploadComplete', false)
+  }
+  try {
+    await jsonUpload.done()
+    metrics.addMetric('JSONEmailsUploaded', MetricUnits.Count, 1)
+    tracer.putAnnotation('jsonUploadComplete', true)
+    tracer.putMetadata('jsonEmail', {
+      bucket: EMAIL_BUCKET,
+      key: `${emailKey}.json`
+    })
+  } catch (error) {
+    metrics.addMetric('JSONEmailsFailedToUpload', MetricUnits.Count, 1)
+    logger.error('Error uploading JSON email', { error })
+    tracer.addErrorAsMetadata(error as Error)
+    tracer.putAnnotation('jsonUploadComplete', false)
   }
   return emailKey
 }

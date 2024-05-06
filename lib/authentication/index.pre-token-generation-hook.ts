@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-import { Tracer, captureLambdaHandler } from '@aws-lambda-powertools/tracer'
+import { Tracer } from '@aws-lambda-powertools/tracer'
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { v4 as uuidv4 } from 'uuid'

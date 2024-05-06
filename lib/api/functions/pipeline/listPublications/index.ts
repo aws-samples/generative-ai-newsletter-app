@@ -29,7 +29,7 @@ export const response = (ctx: Context): any => {
     for (const item of ctx.result.items) {
       const { emailKey, createdAt, newsletterId, sk, accountId } = item
       const publicationId = sk.split('#')[1]
-      let path = ''
+      let filePath = ''
       if (emailKey === undefined) {
         const epochCreatedAt = util.time.parseISO8601ToEpochMilliSeconds(
           createdAt as string
@@ -44,16 +44,14 @@ export const response = (ctx: Context): any => {
         )
         const day = util.time.epochMilliSecondsToFormatted(epochCreatedAt, 'DD')
         const publicationId = sk.split('#')[1]
-        path = `/newsletter-content/${year}/${month}/${day}/${publicationId}`
+        filePath = `/newsletter-content/${year}/${month}/${day}/${publicationId}`
       } else {
-        path = emailKey
-        if (path.indexOf('/') !== 0) {
-          path = '/' + path
+        filePath = emailKey
+        if (filePath.indexOf('/') !== 0) {
+          filePath = '/' + filePath
         }
       }
 
-      const htmlPath = path + '.html'
-      const textPath = path + '.txt'
       items.push({
         newsletterId,
         id: publicationId,
@@ -61,8 +59,7 @@ export const response = (ctx: Context): any => {
           id: accountId
         },
         createdAt,
-        htmlPath,
-        textPath
+        filePath
       })
     }
   }

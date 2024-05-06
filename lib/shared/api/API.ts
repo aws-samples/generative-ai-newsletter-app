@@ -201,8 +201,7 @@ export type Publication = {
   newsletterId?: string | null,
   account?: Account | null,
   createdAt?: string | null,
-  htmlPath?: string | null,
-  textPath?: string | null,
+  filePath?: string | null,
 };
 
 export type ListPublicationsInput = {
@@ -554,8 +553,7 @@ export type GetPublicationQuery = {
       id: string,
     } | null,
     createdAt?: string | null,
-    htmlPath?: string | null,
-    textPath?: string | null,
+    filePath?: string | null,
   } | null,
 };
 
@@ -573,8 +571,7 @@ export type ListPublicationsQuery = {
       id: string,
       newsletterId?: string | null,
       createdAt?: string | null,
-      htmlPath?: string | null,
-      textPath?: string | null,
+      filePath?: string | null,
     } | null > | null,
     nextToken?: string | null,
   } | null,

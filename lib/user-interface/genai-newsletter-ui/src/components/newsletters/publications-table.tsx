@@ -11,11 +11,11 @@ import {
   Button,
   Container,
   ExpandableSection,
-  SpaceBetween,
-  StatusIndicator
+  SpaceBetween
 } from '@cloudscape-design/components'
 import { listPublications } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
+import Newsletter from './newsletter'
 
 export default function PublicationsTable() {
   const appContext = useContext(AppContext)
@@ -23,38 +23,8 @@ export default function PublicationsTable() {
   const [publications, setPublications] = useState<Publication[]>(
     []
   )
-  const [newsletterContent, setNewsletterContent] = useState<{
-    [key: string]: string
-  }>({})
-
-  // const [loading, setLoading] = useState(false)
-
-  const getPublicationContent = useCallback(
-    async (path: string, publicationId: string) => {
-      try {
-        const response = await fetch(path, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'text/html'
-          }
-        })
-        if (response.ok) {
-          const content = await response.text()
-          const publicationsContent = newsletterContent
-          publicationsContent[publicationId] = content
-          setNewsletterContent(publicationsContent)
-        }
-
-      } catch (error) {
-        console.error('Error getting publication content', error)
-      }
-
-    },
-    [newsletterContent]
-  )
-
+ 
   const getPublications = useCallback(async () => {
-    // setLoading(true)
     if (!appContext) {
       return
     }
@@ -79,26 +49,9 @@ export default function PublicationsTable() {
           ?.items as Publication[])
       ])
 
-      for (const publication of result.data.listPublications?.items as Publication[]) {
-        if (publication.textPath) {
-          getPublicationContent(publication.textPath, publication.id)
-        }
-      }
     }
-    // setLoading(false)
-  }, [appContext, getPublicationContent, newsletterId])
+  }, [appContext, newsletterId])
 
-  const renderHtml = (html: string): { __html: string } => {
-    try {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, 'text/html')
-      return { __html: doc.body.innerHTML }
-    } catch (error) {
-      console.error(error)
-      return { __html: '' }
-    }
-
-  }
 
   useEffect(() => {
     getPublications()
@@ -107,19 +60,19 @@ export default function PublicationsTable() {
     <SpaceBetween direction="vertical" size="m">
       {publications.length > 0 ?
         publications.map((publication) => {
-          if (publication.htmlPath) {
+          if (publication.filePath) {
             return (
               <ExpandableSection
                 key={'newsletterPublicationSection' + publication.id}
                 headerText={publication.createdAt}
                 headerActions={
-                  publication.htmlPath !== null &&
-                    publication.htmlPath !== undefined &&
-                    publication.htmlPath.length > 0 ? (
+                  publication.filePath !== null &&
+                    publication.filePath !== undefined &&
+                    publication.filePath.length > 0 ? (
                     <SpaceBetween size="s" direction="horizontal">
                       <Button
                         onClick={() => {
-                          window.open(publication.htmlPath as string, '_blank')
+                            window.open(publication.filePath + '.html' as string, '_blank')
                         }}
                       >
                         Open in a New Window
@@ -132,22 +85,8 @@ export default function PublicationsTable() {
                 variant="stacked"
               >
                 <Container>
-                  {newsletterContent[publication.id] ? (
-                    <>
-                      <div
-                        dangerouslySetInnerHTML={renderHtml(
-                          newsletterContent[publication.id]
-                        )}
-                      />
-                    </>
-                  ) : (
-                    <StatusIndicator
-                      key={'status-publication-' + publication.id}
-                      type="loading"
-                    >
-                      Loading...
-                    </StatusIndicator>
-                  )}
+
+                    <Newsletter filePath={publication.filePath} key={`rendered-newsletter-${publication.id}`}/>
                 </Container>
               </ExpandableSection>
             )

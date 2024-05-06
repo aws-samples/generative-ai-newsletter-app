@@ -163,27 +163,30 @@ export default function NewsletterWizard({
       setIsPrivate(result.data.getNewsletter?.isPrivate ?? true)
       setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
 
-      const filteredDataFeeds = result.data?.getNewsletter?.dataFeeds?.filter((feed) => {
-        return (feed?.id !== undefined && feed?.id !== null)
+      const filteredDataFeeds = result.data?.getNewsletter?.dataFeedIds?.filter((feedId) => {
+        return (feedId !== undefined && feedId !== null)
       })
+
       if (filteredDataFeeds !== undefined && filteredDataFeeds.length > 0) {
         const selectedDataFeedItems: DataFeed[] = []
-        for (const dataFeed of filteredDataFeeds) {
-          if (dataFeed !== undefined && dataFeed !== null) {
+        for (const dataFeedId of filteredDataFeeds) {
+          if (dataFeedId !== undefined && dataFeedId !== null) {
             const dataFeedResult = await apiClient.graphql({
               query: getDataFeed,
               variables: {
                 input: {
-                  id: dataFeed.id
+                  id: dataFeedId
                 }
               }
             })
-            if (dataFeedResult.data.getDataFeed?.articles !== undefined && dataFeedResult.data.getDataFeed?.articles !== null) {
-              selectedDataFeedItems.push(dataFeedResult.data.getDataFeed as DataFeed)
-            }
+
+            console.log('Adding selected data feed', { result: dataFeedResult.data.getDataFeed })
+            selectedDataFeedItems.push(dataFeedResult.data.getDataFeed as DataFeed)
+
           }
 
         }
+        console.log('Selected data feeds', selectedDataFeedItems)
         setSelectedDataFeeds(selectedDataFeedItems)
 
       }

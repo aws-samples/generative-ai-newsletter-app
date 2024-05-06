@@ -1,3 +1,24 @@
+## **1.1.0**&emsp;<sub><sup>2024-05-03 (e5df8e26837978750802d21ec4cbc2f04d45b800...88195107222c9e8b90e8c9a545f95fdcc36b73f9)</sup></sub>
+
+### Bug Fixes
+
+- typos in text and code chore: enable cedar extensions (7ee3b5ed46eec43909cab4af79fa18c7a1867cc0)
+- fixed cedarschema name change bug in cdk (1c23cb7ef0fef5bd432c081dd02035440f946efe)
+- fixed bug on newsletter generator expecting a provided hostname (449543a6497d63d9fdb454abe5075afefd68e560)
+- Improve In\-App View of Newsletter (66cc1ae67b677b4618a3339c362718d65d577726)
+
+### Merges
+
+- pull request \#2 from aws\-samples/dependabot (8229c14adeec3cc0223f3c18c6cf18f3eb6222f4)
+
+
+### BREAKING CHANGES
+- `auth` The refactor can potentially cause down time during deployment\. If the deployment (627230f2cd60502f69b5c219af4166ddf3320801)
+
+fails, temporarily comment out the resolvers in CDK, deploy, then add the resolvers back and deploy
+  again
+<br>
+
 ## **1.0.0**&emsp;<sub><sup>2024-04-04 (2fa39380d025729852d5d2708675d8b1bf674a74...4313411db83166666926d23275bd6fa810c9699f)</sup></sub>
 
 ### Bug Fixes

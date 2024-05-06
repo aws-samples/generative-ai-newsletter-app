@@ -75,7 +75,7 @@
     "react-router-dom": "^6.22.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "~5.2.2",
+    "typescript": "~5.4.5",
     "vite": "^5.0.12"
   },
   "dependencies": {

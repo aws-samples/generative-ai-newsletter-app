@@ -1,3 +1,15 @@
+## **1.1.2**&emsp;<sub><sup>2024-05-06 (18731f52b7c763cdaf1c5d04463ef8cec847b01b...4e5603890fcafd62a66d37524c5841079b5180c1)</sup></sub>
+
+### Bug Fixes
+
+- Resolved issues from powertools tracer upgrade (18731f52b7c763cdaf1c5d04463ef8cec847b01b)
+
+### Merges
+
+- pull request \#21 from aws\-samples/fix\-powertools (4e5603890fcafd62a66d37524c5841079b5180c1)
+
+<br>
+
 ## **1.1.1**&emsp;<sub><sup>2024-05-06 (2a81b6e2b60f11d5568f7fe701a316db0dd34ad9...525b09cbd7d7e81769808445bbd4c17c6c45b9b3)</sup></sub>
 
 ### Bug Fixes

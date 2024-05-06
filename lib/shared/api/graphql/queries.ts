@@ -184,8 +184,7 @@ export const getPublication = /* GraphQL */ `query GetPublication($input: GetPub
       __typename
     }
     createdAt
-    htmlPath
-    textPath
+    filePath
     __typename
   }
 }
@@ -203,8 +202,7 @@ export const listPublications = /* GraphQL */ `query ListPublications(
       id
       newsletterId
       createdAt
-      htmlPath
-      textPath
+      filePath
       __typename
     }
     nextToken

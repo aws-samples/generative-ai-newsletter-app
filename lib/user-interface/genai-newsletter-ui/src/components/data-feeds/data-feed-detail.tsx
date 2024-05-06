@@ -86,7 +86,7 @@ export default function DataFeedDetail() {
           <FormField label="Feed Type">{setDataFeedId?.feedType}</FormField>
           <FormField label="Date Created">{setDataFeedId?.createdAt}</FormField>
           <FormField label="Article Summarization Prompt">
-            {setDataFeedId?.summarizationPrompt ? setDataFeedId?.summarizationPrompt?.length : <span style={{ fontStyle: 'italic' }}>No Custom Prompt Provided</span>}
+            {setDataFeedId?.summarizationPrompt ??  <span style={{ fontStyle: 'italic' }}>No Custom Prompt Provided</span>}
           </FormField>
         </SpaceBetween>
       )

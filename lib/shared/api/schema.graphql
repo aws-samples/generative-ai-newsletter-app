@@ -80,8 +80,7 @@ type Publication {
   newsletterId: String
   account: Account
   createdAt: AWSDateTime
-  htmlPath: String
-  textPath: String
+  filePath: String
 }
 
 type Publications {

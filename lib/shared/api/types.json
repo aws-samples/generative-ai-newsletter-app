@@ -1951,7 +1951,7 @@
             "deprecationReason": null
           },
           {
-            "name": "htmlPath",
+            "name": "filePath",
             "description": null,
             "args": [],
             "type": {
@@ -1980,18 +1980,6 @@
           },
           {
             "name": "newsletterId",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "textPath",
             "description": null,
             "args": [],
             "type": {

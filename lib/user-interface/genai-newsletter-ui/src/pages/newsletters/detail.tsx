@@ -6,7 +6,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../../common/app-context'
-// import { ApiClient } from '../../common/api'
 import {
   ArticleSummaryType,
   DataFeed,
@@ -19,7 +18,6 @@ import {
   Container,
   Header,
   SpaceBetween,
-  SplitPanel,
   StatusIndicator
 } from '@cloudscape-design/components'
 import useOnFollow from '../../common/hooks/use-on-follow'
@@ -27,8 +25,6 @@ import NewsletterReviewForm from '../../components/newsletters/forms/newsletter-
 import PublicationsTable from '../../components/newsletters/publications-table'
 import UserSubscriberData from '../../components/newsletters/user-subscriber-data'
 import BaseContentLayout from '../../components/base-content-layout'
-import NewsletterPreview from '../../components/newsletters/preview'
-import { NewsletterStyle } from '../../../../../shared/common/newsletter-style'
 import { canUpdateNewsletter, getNewsletter } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
@@ -39,11 +35,6 @@ export default function NewsletterDetail() {
   const appContext = useContext(AppContext)
   const [canUpdateNewsletterVal, setCanUpdateNewsletterVal] = useState<boolean>(false)
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
-  const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(
-    new NewsletterStyle()
-  )
-  const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)
-
 
 
   const getNewsletterCall = useCallback(async () => {
@@ -66,14 +57,6 @@ export default function NewsletterDetail() {
       console.error(result.errors)
     } else {
       setNewsletter(result.data.getNewsletter as Newsletter)
-    }
-    if (
-      result.data.getNewsletter?.newsletterStyle !== null &&
-      result.data.getNewsletter?.newsletterStyle !== undefined
-    ) {
-      setNewsletterStyle(
-        JSON.parse(result.data.getNewsletter.newsletterStyle)
-      )
     }
     try {
       const editResponse = await apiClient.graphql({
@@ -120,19 +103,6 @@ export default function NewsletterDetail() {
           ]}
         />
       }
-      splitPanelPreferences={{ position: 'side' }}
-      splitPanelOpen={splitPanelOpen}
-      onSplitPanelToggle={({ detail }) => {
-        setSplitPanelOpen(detail.open)
-      }}
-      splitPanel={
-        <SplitPanel
-          header="Preview Newsletter Style"
-          hidePreferencesButton={true}
-        >
-          <NewsletterPreview previewMode={true} styleProps={newsletterStyle} />
-        </SplitPanel>
-      }
       content={
         <BaseContentLayout
           header={<Header
@@ -147,20 +117,6 @@ export default function NewsletterDetail() {
                   }}
                 >
                   Edit
-                </Button>
-                {/* <Button disabled>Delete (Not Yet Implemented)</Button> */}
-                <Button
-                  iconAlign="right"
-                  variant="primary"
-                  onClick={() => {
-                    setSplitPanelOpen(
-                      !splitPanelOpen
-                    )
-                  }}
-                >
-                  {splitPanelOpen
-                    ? 'Hide Preview'
-                    : 'Show Preview'}
                 </Button>
               </SpaceBetween>
             }
@@ -180,9 +136,9 @@ export default function NewsletterDetail() {
                   title={newsletter.title ?? ""}
                   formMode="detail"
                   newsletterIntroPrompt={
-                    newsletter.newsletterIntroPrompt !== null &&
+                    (newsletter.newsletterIntroPrompt !== null &&
                       newsletter.newsletterIntroPrompt !== undefined &&
-                      newsletter.newsletterIntroPrompt.length > 0
+                      newsletter.newsletterIntroPrompt.length > 0)
                       ? newsletter.newsletterIntroPrompt
                       : undefined
                   }

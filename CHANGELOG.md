@@ -1,3 +1,20 @@
+## **1.1.1**&emsp;<sub><sup>2024-05-06 (2a81b6e2b60f11d5568f7fe701a316db0dd34ad9...525b09cbd7d7e81769808445bbd4c17c6c45b9b3)</sup></sub>
+
+### Bug Fixes
+
+- Bug for getPublication (fb9ddb03bf9846d270b244366b2fd54ee7189dd1)
+
+### Merges
+
+- pull request \#20 from aws\-samples/bee6dependabot/npm\_and\_yarn/cdk\-nag\-2\.28\.109 (b36f706f311873d270d159a7125d179544b78a49)
+- pull request \#19 from aws\-samples/48aadependabot/npm\_and\_yarn/typescript\-5\.4\.5 (e065e607d4e9adba6bd5326850ce870a6bb6c0c3)
+- branch 'main' into daa7dependabot/npm\_and\_yarn/aws\-sdk/client\-sfn\-3\.569\.0 (06d6d4a871a00d4517fc459d419ae6502764d45a)
+- pull request \#18 from aws\-samples/daa7dependabot/npm\_and\_yarn/aws\-sdk/client\-sfn\-3\.569\.0 (889f44231b6b6aacb73f04333858400f51eef144)
+- branch 'main' into facddependabot/npm\_and\_yarn/aws\-lambda\-powertools/tracer\-2\.1\.0 (768573572a746fb53493a271ca323406bf346f76)
+- pull request \#13 from aws\-samples/facddependabot/npm\_and\_yarn/aws\-lambda\-powertools/tracer\-2\.1\.0 (525b09cbd7d7e81769808445bbd4c17c6c45b9b3)
+
+<br>
+
 ## **1.1.0**&emsp;<sub><sup>2024-05-03 (e5df8e26837978750802d21ec4cbc2f04d45b800...88195107222c9e8b90e8c9a545f95fdcc36b73f9)</sup></sub>
 
 ### Bug Fixes

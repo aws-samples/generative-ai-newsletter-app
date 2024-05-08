@@ -22,7 +22,10 @@
     "codegen:api": "cd lib/shared/api && npx @aws-amplify/cli codegen",
     "codegen:auth": "cd lib/shared/api/schema-to-avp && npx graphql-codegen ./codegen.ts",
     "email:start": "cd lib/shared/email-generator && npm run start",
-    "ui:start": "cd lib/user-interface/genai-newsletter-ui/ && vite"
+    "ui:start": "cd lib/user-interface/genai-newsletter-ui/ && vite",
+    "docs:dev": "vitepress dev pages",
+    "docs:build": "vitepress build pages",
+    "docs:preview": "vitepress preview pages"
   },
   "devDependencies": {
     "@aws-amplify/cli": "^12.10.1",
@@ -77,7 +80,8 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "typescript": "~5.4.5",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "vitepress": "^1.1.4"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.9.1",

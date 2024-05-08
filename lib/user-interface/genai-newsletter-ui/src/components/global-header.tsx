@@ -34,7 +34,7 @@ export default function GlobalHeader() {
       setTheme(StorageHelper.applyTheme(Mode.Dark));
     }
   };
-  const addedLinks = []
+  const addedLinks: any[] = []
   if (appContext?.ui?.headerLinks) {
     for (const link of appContext.ui.headerLinks) {
       addedLinks.push({
@@ -64,7 +64,7 @@ export default function GlobalHeader() {
           {
             type: 'button',
             text: 'User Guide',
-            href: 'https://gitlab.aws.dev/awsrudy/genai-newsletter/-/blob/main/USER_GUIDE.md?ref_type=heads',
+            href: 'https://aws-samples.github.io/generative-ai-newsletter-app/user-guide.html',
             external: true,
             target: '_blank'
           },

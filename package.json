@@ -7,7 +7,7 @@
   },
   "scripts": {
     "config": "node -r ts-node/register ./cli/config.ts",
-    "build": "tsc && npm run codegen && npm run build:ui",
+    "build": "tsc && npm run codegen && npm run build:ui && npm run build:appsync",
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
     "build:appsync": "cd lib/api/functions && npx tsc",
     "watch": "tsc -w",

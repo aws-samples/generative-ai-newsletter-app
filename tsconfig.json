@@ -41,8 +41,7 @@
     "node_modules",
     "cdk.out",
     "lib/user-interface/genai-newsletter-ui/dist",
-    "lib/api/functions/resolvers",
-    "lib/api/functions/pipeline"
+    "lib/api/functions/out"
   ],
   "include": [
     "jest.config.ts",

@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "scripts": {
-    "build": "esbuild --bundle --sourcemap=inline --sources-content=false --target=esnext --platform=node --format=esm --external:@aws-appsync/utils"
-  },
-  "name": "genai-newsletter-resolver-functions"
-}

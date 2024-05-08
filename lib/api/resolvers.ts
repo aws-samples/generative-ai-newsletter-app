@@ -28,7 +28,7 @@ export class ApiResolvers extends Construct {
 
     const functionsPath = path.join(__dirname, 'functions')
     const getFunctionPath = (functionName: string, functionType: 'pipeline' | 'resolver'): string => {
-      return path.join(functionsPath, functionType, functionName, 'index.js')
+      return path.join(functionsPath, 'out', functionType, functionName, 'index.js')
     }
 
     /** ****** DATA SOURCES FOR AppSync ******* **/

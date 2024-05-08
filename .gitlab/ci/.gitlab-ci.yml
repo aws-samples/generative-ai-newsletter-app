@@ -36,6 +36,7 @@ build-branch:
   artifacts:
     paths:
       - ./lib/user-interface/genai-newsletter-ui/dist
+      - ./lib/api/functions/out
   cache:
     policy: push
     when: on_success

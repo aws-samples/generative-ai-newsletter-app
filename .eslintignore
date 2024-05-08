@@ -6,3 +6,4 @@ lib/user-interface/genai-newsletter-ui/src/graphql/*
 lib/user-interface/genai-newsletter-ui/vite.config.ts
 vite.config.ts
 misc/
+lib/api/functions/out/*

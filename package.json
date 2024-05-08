@@ -7,9 +7,9 @@
   },
   "scripts": {
     "config": "node -r ts-node/register ./cli/config.ts",
-    "build": "tsc && npm run codegen && npm run build:ui && npm run build:appsync",
+    "build": "tsc && npm run codegen && npm run build:appsync && npm run build:ui",
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
-    "build:appsync": "cd lib/api/functions && npx tsc",
+    "build:appsync": "esbuild --bundle --sourcemap=inline --sources-content=false --target=esnext --platform=node --format=esm --external:@aws-appsync/utils --outdir=lib/api/functions/out/ lib/api/functions/**/**/index.ts",
     "watch": "tsc -w",
     "lint": "eslint . --fix --ext .ts,.tsx --report-unused-disable-directives",
     "prettier": "prettier --write \"**/*.{ts,tsx}\"",

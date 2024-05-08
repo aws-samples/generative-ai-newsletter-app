@@ -3,16 +3,12 @@ import {
   util,
   type DynamoDBUpdateItemRequest
 } from '@aws-appsync/utils'
-import { type UpdateNewsletterInput } from '../../../../shared/api'
 
 export function request (ctx: Context): DynamoDBUpdateItemRequest {
-  const input: UpdateNewsletterInput = ctx.args.input
+  const input = ctx.args.input
   let expression = 'SET '
   const expressionNames: Record<string, string> = {}
-  const expressionValues: Record<
-  string,
-  string | number | object | string[] | boolean
-  > = {}
+  const expressionValues: Record<string, any> = {}
   let updates = 0
   if (input.title != null) {
     expression += '#title = :title, '

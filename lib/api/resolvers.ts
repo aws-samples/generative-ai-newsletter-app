@@ -43,7 +43,7 @@ export class ApiResolvers extends Construct {
             `npm --silent --prefix "${functionsPath}" install`,
             `npm --silent --prefix "${functionsPath}" run build -- -outdir=${pathToFunction} ${pathToFunction}/index.ts`,
             'ls -la',
-            `mv -f ${pathToFunction}/index.js /asset-output/`
+            `cp ${pathToFunction}/index.js /asset-output/`
           ].join(' && ')
         ],
         image: DockerImage.fromRegistry(
@@ -67,7 +67,7 @@ export class ApiResolvers extends Construct {
                 options
               )
               execSync(
-                `mv -f ${pathToFunction}/index.js ${outputDir}`,
+                `cp ${pathToFunction}/index.js ${outputDir}`,
                 options
               )
             } catch (e) {

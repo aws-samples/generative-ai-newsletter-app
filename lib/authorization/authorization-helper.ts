@@ -131,6 +131,31 @@ export const queryToResourceEntity = (query: string): string => {
   }
 }
 
+export const queryToResourcesEntity = (query: string): string => {
+  const action = queryToActionAuth(query)
+  const queries = schemaMap.__schema.types.find((type) => {
+    return type.name === 'Query' && type.kind === 'OBJECT'
+  })
+  if (queries === undefined || queries === null) {
+    throw new Error('Unable to locate Query type')
+  }
+  const queryFieldType = queries.fields?.find((field) => {
+    return field.name === action
+  })
+  if (queryFieldType !== undefined) {
+    const queryFieldTypeObject = schemaMap.__schema.types.find((type) => {
+      return type.name === queryFieldType.type.name
+    })
+    const itemObject = queryFieldTypeObject?.fields?.find((fieldItem) => {
+      return fieldItem.name === 'items'
+    })
+    if (itemObject !== undefined && itemObject.type.kind === 'LIST' && itemObject?.type?.ofType?.name !== undefined && itemObject?.type?.ofType?.name !== null) {
+      return itemObject.type.ofType?.name
+    }
+  }
+  throw new Error('Unable to locate resource Entity')
+}
+
 export const mutationToResourceEntity = (query: string): string => {
   const action = queryToActionAuth(query)
   const queries = schemaMap.__schema.types.find((type) => {

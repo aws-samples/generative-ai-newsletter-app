@@ -12,7 +12,7 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import middy from '@middy/core'
 import { type Context } from 'aws-lambda'
 import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
-import { getEntityItem, lowercaseFirstLetter, queryToActionAuth, queryToResourceEntity } from './authorization-helper'
+import { getEntityItem, lowercaseFirstLetter, queryToActionAuth, queryToResourcesEntity } from './authorization-helper'
 
 const SERVICE_NAME = 'list-filter-authorization'
 
@@ -83,7 +83,7 @@ const checkItemAuthorization = async (item: any, schema: Record<string, any>, us
       actionType: 'GenAINewsletter::Action'
     },
     resource: {
-      entityType: `GenAINewsletter::${queryToResourceEntity(queryString)}`,
+      entityType: `GenAINewsletter::${queryToResourcesEntity(queryString)}`,
       entityId: item.id
     },
     entities: {
@@ -102,7 +102,7 @@ const checkItemAuthorization = async (item: any, schema: Record<string, any>, us
             }
           }
         },
-        getEntityItem(schema, item.id as string, queryToResourceEntity(queryString), item as Record<string, any>, { logger })
+        getEntityItem(schema, item.id as string, queryToResourcesEntity(queryString), item as Record<string, any>, { logger })
       ]
     }
 

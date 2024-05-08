@@ -17,6 +17,9 @@ export default defineConfig({
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/aws-samples/generative-ai-newsletter-app' }
-    ]
+    ],
+    footer: {
+      copyright: 'This library is licensed under the MIT-0 License.'
+    }
   }
 })

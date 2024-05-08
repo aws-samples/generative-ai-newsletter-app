@@ -8,6 +8,9 @@ hero:
   tagline: Generative AI Powered Newsletters
   actions:
     - theme: brand
+      text: Learn More
+      link: /about
+    - theme: alt
       text: Deployment Guide
       link: /deployment
     - theme: alt

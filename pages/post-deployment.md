@@ -23,3 +23,7 @@ User accounts for the application are managed using [Amazon Cognito](https://aws
 1. Login with the email and temporary password.
 1. If login is successful, you will be asked to provide your name and update your password.
 1. After you complete the name and password update, you will be logged into the application and can get started.
+
+## User Guide
+Once you've successfully logged into the application, you can start using the application!
+Head over to the [User Guide](./user-guide) to learn more.

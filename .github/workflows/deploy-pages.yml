@@ -1,0 +1,53 @@
+name: Deploy VitePress site to pages
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: pages
+    cancel-in-progress: false
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/setup-node@v3
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                node-version: 20
+                cache: npm
+            - name: Setup Pages
+              uses: actions/configure-pages@v3
+            - name: Install packages
+              run: npm ci
+            - name: Build Pages
+              run: |
+                npm run docs:build
+                touch pages/.vitepress/dist/.nojekyll
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v2
+              with:
+                path: pages/.vitepress/dist
+    
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        needs: build
+        runs-on: ubuntu-latest
+        name: Deploy Pages
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v2
+                
+            

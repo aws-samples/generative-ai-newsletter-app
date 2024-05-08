@@ -105,7 +105,7 @@ export class UserInterface extends Construct {
           prefix: 'cloudfront-access-logs/'
         },
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        viewerCertificate: (ui.acmCertificateArn !== undefined && ui.hostName !== undefined)
+        viewerCertificate: (ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined)
           ? ViewerCertificate.fromAcmCertificate(Certificate.fromCertificateArn(this, 'AcmCertificate', ui.acmCertificateArn), {
             aliases: [ui.hostName]
           })
@@ -144,8 +144,12 @@ export class UserInterface extends Construct {
       }
     )
 
-    const amplifyUI = ui
-    delete amplifyUI.acmCertificateArn
+    let amplifyUI = ui
+    if (ui !== undefined) {
+      delete amplifyUI.acmCertificateArn
+    } else {
+      amplifyUI = {}
+    }
     if (amplifyUI.hostName === undefined) {
       amplifyUI.hostName = cloudfrontDistribution.distributionDomainName
     }
@@ -194,7 +198,7 @@ export class UserInterface extends Construct {
     })
 
     new CfnOutput(this, 'AppLink', {
-      value: `https://${(ui.acmCertificateArn !== undefined && ui.hostName !== undefined) ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
+      value: `https://${(ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined) ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
     })
 
     NagSuppressions.addResourceSuppressions(

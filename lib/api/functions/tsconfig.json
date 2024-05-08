@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
-    "rootDir": "../../../",
+    "rootDir": "./",
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
     "noEmit": false,
     "strictNullChecks": true,
   },
-  "include": ["./**/*.ts"],
-  "extends": ["../../../tsconfig.json"],
+  "include": ["./**/*.ts"]
 }

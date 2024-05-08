@@ -5,18 +5,16 @@
  */
 import {
   type GraphqlApi,
-  Code,
   AppsyncFunction,
   FunctionRuntime,
   Resolver,
   LambdaDataSource,
-  DynamoDbDataSource
+  DynamoDbDataSource,
+  AssetCode
 } from 'aws-cdk-lib/aws-appsync'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ApiProps } from '.'
-import { type BundlingOptions, DockerImage, BundlingOutput } from 'aws-cdk-lib'
-import { type ExecSyncOptionsWithBufferEncoding, execSync } from 'child_process'
 import { Effect, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 
 interface ApiResolversProps extends ApiProps {
@@ -29,55 +27,8 @@ export class ApiResolvers extends Construct {
     const { api, dataFeedTable, newsletterTable, unauthenticatedUserRole } = props
 
     const functionsPath = path.join(__dirname, 'functions')
-    const getFunctionBundlingOptions = (
-      functionName: string,
-      functionType: 'resolver' | 'pipeline'
-    ): BundlingOptions => {
-      const pathToFunction = path.join(functionsPath, functionType, functionName)
-      return {
-        outputType: BundlingOutput.SINGLE_FILE,
-        command: [
-          'sh',
-          '-c',
-          [
-            `npm --silent --prefix "${functionsPath}" install`,
-            `npm --silent --prefix "${functionsPath}" run build -- -outdir=${pathToFunction} ${pathToFunction}/index.ts`,
-            'ls -la',
-            `mv -f ${pathToFunction}/index.js /asset-output/`
-          ].join(' && ')
-        ],
-        image: DockerImage.fromRegistry(
-          'public.ecr.aws/sam/build-nodejs20.x:latest'
-        ),
-        local: {
-          tryBundle (outputDir: string) {
-            try {
-              const options: ExecSyncOptionsWithBufferEncoding = {
-                stdio: 'inherit',
-                env: {
-                  ...process.env
-                }
-              }
-              execSync(
-                `npm --silent --prefix "${functionsPath}" install`,
-                options
-              )
-              execSync(
-                `npm --silent --prefix "${functionsPath}" run build -- --outdir=${pathToFunction} ${pathToFunction}/index.ts`,
-                options
-              )
-              execSync(
-                `mv -f ${pathToFunction}/index.js ${outputDir}`,
-                options
-              )
-            } catch (e) {
-              console.error(e)
-              return false
-            }
-            return true
-          }
-        }
-      }
+    const getFunctionPath = (functionName: string, functionType: 'pipeline' | 'resolver'): string => {
+      return path.join(functionsPath, 'out', functionType, functionName, 'index.js')
     }
 
     /** ****** DATA SOURCES FOR AppSync ******* **/
@@ -316,9 +267,7 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         name: 'getNewsletter',
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getNewsletter', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('getNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -330,9 +279,7 @@ export class ApiResolvers extends Construct {
         name: 'listNewslettersOwned',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listNewslettersOwned', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersOwned', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -345,9 +292,7 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listNewslettersDiscoverable', 'pipeline')
-        })
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersDiscoverable', 'pipeline'))
       }
     )
 
@@ -359,9 +304,7 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listNewslettersShared', 'pipeline')
-        })
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersShared', 'pipeline'))
       }
     )
 
@@ -386,9 +329,7 @@ export class ApiResolvers extends Construct {
         name: 'listPublications',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listPublications', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listPublications', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -399,9 +340,7 @@ export class ApiResolvers extends Construct {
         name: 'getPublication',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getPublication', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('getPublication', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -413,9 +352,7 @@ export class ApiResolvers extends Construct {
         name: 'updateNewsletter',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('updateNewsletter', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('updateNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -426,9 +363,7 @@ export class ApiResolvers extends Construct {
         name: 'subscribeToNewsletter',
         api,
         dataSource: userSubscriberLambdaSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('subscribeToNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -440,9 +375,7 @@ export class ApiResolvers extends Construct {
         name: 'unsubscribeFromNewsletter',
         api,
         dataSource: userUnsubscriberLambdaSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('unsubscribeFromNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -454,9 +387,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsOwned',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listDataFeedsOwned', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsOwned', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -468,9 +399,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsShared',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listDataFeedsShared', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsShared', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -482,9 +411,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsDiscoverable',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listDataFeedsDiscoverable', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsDiscoverable', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -496,9 +423,7 @@ export class ApiResolvers extends Construct {
         name: 'createDataFeed',
         api,
         dataSource: dataFeedSubscriberLambdaSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('createDataFeed', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('createDataFeed', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -509,9 +434,7 @@ export class ApiResolvers extends Construct {
         name: 'getDataFeed',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getDataFeed', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('getDataFeed', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -523,9 +446,7 @@ export class ApiResolvers extends Construct {
         name: 'updateDataFeed',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('updateDataFeed', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('updateDataFeed', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -537,9 +458,7 @@ export class ApiResolvers extends Construct {
         name: 'listArticles',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listArticles', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listArticles', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -551,11 +470,7 @@ export class ApiResolvers extends Construct {
         name: 'checkSubscriptionToNewsletter',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions(
-            'checkSubscriptionToNewsletter', 'pipeline'
-          )
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('checkSubscriptionToNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -567,9 +482,7 @@ export class ApiResolvers extends Construct {
         name: 'getNewsletterSubscriberStats',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('getNewsletterSubscriberStats', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -581,9 +494,7 @@ export class ApiResolvers extends Construct {
         name: 'flagArticle',
         api,
         dataSource: dataFeedTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('flagArticle', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('flagArticle', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -595,9 +506,7 @@ export class ApiResolvers extends Construct {
         name: 'listUserSubscriptions',
         api,
         dataSource: newsletterTableSource,
-        code: Code.fromAsset(functionsPath, {
-          bundling: getFunctionBundlingOptions('listUserSubscriptions', 'pipeline')
-        }),
+        code: AssetCode.fromAsset(getFunctionPath('listUserSubscriptions', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -607,9 +516,7 @@ export class ApiResolvers extends Construct {
       api,
       dataSource: isAuthorizedFunctionSource,
       runtime: FunctionRuntime.JS_1_0_0,
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('isAuthorized', 'pipeline')
-      })
+      code: AssetCode.fromAsset(getFunctionPath('isAuthorized', 'pipeline'))
     })
 
     const filterListByAuthorization = new AppsyncFunction(this, 'filterListByAuthorization', {
@@ -617,9 +524,7 @@ export class ApiResolvers extends Construct {
       api,
       dataSource: filterListByAuthorizationSource,
       runtime: FunctionRuntime.JS_1_0_0,
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('filterListByAuthorization', 'pipeline')
-      })
+      code: AssetCode.fromAsset(getFunctionPath('filterListByAuthorization', 'pipeline'))
     })
 
     /** AppSync GraphQL API Resolvers */
@@ -628,9 +533,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'getNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('getNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('getNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized]
     })
@@ -639,9 +542,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'listNewsletters',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('listNewsletters', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('listNewsletters', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
     })
@@ -650,9 +551,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'listPublications',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('listPublications', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('listPublications', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, listPublicationsFunction, filterListByAuthorization]
     })
@@ -661,9 +560,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'getPublication',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('getPublication', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('getPublication', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getPublication]
     })
@@ -672,9 +569,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'updateNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('updateNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('updateNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized, updateNewsletterResolverFunction]
     })
@@ -683,9 +578,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'listDataFeeds',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('listDataFeeds', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('listDataFeeds', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
     })
@@ -694,9 +587,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'getDataFeed',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('getDataFeed', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('getDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getDataFeedFunction, isAuthorized]
     })
@@ -705,9 +596,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'updateDataFeed',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('updateDataFeed', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('updateDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getDataFeedFunction, isAuthorized, updateDataFeedFunction]
     })
@@ -716,9 +605,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'listArticles',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('listArticles', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('listArticles', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getDataFeedFunction, isAuthorized, listArticlesFunction]
     })
@@ -727,9 +614,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'flagArticle',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('flagArticle', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('flagArticle', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [flagArticleFunction]
     })
@@ -742,9 +627,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'createDataFeed',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('createDataFeed', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('createDataFeed', 'resolver')),
       pipelineConfig: [createDataFeedFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
@@ -754,9 +637,7 @@ export class ApiResolvers extends Construct {
       dataSource: newsletterCreatorLambdaSource,
       typeName: 'Mutation',
       fieldName: 'createNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('createNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('createNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -764,9 +645,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'subscribeToNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('subscribeToNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('subscribeToNewsletter', 'resolver')),
       pipelineConfig: [getNewsletterFunction, isAuthorized, subscribeToNewsletterFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
@@ -775,9 +654,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'unsubscribeFromNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('unsubscribeFromNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('unsubscribeFromNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [unsubscribeFromNewsletter]
     })
@@ -786,9 +663,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'externalUnsubscribeFromNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('externalUnsubscribeFromNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('externalUnsubscribeFromNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [unsubscribeFromNewsletter]
     })
@@ -806,9 +681,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'checkSubscriptionToNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('checkSubscriptionToNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('checkSubscriptionToNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized, checkSubscriptionToNewsletterFunction]
     })
@@ -817,9 +690,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'listUserSubscriptions',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('listUserSubscriptions', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('listUserSubscriptions', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
         listUserSubscriptionsFunction,
@@ -831,9 +702,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateNewsletter',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('canUpdateNewsletter', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('canUpdateNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized]
     })
@@ -842,9 +711,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateDataFeed',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('canUpdateDataFeed', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('canUpdateDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getDataFeedFunction, isAuthorized]
     })
@@ -853,9 +720,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'getNewsletterSubscriberStats',
-      code: Code.fromAsset(functionsPath, {
-        bundling: getFunctionBundlingOptions('getNewsletterSubscriberStats', 'resolver')
-      }),
+      code: AssetCode.fromAsset(getFunctionPath('getNewsletterSubscriberStats', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized, getNewsletterSubscriberStatsFunction]
     })

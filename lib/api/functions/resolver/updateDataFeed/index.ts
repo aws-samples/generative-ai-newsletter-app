@@ -1,10 +1,9 @@
 import { type Context, util } from '@aws-appsync/utils'
-import { type UpdateDataFeedInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
   ctx.stash.root = 'DataFeed'
   const { args } = ctx
-  const input = args.input as UpdateDataFeedInput
+  const input = args.input
   if (input.id === undefined || input.id === null) {
     util.error('DataFeedID is required', 'ValidationException')
   }

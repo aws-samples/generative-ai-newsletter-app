@@ -1,9 +1,8 @@
 import { type Context, util } from '@aws-appsync/utils'
-import { type ListPublicationsInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
   ctx.stash.root = 'Publications'
-  const input = ctx.args.input as ListPublicationsInput
+  const input = ctx.args.input
   if (input.id === undefined || input.id === null) {
     util.error('NewsletterId is required', 'ValidationException')
   }

@@ -5,12 +5,11 @@ import {
   type DynamoDBQueryRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { type ListDataFeedsInput } from 'lib/shared/api'
 import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const dataFeedTypeIndex = 'type-index' // TODO - Make ENV variable
-  const input = ctx.args.input as ListDataFeedsInput
+  const input = ctx.args.input
   const includeDiscoverable = input?.includeDiscoverable !== undefined ? input.includeDiscoverable : ctx.stash.lookupDefinition.includeDiscoverable ?? false
   if (includeDiscoverable === false) {
     runtime.earlyReturn(ctx.prev.result)

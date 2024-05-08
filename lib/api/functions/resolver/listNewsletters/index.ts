@@ -5,12 +5,11 @@
  */
 
 import { type Context, util } from '@aws-appsync/utils'
-import { type ListNewslettersInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
   ctx.stash.root = 'Newsletters'
   console.log('[listNewslettersResolverRequest]', { ctx })
-  const input = ctx.args.input as ListNewslettersInput
+  const input = ctx.args.input
   if (input === undefined || (input.includeDiscoverable === undefined && input.includeOwned === undefined && input.includeShared === undefined)) {
     ctx.stash.lookupDefinition = {
       includeOwned: true,

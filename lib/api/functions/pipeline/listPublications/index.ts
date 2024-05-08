@@ -24,7 +24,7 @@ export const response = (ctx: Context): any => {
   if (ctx.error !== undefined && ctx.error !== null) {
     util.error(ctx.error.message, ctx.error.type)
   }
-  const items = []
+  const items: any[] = []
   if (ctx.result.items !== undefined) {
     for (const item of ctx.result.items) {
       const { emailKey, createdAt, newsletterId, sk, accountId } = item

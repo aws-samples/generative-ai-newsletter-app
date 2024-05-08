@@ -5,13 +5,12 @@
  */
 
 import { type Context, util, type LambdaRequest, type AppSyncIdentityLambda } from '@aws-appsync/utils'
-import { type UnsubscribeFromNewsletterInput } from 'lib/shared/api'
 
 export function request (ctx: Context): LambdaRequest {
   ctx.stash.root = 'Newsletter'
   const { args } = ctx
   const identity = ctx.identity as AppSyncIdentityLambda
-  const input = args.input as UnsubscribeFromNewsletterInput
+  const input = args.input
   if (input.id === undefined || input.id === null) {
     util.error('Newsletter ID is required', 'ValidationException')
   }

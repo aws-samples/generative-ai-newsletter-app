@@ -6,14 +6,13 @@ import {
   type AppSyncIdentityLambda
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { type ListNewslettersInput } from 'lib/shared/api'
 import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const identity = ctx.identity as AppSyncIdentityLambda
   const tableSKIndex = 'newsletter-item-type-index' // CDK doesn't have env variables yet
   const { nextToken, limit = 1000 } = ctx.args
-  const input = ctx.args.input as ListNewslettersInput
+  const input = ctx.args.input
   const includeOwned = input?.includeOwned !== undefined ? input.includeOwned : ctx.stash.lookupDefinition.includeOwned ?? false as boolean
   if (includeOwned === true) {
     return ddb.query({

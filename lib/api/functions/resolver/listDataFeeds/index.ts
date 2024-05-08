@@ -1,8 +1,7 @@
 import { type Context, util } from '@aws-appsync/utils'
-import { type ListDataFeedsInput } from 'lib/shared/api'
 
 export function request (ctx: Context): any {
-  const input = ctx.args.input as ListDataFeedsInput
+  const input = ctx.args.input
   ctx.stash.root = 'DataFeeds'
   if (input === undefined || (input.includeOwned === undefined && input.includeShared === undefined && input.includeDiscoverable === undefined)) {
     ctx.stash.lookupDefinition = {

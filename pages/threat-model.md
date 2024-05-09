@@ -2,6 +2,9 @@
 ## Application Info
 This solution provides a serverless application for setting up RSS/ATOM data feeds, generating summaries of articles from those feeds using customizable prompts, creating newsletters by selecting multiple data feeds and their summaries, generating an overall newsletter summary, subscribing to public or private newsletters, and flagging incorrect summaries for review.
 
+## Threat Model Info
+This threat model was created using the Threat Composer that is available [here](https://awslabs.github.io/threat-composer/). To view this threat model interactively in Threat Composer, download the <a href="./assets/GenAINewsletter_ThreatComposer.json" target="_blank">GenAINewsletter_ThreatComposer.json</a> and import the json into Threat Composer.
+
 
 ## Architecture
 ### Introduction
@@ -38,9 +41,11 @@ Here's a detailed description of the high-level architecture:
 
 *Overall, the Generative AI Newsletter Application leverages various AWS services, including AWS AppSync, Amazon CloudFront, AWS Step Functions, AWS Lambda, Amazon DynamoDB, Amazon S3, Amazon Bedrock, Amazon Pinpoint, and Amazon Verified.*
 ### Architecture Diagram
-![Architecture Diagram](./documentation-assets/High-Level-Architecture.jpg)
-![Data Feed Ingestion](./documentation-assets/Data-Feed-Ingestion-Flow.png)
-![Newsletter Generation](./documentation-assets/Newletter-Generator-Detailed-Architecture.png)
+![Architecture Diagram](./images/High-Level-Architecture.jpg)
+
+![Data Feed Ingestion](./images/Data-Feed-Ingestion-Flow.png)
+
+![Newsletter Generation](./images/Newletter-Generator-Detailed-Architecture.png)
 
 
 ## Dataflow
@@ -98,7 +103,7 @@ The table below categorizes the various threat sources mentioned across the thre
 | Unauthorized External Users | External entities with no system access | A malicious user (no system access)|
 
 ### Dataflow Diagram
-![Dataflow Diagram](./DataFlowDiagram.svg)
+![Dataflow Diagram](./images/DataFlowDiagram.svg)
 
 
 ## Assumptions

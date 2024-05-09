@@ -3,7 +3,7 @@
 This solution provides a serverless application for setting up RSS/ATOM data feeds, generating summaries of articles from those feeds using customizable prompts, creating newsletters by selecting multiple data feeds and their summaries, generating an overall newsletter summary, subscribing to public or private newsletters, and flagging incorrect summaries for review.
 
 ## Threat Model Info
-This threat model was created using the Threat Composer that is available [here](https://awslabs.github.io/threat-composer/). To view this threat model interactively in Threat Composer, download the [GenAINewsletter_ThreatComposer.json](assets/GenAINewsletter_ThreatComposer.json) and import the json into Threat Composer.
+This threat model was created using the Threat Composer that is available [here](https://awslabs.github.io/threat-composer/). To view this threat model interactively in Threat Composer, download the [GenAINewsletter_ThreatComposer.json](https://raw.githubusercontent.com/aws-samples/generative-ai-newsletter-app/main/pages/GenAINewsletter_ThreatComposer.json) and import the json into Threat Composer.
 
 
 ## Architecture

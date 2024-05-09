@@ -8,7 +8,6 @@ import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 
-// import { getEntityItem } from '../shared/api/schema-to-avp/permission-map'
 import middy from '@middy/core'
 import { type Context } from 'aws-lambda'
 import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
@@ -47,9 +46,12 @@ const lambdaHandler = async (event: any, context: Context): Promise<any> => {
   }
   if (event.result.items !== undefined && event.result.items.length > 0) {
     logger.debug('Checking Item Authorization for Filtering', { itemCount: event.result.items.length })
-    const items = event.result.items.filter(async (item: any) => {
-      return await checkItemAuthorization(item, schema, userId as string, accountId as string, event.requestContext)
+    const unfilteredItemPromises: Array<Promise<any>> = []
+    event.result.items.forEach(async (item: any) => {
+      unfilteredItemPromises.push(checkItemAuthorization(item, schema, userId as string, accountId as string, event.requestContext))
     })
+    const resolvedAuthItems = await Promise.all(unfilteredItemPromises)
+    const items = resolvedAuthItems.filter((item) => item.authorization).map((item) => item.item)
     logger.debug('Filtered Items', { itemCount: items.length })
     if (items.length > 0) {
       return {
@@ -70,7 +72,7 @@ const lambdaHandler = async (event: any, context: Context): Promise<any> => {
   }
 }
 
-const checkItemAuthorization = async (item: any, schema: Record<string, any>, userId: string, accountId: string, requestContext: any): Promise<boolean> => {
+const checkItemAuthorization = async (item: any, schema: Record<string, any>, userId: string, accountId: string, requestContext: any): Promise<{ item: any, authorization: boolean }> => {
   const queryString = requestContext.queryString as string
   const isAuthInput: IsAuthorizedCommandInput = {
     policyStoreId: POLICY_STORE_ID,
@@ -110,20 +112,35 @@ const checkItemAuthorization = async (item: any, schema: Record<string, any>, us
   logger.debug('AVP REQUEST', {
     isAuthInput
   })
-  const command = new IsAuthorizedCommand(isAuthInput)
-  const response = await verifiedpermissions.send(command)
-  logger.debug('AVP RESPONSE', {
-    response
-  })
+  try {
+    const command = new IsAuthorizedCommand(isAuthInput)
+    const response = await verifiedpermissions.send(command)
+    logger.debug('AVP RESPONSE', {
+      response
+    })
 
-  if (response.decision === Decision.ALLOW.toString()) {
-    metrics.addMetric('AuthCheckPassed', MetricUnits.Count, 1)
-    logger.debug('Authorized')
-    return true
-  } else {
+    if (response.decision === Decision.ALLOW.toString()) {
+      metrics.addMetric('AuthCheckPassed', MetricUnits.Count, 1)
+      logger.debug('Authorized')
+      return {
+        item,
+        authorization: true
+      }
+    } else {
+      metrics.addMetric('AuthCheckFailed', MetricUnits.Count, 1)
+      logger.debug('Not Authorized')
+      return {
+        item,
+        authorization: false
+      }
+    }
+  } catch (error) {
     metrics.addMetric('AuthCheckFailed', MetricUnits.Count, 1)
-    logger.debug('Not Authorized')
-    return false
+    logger.error('Error checking authorization', { error })
+  }
+  return {
+    item,
+    authorization: false
   }
 }
 

@@ -35,6 +35,9 @@ This serverless solution leverages a variety of AWS services, including Lambda, 
 
 ## Get Started
 
-To begin using the AWS Serverless Feed Summarizer and Newsletter Solution, simply log in to the application and follow the [user guide](user-guide) to set up your data feeds, create newsletters, and manage your subscribers.
+To begin using the AWS Serverless Feed Summarizer and Newsletter Solution, simply log in to the application and follow the [user guide](./user-guide) to set up your data feeds, create newsletters, and manage your subscribers.
 
 If you have any questions or need further assistance, please don't hesitate to reach out to our support team.
+
+## Threat Model
+To learn more about the security and threat modeling of the solution, visit the [threat model](./threat-model) page.

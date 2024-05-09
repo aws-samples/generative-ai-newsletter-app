@@ -10,7 +10,7 @@ The Generative AI Newsletter Application sample is a ready-to-use serverless sol
 
 The application offers users the ability to influence the generative AI prompts to customize how content is summarized such as the tone, intended audience, and more. Users can stylize the HTML newsletter, define how frequently newsletters are created and share the newsletters with others. 
 
-![Generative AI Newsletter Application Welcome Page](./documentation-assets/Generative-AI-Newsletter-App-Landing-Image.png)
+![Generative AI Newsletter Application Welcome Page](./pages/images/Generative-AI-Newsletter-App-Landing-Image.png)
 
 
 ## Author
@@ -22,7 +22,7 @@ The application offers users the ability to influence the generative AI prompts 
 
 ## Threat Model
 
-Review the threat model developed for the solution [here](THREAT_MODEL.md). Additionally, you can download the [Threat Model JSON](documentation-assets/GenAINewsletter_ThreatComposer.json) and view the visualized threat model by importing the JSON into [Threat Composer](https://awslabs.github.io/threat-composer/workspaces/default/dashboard).
+The threat model for this solution can be found [here](https://aws-samples.github.io/generative-ai-newsletter-app/threat-model).
 
 ## License
 

@@ -51,7 +51,7 @@ type Newsletter {
 }
 
 type Newsletters {
-  items: [Newsletter]!
+  items: [Newsletter]
   nextToken: String
 }
 

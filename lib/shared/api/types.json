@@ -1888,16 +1888,12 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
+              "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "OBJECT",
-                  "name": "Newsletter",
-                  "ofType": null
-                }
+                "kind": "OBJECT",
+                "name": "Newsletter",
+                "ofType": null
               }
             },
             "isDeprecated": false,

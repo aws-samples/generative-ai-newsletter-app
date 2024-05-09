@@ -1,3 +1,15 @@
+## **1.1.3**&emsp;<sub><sup>2024-05-09 (75b63edd9f1c703c256de64c4f772211ffcd593f...b5fe36a3c15106892d2db7ac401da386986ea218)</sup></sub>
+
+### Bug Fixes
+
+- AppSync Functions fail to compile on Windows OS \(\#24\) (6a9779b7f27bb220ae934a1bd458fa4572592fda)
+
+##### &ensp;`authz`
+
+- fixed bug causing list filter to show private items of other users \(\#31\) (dacdf50c5ddf4b4a5989380c716dd9fb6faeadea)
+
+<br>
+
 ## **1.1.2**&emsp;<sub><sup>2024-05-06 (18731f52b7c763cdaf1c5d04463ef8cec847b01b...4e5603890fcafd62a66d37524c5841079b5180c1)</sup></sub>
 
 ### Bug Fixes

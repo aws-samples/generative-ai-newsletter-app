@@ -51,6 +51,9 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: built-project
+
+    - name: Validate artifact
+      run: ls lib/api/functions/out -la
     
     - name: Generate Configuration file
       run: echo "${DEPLOY_CONFIG}" > ./bin/config.json

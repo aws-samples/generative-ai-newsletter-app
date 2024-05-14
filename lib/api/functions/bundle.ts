@@ -37,5 +37,16 @@ esbuild.build({
   target: 'esnext',
   format: 'esm',
   minify: false,
-  logLevel: 'info'
+  logLevel: 'info',
+  plugins: [
+    {
+      name: 'log-files',
+      setup (build) {
+        build.onLoad({ filter: /.*/ }, (args) => {
+          console.log(`Building: ${args.path}`)
+          return null
+        })
+      }
+    }
+  ]
 }).catch(() => process.exit(1))

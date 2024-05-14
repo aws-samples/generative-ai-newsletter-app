@@ -53,7 +53,7 @@ jobs:
         name: built-project
     
     - name: Generate Configuration file
-      run: echo $DEPLOY_CONFIG > ./bin/config.json
+      run: echo "${{env.DEPLOY_CONFIG}}" > ./bin/config.json
         
     - name: Synthesize CDK
       run: npx cdk synth

@@ -67,8 +67,8 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
             query: listUserSubscriptions
           })
         if (result.data !== undefined && result.errors === undefined) {
-          setNewsletters(result.data.listUserSubscriptions.items as Newsletter[])
-          setSubscribedCount(result.data.listUserSubscriptions.items.length)
+          setNewsletters(result.data.listUserSubscriptions?.items as Newsletter[])
+          setSubscribedCount(result.data.listUserSubscriptions?.items?.length ?? 0)
         }
       } else {
         const result =
@@ -83,7 +83,7 @@ export default function NewslettersTable(props: ListableNewslettersTableProps | 
             }
           })
         if (result.data !== undefined && result.errors === undefined) {
-          setNewsletters(result.data.listNewsletters.items as Newsletter[])
+          setNewsletters(result.data.listNewsletters?.items as Newsletter[])
         }
       }
 

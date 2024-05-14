@@ -1,3 +1,14 @@
+## **1.1.15**&emsp;<sub><sup>2024-05-14 (9dbc6a385ef48cc635f4f4fd43ff42a5d28df534...9dbc6a385ef48cc635f4f4fd43ff42a5d28df534)</sup></sub>
+
+### Bug Fixes
+
+- fixed build issue with updated schema (9dbc6a385ef48cc635f4f4fd43ff42a5d28df534)
+
+
+### BREAKING CHANGES
+-  Fails to build due to mismatch between schema and UI code (9dbc6a385ef48cc635f4f4fd43ff42a5d28df534)
+<br>
+
 ## **1.1.14**&emsp;<sub><sup>2024-05-14 (7c9bb598eb7acec96e581451c129a332789d485e...0c77e04a4b525b89b211bde101a05d3d7e93dcef)</sup></sub>
 
 ### Bug Fixes

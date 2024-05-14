@@ -156,7 +156,7 @@ export type ListNewslettersInput = {
 
 export type Newsletters = {
   __typename: "Newsletters",
-  items:  Array<Newsletter | null >,
+  items?:  Array<Newsletter | null > | null,
   nextToken?: string | null,
 };
 
@@ -378,7 +378,7 @@ export type ListNewslettersQueryVariables = {
 export type ListNewslettersQuery = {
   listNewsletters?:  {
     __typename: "Newsletters",
-    items:  Array< {
+    items?:  Array< {
       __typename: "Newsletter",
       id: string,
       title?: string | null,
@@ -393,7 +393,7 @@ export type ListNewslettersQuery = {
       currentUserSubscribed?: boolean | null,
       authGranted?: AuthGranted | null,
       scheduleId?: string | null,
-    } | null >,
+    } | null > | null,
     nextToken?: string | null,
   } | null,
 };
@@ -593,7 +593,7 @@ export type ListUserSubscriptionsQueryVariables = {
 export type ListUserSubscriptionsQuery = {
   listUserSubscriptions?:  {
     __typename: "Newsletters",
-    items:  Array< {
+    items?:  Array< {
       __typename: "Newsletter",
       id: string,
       title?: string | null,
@@ -608,7 +608,7 @@ export type ListUserSubscriptionsQuery = {
       currentUserSubscribed?: boolean | null,
       authGranted?: AuthGranted | null,
       scheduleId?: string | null,
-    } | null >,
+    } | null > | null,
     nextToken?: string | null,
   } | null,
 };

@@ -1,3 +1,20 @@
+## **1.1.14**&emsp;<sub><sup>2024-05-14 (7c9bb598eb7acec96e581451c129a332789d485e...0c77e04a4b525b89b211bde101a05d3d7e93dcef)</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`authz`
+
+- second fix for the authz list filtering \(\#34\) (0c77e04a4b525b89b211bde101a05d3d7e93dcef)
+
+
+### BREAKING CHANGES
+- `authz` Previous versions have security vulnerabilities showing private items in lists\. (0c77e04a4b525b89b211bde101a05d3d7e93dcef)
+
+Details for the items are still restricted\.
+  
+  fix \#30
+<br>
+
 ## **1.1.3**&emsp;<sub><sup>2024-05-09 (75b63edd9f1c703c256de64c4f772211ffcd593f...b5fe36a3c15106892d2db7ac401da386986ea218)</sup></sub>
 
 ### Bug Fixes

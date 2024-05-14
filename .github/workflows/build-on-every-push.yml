@@ -54,14 +54,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: built-ui
+        merge-multiple: true
     
     - name: Download Resolver Function Artifacts
       uses: actions/download-artifact@v4
       with:
         name: built-resolver-functions
-
-    - name: Validate artifact
-      run: ls -la
+        merge-multiple: true
     
     - name: Generate Configuration file
       run: echo "${DEPLOY_CONFIG}" > ./bin/config.json

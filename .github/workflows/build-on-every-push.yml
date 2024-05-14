@@ -61,7 +61,7 @@ jobs:
         name: built-resolver-functions
 
     - name: Validate artifact
-      run: ls lib/api/functions/out -la
+      run: ls -la
     
     - name: Generate Configuration file
       run: echo "${DEPLOY_CONFIG}" > ./bin/config.json

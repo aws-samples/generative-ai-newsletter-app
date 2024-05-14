@@ -56,7 +56,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: built-ui
-        path: lib/user-interface/genai-newsletter-app/dist/
+        path: lib/user-interface/genai-newsletter-ui/dist/
         merge-multiple: true
     
     - name: Download Resolver Function Artifacts

@@ -1,4 +1,6 @@
+# This workflow is designed to build and synthesize each push to reduce risk of failing builds moving into main
 name: Build and Synthesize
+
 
 on:
   push:
@@ -54,12 +56,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: built-ui
+        path: lib/user-interface/genai-newsletter-app/dist/
         merge-multiple: true
     
     - name: Download Resolver Function Artifacts
       uses: actions/download-artifact@v4
       with:
         name: built-resolver-functions
+        path: lib/api/functions/out/
         merge-multiple: true
     
     - name: Generate Configuration file

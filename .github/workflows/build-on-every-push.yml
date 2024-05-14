@@ -51,6 +51,9 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: built-project
+        path: |
+          lib/api/functions/out/*
+          lib/user-interface/genai-newsletter-ui/dist/*
     
     - name: Generate Configuration file
       run: echo "${DEPLOY_CONFIG}" > ./bin/config.json

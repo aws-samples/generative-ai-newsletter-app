@@ -12,7 +12,7 @@
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module"
+    "sourceType": "commonjs"
   },
   "plugins": [
     "react"

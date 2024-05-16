@@ -20,7 +20,6 @@ import {
 import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-// Note: Requires local path rather than shared path to bundle deps correctly
 import NewsletterEmail from '../shared/email-generator/emails/newsletter'
 import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 import { render } from '@react-email/render'
@@ -31,7 +30,7 @@ import { type ArticleData } from '../shared/prompts/types'
 import { MultiSizeFormattedResponse } from '../shared/prompts/prompt-processing'
 import { ArticleSummaryType, type Newsletter } from '../shared/api/API'
 import { type NewsletterStyle } from '../shared/common/newsletter-style'
-import { generateNewsletterJSON } from 'lib/shared/email-generator/newsletter-json-data'
+import { generateNewsletterJSON } from '../shared/email-generator/newsletter-json-data'
 
 const SERVICE_NAME = 'email-generator'
 

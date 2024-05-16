@@ -82,7 +82,7 @@
     "vitepress": "^1.1.4"
   },
   "dependencies": {
-    "@anthropic-ai/bedrock-sdk": "^0.9.1",
+    "@anthropic-ai/bedrock-sdk": "^0.9.8",
     "@aws-amplify/auth": "^6.3.1",
     "@aws-amplify/core": "^6.2.1",
     "@aws-amplify/ui-react": "^6.1.6",

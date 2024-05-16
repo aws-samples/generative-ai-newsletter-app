@@ -32,7 +32,7 @@ import { CfnScheduleGroup } from 'aws-cdk-lib/aws-scheduler'
 import { Construct } from 'constructs'
 import { PinpointApp } from './pinpoint-app'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
-import { type UIConfig } from 'lib/shared'
+import { type UIConfig } from '../shared'
 import { NagSuppressions } from 'cdk-nag'
 
 interface NewsletterGeneratorProps {

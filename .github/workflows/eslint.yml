@@ -32,10 +32,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install ESLint
-        run: |
-          npm install eslint@8.10.0
-          npm install @microsoft/eslint-formatter-sarif@2.1.7
+      - name: Install Node Packages
+        run: npm install --save-dev
 
       - name: Run ESLint
         run: npx eslint .

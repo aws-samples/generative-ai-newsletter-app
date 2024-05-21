@@ -6,7 +6,6 @@
   },
   "extends": [
     "plugin:react/jsx-runtime",
-    "standard-with-typescript",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended"
   ],

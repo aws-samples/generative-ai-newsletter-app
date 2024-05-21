@@ -13,3 +13,4 @@ lib/api/functions/resolver/*/index.js
 lib/api/functions/pipeline/*/index.js
 
 scripts/*
+pages/*

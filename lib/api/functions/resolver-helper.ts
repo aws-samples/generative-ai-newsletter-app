@@ -54,7 +54,7 @@ export const convertFieldIdToObjectId = (obj: any, idFieldName: string): any => 
     return obj
   }
   obj.id = obj[idFieldName]
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+   
   delete obj[idFieldName]
   return obj
 }
@@ -73,7 +73,7 @@ export const convertFieldIdToObject = (obj: any, fieldIdName: string, objectName
     __typename: objectName,
     id: obj[fieldIdName]
   }
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+   
   delete obj[fieldIdName]
   return obj
 }

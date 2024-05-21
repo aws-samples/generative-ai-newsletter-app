@@ -7,3 +7,7 @@ lib/user-interface/genai-newsletter-ui/vite.config.ts
 vite.config.ts
 misc/
 lib/api/functions/out/*
+cdk.out/*
+node_modules/
+lib/api/functions/resolver/*/index.js
+lib/api/functions/pipeline/*/index.js

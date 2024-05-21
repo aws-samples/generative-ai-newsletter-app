@@ -34,10 +34,9 @@ jobs:
           node-version: 20
       - name: Install Node Packages
         run: npm install --save-dev
-
       - name: Run ESLint
-        run: npx eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
-        continue-on-error: true
+        run: npx eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --verbose
+        continue-on-error: false
 
       - name: Upload analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3

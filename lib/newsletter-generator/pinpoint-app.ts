@@ -169,17 +169,14 @@ export class PinpointApp extends Construct {
       pinpointSubscribeUserToNewsletterPolicyStatement
 
     /**
-     * CDK NAG Suppressions
-     */
+       * CDK NAG Suppressions
+       */
     NagSuppressions.addResourceSuppressions(
       [pinpointCampaignHookFunction, pinpointProjectAdminPolicy],
-      [
-        {
-          id: 'AwsSolutions-IAM5',
-          reason: 'Allowing CloudWatch/XRay'
-        }
-      ],
-      true
+      [{
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing CloudWatch/XRay'
+      }], true
     )
   }
 }

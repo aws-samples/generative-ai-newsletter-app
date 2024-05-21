@@ -22,10 +22,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useOnFollow from '../../common/hooks/use-on-follow'
 import { UserContext } from '../../common/user-context'
-import {
-  listNewsletters,
-  listUserSubscriptions
-} from '../../../../../shared/api/graphql/queries'
+import { listNewsletters, listUserSubscriptions } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
 export interface ListableNewslettersTableProps {
@@ -44,25 +41,17 @@ export interface UserSubscriptionNewslettersTableProps {
   includeSubscriptions?: boolean
 }
 
-export default function NewslettersTable(
-  props: ListableNewslettersTableProps | UserSubscriptionNewslettersTableProps
-) {
+export default function NewslettersTable(props: ListableNewslettersTableProps | UserSubscriptionNewslettersTableProps) {
   const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
   const navigate = useNavigate()
   const onFollow = useOnFollow()
-  const {
-    includeOwned,
-    includeDiscoverable,
-    includeShared,
-    includeSubscriptions
-  } = props
+  const { includeOwned, includeDiscoverable, includeShared, includeSubscriptions } = props
   const [newsletters, setNewsletters] = useState<Newsletter[]>([])
   const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter>()
   const [loadingNewsletters, setLoadingNewsletters] = useState<boolean>(true)
   const [subscribedCount, setSubscribedCount] = useState<number>(0)
-  const [subscribedAlertDismissed, setSubscribedAlertDismissed] =
-    useState<boolean>(false)
+  const [subscribedAlertDismissed, setSubscribedAlertDismissed] = useState<boolean>(false)
   const [editDisabled, setEditDisabled] = useState<boolean>(false)
 
   const getNewsletters = useCallback(async () => {
@@ -73,43 +62,38 @@ export default function NewslettersTable(
     try {
       setSubscribedCount(0)
       if (includeSubscriptions === true) {
-        const result = await apiClient.graphql({
-          query: listUserSubscriptions
-        })
+        const result =
+          await apiClient.graphql({
+            query: listUserSubscriptions
+          })
         if (result.data !== undefined && result.errors === undefined) {
-          setNewsletters(
-            result.data.listUserSubscriptions?.items as Newsletter[]
-          )
-          setSubscribedCount(
-            result.data.listUserSubscriptions?.items?.length ?? 0
-          )
+          setNewsletters(result.data.listUserSubscriptions?.items as Newsletter[])
+          setSubscribedCount(result.data.listUserSubscriptions?.items?.length ?? 0)
         }
       } else {
-        const result = await apiClient.graphql({
-          query: listNewsletters,
-          variables: {
-            input: {
-              includeDiscoverable,
-              includeOwned,
-              includeShared
+        const result =
+          await apiClient.graphql({
+            query: listNewsletters,
+            variables: {
+              input: {
+                includeDiscoverable,
+                includeOwned,
+                includeShared
+              }
             }
-          }
-        })
+          })
         if (result.data !== undefined && result.errors === undefined) {
           setNewsletters(result.data.listNewsletters?.items as Newsletter[])
         }
       }
+
+
+
     } catch (e) {
       console.error(e)
     }
     setLoadingNewsletters(false)
-  }, [
-    appContext,
-    includeDiscoverable,
-    includeOwned,
-    includeShared,
-    includeSubscriptions
-  ])
+  }, [appContext, includeDiscoverable, includeOwned, includeShared, includeSubscriptions])
 
   const handleUpdateDropdownItemClick = (
     event: CustomEvent<ButtonDropdownProps.ItemClickDetails>
@@ -164,7 +148,7 @@ export default function NewslettersTable(
     {
       id: 'Newsletter Created',
       header: 'Newsletter Created',
-      cell: (item: Newsletter) => new Date(item.createdAt ?? '').toUTCString()
+      cell: (item: Newsletter) => new Date(item.createdAt ?? "").toUTCString()
     }
   ]
   const newslettersTableColumnDisplay = [
@@ -201,21 +185,17 @@ export default function NewslettersTable(
   )
 
   return (
-    <SpaceBetween direction="vertical" size="s">
-      {subscribedCount > newsletters.length && !subscribedAlertDismissed ? (
-        <Alert
-          type="warning"
+    <SpaceBetween direction='vertical' size='s'>
+      {(subscribedCount > newsletters.length && !subscribedAlertDismissed) ?
+        <Alert type='warning'
           dismissible
           onDismiss={() => setSubscribedAlertDismissed(true)}
         >
-          There are {subscribedCount - newsletters.length} newsletters you are
-          subscribed to that are no longer visible to you. This can happen when
-          a newsletter owner stops sharing a newsletter and doesn't unsubscribe
-          its users. Please contact your administrator for support.
-        </Alert>
-      ) : (
-        <></>
-      )}
+          There are {subscribedCount - newsletters.length} newsletters you are subscribed to that are no longer visible to you.
+          This can happen when a newsletter owner stops sharing a newsletter and doesn't unsubscribe its users.
+          Please contact your administrator for support.
+        </Alert> : <></>
+      }
       <Table
         {...collectionProps}
         columnDisplay={newslettersTableColumnDisplay}
@@ -243,9 +223,7 @@ export default function NewslettersTable(
         selectedItems={selectedNewsletter ? [selectedNewsletter] : []}
         onSelectionChange={({ detail }) => {
           setSelectedNewsletter(detail.selectedItems[0] as Newsletter)
-          setEditDisabled(
-            detail.selectedItems[0]?.account?.id !== userContext?.accountId
-          )
+          setEditDisabled(detail.selectedItems[0]?.account?.id !== userContext?.accountId)
         }}
         header={
           <Header
@@ -260,13 +238,7 @@ export default function NewslettersTable(
                   Create New Newsletter
                 </Button>
                 <ButtonDropdown
-                  items={[
-                    {
-                      text: 'Edit Newsletter',
-                      id: 'edit',
-                      disabled: editDisabled
-                    }
-                  ]}
+                  items={[{ text: 'Edit Newsletter', id: 'edit', disabled: editDisabled }]}
                   onItemClick={handleUpdateDropdownItemClick}
                 >
                   Update Newsletter

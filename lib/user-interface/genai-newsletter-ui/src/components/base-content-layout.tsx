@@ -24,13 +24,15 @@ export default function BaseContentLayout(props: BaseContentLayoutProps) {
     setDismissed(true)
   }
   return (
-    <ContentLayout header={header}>
+    <ContentLayout
+      header={header}
+    >
       {appContext?.ui?.persistentAlert && !dismissed ? (
         <Alert
           type={appContext.ui.persistentAlert.type}
           action={
             appContext.ui.persistentAlert.buttonHref &&
-            appContext.ui.persistentAlert.buttonText ? (
+              appContext.ui.persistentAlert.buttonText ? (
               <SpaceBetween direction="horizontal" size="s">
                 <Button href={appContext.ui.persistentAlert.buttonHref}>
                   {appContext.ui.persistentAlert.buttonText}

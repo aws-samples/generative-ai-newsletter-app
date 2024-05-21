@@ -49,8 +49,14 @@ function App() {
             />
             <Route path="/feeds" element={<DataFeedsDashboard />} />
             <Route path="/feeds/create" element={<CreateDataFeed />} />
-            <Route path="/feeds/:dataFeedId" element={<DataFeedDetails />} />
-            <Route path="/feeds/:dataFeedId/edit" element={<EditDataFeed />} />
+            <Route
+              path="/feeds/:dataFeedId"
+              element={<DataFeedDetails />}
+            />
+            <Route
+              path="/feeds/:dataFeedId/edit"
+              element={<EditDataFeed />}
+            />
           </Routes>
         </div>
       </BrowserRouter>

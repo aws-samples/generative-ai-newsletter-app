@@ -3,7 +3,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-
+ 
 export class ArticleIngestorPromptConfiguration {
   private static readonly BASE_PROMPT =
     '\n\nHuman: ' +

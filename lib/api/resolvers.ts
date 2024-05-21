@@ -15,14 +15,7 @@ import {
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type ApiProps } from '.'
-import {
-  Effect,
-  Policy,
-  PolicyDocument,
-  PolicyStatement,
-  Role,
-  ServicePrincipal
-} from 'aws-cdk-lib/aws-iam'
+import { Effect, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 
 interface ApiResolversProps extends ApiProps {
   api: GraphqlApi
@@ -31,65 +24,47 @@ interface ApiResolversProps extends ApiProps {
 export class ApiResolvers extends Construct {
   constructor (scope: Construct, id: string, props: ApiResolversProps) {
     super(scope, id)
-    const { api, dataFeedTable, newsletterTable, unauthenticatedUserRole } =
-      props
+    const { api, dataFeedTable, newsletterTable, unauthenticatedUserRole } = props
 
     const functionsPath = path.join(__dirname, 'functions')
-    const getFunctionPath = (
-      functionName: string,
-      functionType: 'pipeline' | 'resolver'
-    ): string => {
-      return path.join(
-        functionsPath,
-        'out',
-        functionType,
-        functionName,
-        'index.js'
-      )
+    const getFunctionPath = (functionName: string, functionType: 'pipeline' | 'resolver'): string => {
+      return path.join(functionsPath, 'out', functionType, functionName, 'index.js')
     }
 
     /** ****** DATA SOURCES FOR AppSync ******* **/
 
-    const newsletterTableSourceRole = new Role(
-      this,
-      'NewsletterTableSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          NewsletterTableSourceRolePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: [
-                  'dynamodb:GetItem',
-                  'dynamodb:PutItem',
-                  'dynamodb:UpdateItem',
-                  'dynamodb:DeleteItem',
-                  'dynamodb:Query',
-                  'dynamodb:Scan',
-                  'dynamodb:BatchGetItem'
-                ],
-                resources: [
-                  newsletterTable.tableArn,
-                  `${newsletterTable.tableArn}/index/${props.newsletterTableItemTypeGSI}`
-                ]
-              })
-            ]
-          })
-        }
+    const newsletterTableSourceRole = new Role(this, 'NewsletterTableSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        NewsletterTableSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'dynamodb:GetItem',
+                'dynamodb:PutItem',
+                'dynamodb:UpdateItem',
+                'dynamodb:DeleteItem',
+                'dynamodb:Query',
+                'dynamodb:Scan',
+                'dynamodb:BatchGetItem'
+              ],
+              resources: [
+                newsletterTable.tableArn,
+                `${newsletterTable.tableArn}/index/${props.newsletterTableItemTypeGSI}`
+              ]
+            })
+          ]
+        })
       }
-    )
+    })
 
-    const newsletterTableSource = new DynamoDbDataSource(
-      this,
-      'NewsletterTableSource',
-      {
-        api,
-        table: newsletterTable,
-        serviceRole: newsletterTableSourceRole.withoutPolicyUpdates(),
-        name: 'NewsletterTableSource',
-        description: 'DynamoDB data source for newsletter table'
-      }
-    )
+    const newsletterTableSource = new DynamoDbDataSource(this, 'NewsletterTableSource', {
+      api,
+      table: newsletterTable,
+      serviceRole: newsletterTableSourceRole.withoutPolicyUpdates(),
+      name: 'NewsletterTableSource',
+      description: 'DynamoDB data source for newsletter table'
+    })
 
     const dataFeedTableSourceRole = new Role(this, 'DataFeedTableSourceRole', {
       assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
@@ -114,209 +89,174 @@ export class ApiResolvers extends Construct {
           ]
         })
       }
+    }
+    )
+
+    const dataFeedTableSource = new DynamoDbDataSource(this, 'DataFeedTableSource', {
+      api,
+      table: dataFeedTable,
+      description: 'DynamoDB data source for Data Feed table',
+      serviceRole: dataFeedTableSourceRole.withoutPolicyUpdates(),
+      name: 'DataFeedTableSource'
     })
 
-    const dataFeedTableSource = new DynamoDbDataSource(
-      this,
-      'DataFeedTableSource',
-      {
-        api,
-        table: dataFeedTable,
-        description: 'DynamoDB data source for Data Feed table',
-        serviceRole: dataFeedTableSourceRole.withoutPolicyUpdates(),
-        name: 'DataFeedTableSource'
+    const dataFeedSubscriberLambdaSourceRole = new Role(this, 'DataFeedSubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        DataFeedSubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.feedSubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
+    }
     )
 
-    const dataFeedSubscriberLambdaSourceRole = new Role(
-      this,
-      'DataFeedSubscriberLambdaSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          DataFeedSubscriberLambdaSourceRolePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [props.functions.feedSubscriberFunction.functionArn]
-              })
-            ]
-          })
-        }
+    const dataFeedSubscriberLambdaSource = new LambdaDataSource(this, 'DataFeedSubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.feedSubscriberFunction,
+      name: 'DataFeedSubscriberLambdaSource',
+      description: 'Lambda data source for feedSubscriber function',
+      serviceRole: dataFeedSubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
+
+    const newsletterCreatorLambdaSourceRole = new Role(this, 'NewsletterCreatorLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        NewsletterCreatorLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.createNewsletterFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
+    })
+
+    const newsletterCreatorLambdaSource = new LambdaDataSource(this, 'NewsletterCreatorLambdaSource', {
+      api,
+      lambdaFunction: props.functions.createNewsletterFunction,
+      name: 'NewsletterCreatorLambdaSource',
+      description: 'Lambda data source for createNewsletter function',
+      serviceRole: newsletterCreatorLambdaSourceRole.withoutPolicyUpdates()
+    })
+
+    const userSubscriberLambdaSourceRole = new Role(this, 'UserSubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        UserSubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.userSubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
+      }
+    }
     )
 
-    const dataFeedSubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'DataFeedSubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.feedSubscriberFunction,
-        name: 'DataFeedSubscriberLambdaSource',
-        description: 'Lambda data source for feedSubscriber function',
-        serviceRole: dataFeedSubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+    const userSubscriberLambdaSource = new LambdaDataSource(this, 'UserSubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.userSubscriberFunction,
+      name: 'UserSubscriberLambdaSource',
+      description: 'Lambda data source for userSubscriber function',
+      serviceRole: userSubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
 
-    const newsletterCreatorLambdaSourceRole = new Role(
-      this,
-      'NewsletterCreatorLambdaSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          NewsletterCreatorLambdaSourceRolePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [
-                  props.functions.createNewsletterFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
+    const userUnsubscriberLambdaSourceRole = new Role(this, 'UserUnsubscriberLambdaSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        UserUnsubscriberLambdaSourceRolePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.userUnsubscriberFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
-    )
+    })
 
-    const newsletterCreatorLambdaSource = new LambdaDataSource(
-      this,
-      'NewsletterCreatorLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.createNewsletterFunction,
-        name: 'NewsletterCreatorLambdaSource',
-        description: 'Lambda data source for createNewsletter function',
-        serviceRole: newsletterCreatorLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+    const userUnsubscriberLambdaSource = new LambdaDataSource(this, 'UserUnsubscriberLambdaSource', {
+      api,
+      lambdaFunction: props.functions.userUnsubscriberFunction,
+      name: 'UserUnsubscriberLambdaSource',
+      description: 'Lambda data source for userUnsubscriber function',
+      serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates()
+    })
 
-    const userSubscriberLambdaSourceRole = new Role(
-      this,
-      'UserSubscriberLambdaSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          UserSubscriberLambdaSourceRolePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [props.functions.userSubscriberFunction.functionArn]
-              })
-            ]
-          })
-        }
+    const isAuthorizedFunctionSourceRole = new Role(this, 'IsAuthorizedFunctionSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        IsAuthInvokePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.graphqlReadAuthorizerFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
-    )
+    })
 
-    const userSubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'UserSubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.userSubscriberFunction,
-        name: 'UserSubscriberLambdaSource',
-        description: 'Lambda data source for userSubscriber function',
-        serviceRole: userSubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+    const isAuthorizedFunctionSource = new LambdaDataSource(this, 'IsAuthorizedFunctionSource', {
+      api,
+      lambdaFunction: props.functions.graphqlReadAuthorizerFunction,
+      name: 'isAuthorizedFunctionSource',
+      description: 'Lambda data source for isAuthorized function',
+      serviceRole: isAuthorizedFunctionSourceRole.withoutPolicyUpdates()
+    })
 
-    const userUnsubscriberLambdaSourceRole = new Role(
-      this,
-      'UserUnsubscriberLambdaSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          UserUnsubscriberLambdaSourceRolePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [
-                  props.functions.userUnsubscriberFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
+    const filterListByAuthorizationFunctionSourceRole = new Role(this, 'FilterListByAuthFunctionSourceRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
+      inlinePolicies: {
+        FilterIsAuthInvokePolicy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                'lambda:InvokeFunction'
+              ],
+              resources: [
+                props.functions.graphqlFilterReadAuthorizerFunction.functionArn
+              ]
+            })
+          ]
+        })
       }
-    )
+    })
 
-    const userUnsubscriberLambdaSource = new LambdaDataSource(
-      this,
-      'UserUnsubscriberLambdaSource',
-      {
-        api,
-        lambdaFunction: props.functions.userUnsubscriberFunction,
-        name: 'UserUnsubscriberLambdaSource',
-        description: 'Lambda data source for userUnsubscriber function',
-        serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
-
-    const isAuthorizedFunctionSourceRole = new Role(
-      this,
-      'IsAuthorizedFunctionSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          IsAuthInvokePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [
-                  props.functions.graphqlReadAuthorizerFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
-
-    const isAuthorizedFunctionSource = new LambdaDataSource(
-      this,
-      'IsAuthorizedFunctionSource',
-      {
-        api,
-        lambdaFunction: props.functions.graphqlReadAuthorizerFunction,
-        name: 'isAuthorizedFunctionSource',
-        description: 'Lambda data source for isAuthorized function',
-        serviceRole: isAuthorizedFunctionSourceRole.withoutPolicyUpdates()
-      }
-    )
-
-    const filterListByAuthorizationFunctionSourceRole = new Role(
-      this,
-      'FilterListByAuthFunctionSourceRole',
-      {
-        assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
-        inlinePolicies: {
-          FilterIsAuthInvokePolicy: new PolicyDocument({
-            statements: [
-              new PolicyStatement({
-                actions: ['lambda:InvokeFunction'],
-                resources: [
-                  props.functions.graphqlFilterReadAuthorizerFunction
-                    .functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
-
-    const filterListByAuthorizationSource = new LambdaDataSource(
-      this,
-      'FilterIsAuthorizedFunctionSource',
-      {
-        api,
-        lambdaFunction: props.functions.graphqlFilterReadAuthorizerFunction,
-        name: 'filterIsAuthorizedFunctionSource',
-        description: 'Lambda data source for isAuthorized function',
-        serviceRole:
-          filterListByAuthorizationFunctionSourceRole.withoutPolicyUpdates()
-      }
-    )
+    const filterListByAuthorizationSource = new LambdaDataSource(this, 'FilterIsAuthorizedFunctionSource', {
+      api,
+      lambdaFunction: props.functions.graphqlFilterReadAuthorizerFunction,
+      name: 'filterIsAuthorizedFunctionSource',
+      description: 'Lambda data source for isAuthorized function',
+      serviceRole: filterListByAuthorizationFunctionSourceRole.withoutPolicyUpdates()
+    })
 
     /** AppSync Resolver Pipeline Functions */
 
@@ -339,9 +279,7 @@ export class ApiResolvers extends Construct {
         name: 'listNewslettersOwned',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersOwned', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersOwned', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -354,9 +292,7 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersDiscoverable', 'pipeline')
-        )
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersDiscoverable', 'pipeline'))
       }
     )
 
@@ -368,9 +304,7 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersShared', 'pipeline')
-        )
+        code: AssetCode.fromAsset(getFunctionPath('listNewslettersShared', 'pipeline'))
       }
     )
 
@@ -395,9 +329,7 @@ export class ApiResolvers extends Construct {
         name: 'listPublications',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listPublications', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listPublications', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -408,9 +340,7 @@ export class ApiResolvers extends Construct {
         name: 'getPublication',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('getPublication', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('getPublication', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -422,9 +352,7 @@ export class ApiResolvers extends Construct {
         name: 'updateNewsletter',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('updateNewsletter', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('updateNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -435,9 +363,7 @@ export class ApiResolvers extends Construct {
         name: 'subscribeToNewsletter',
         api,
         dataSource: userSubscriberLambdaSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('subscribeToNewsletter', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('subscribeToNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -449,9 +375,7 @@ export class ApiResolvers extends Construct {
         name: 'unsubscribeFromNewsletter',
         api,
         dataSource: userUnsubscriberLambdaSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('unsubscribeFromNewsletter', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('unsubscribeFromNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -463,9 +387,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsOwned',
         api,
         dataSource: dataFeedTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsOwned', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsOwned', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -477,9 +399,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsShared',
         api,
         dataSource: dataFeedTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsShared', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsShared', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -491,9 +411,7 @@ export class ApiResolvers extends Construct {
         name: 'listDataFeedsDiscoverable',
         api,
         dataSource: dataFeedTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsDiscoverable', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listDataFeedsDiscoverable', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -505,9 +423,7 @@ export class ApiResolvers extends Construct {
         name: 'createDataFeed',
         api,
         dataSource: dataFeedSubscriberLambdaSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('createDataFeed', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('createDataFeed', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -530,9 +446,7 @@ export class ApiResolvers extends Construct {
         name: 'updateDataFeed',
         api,
         dataSource: dataFeedTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('updateDataFeed', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('updateDataFeed', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -556,9 +470,7 @@ export class ApiResolvers extends Construct {
         name: 'checkSubscriptionToNewsletter',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('checkSubscriptionToNewsletter', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('checkSubscriptionToNewsletter', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -570,9 +482,7 @@ export class ApiResolvers extends Construct {
         name: 'getNewsletterSubscriberStats',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('getNewsletterSubscriberStats', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('getNewsletterSubscriberStats', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -596,9 +506,7 @@ export class ApiResolvers extends Construct {
         name: 'listUserSubscriptions',
         api,
         dataSource: newsletterTableSource,
-        code: AssetCode.fromAsset(
-          getFunctionPath('listUserSubscriptions', 'pipeline')
-        ),
+        code: AssetCode.fromAsset(getFunctionPath('listUserSubscriptions', 'pipeline')),
         runtime: FunctionRuntime.JS_1_0_0
       }
     )
@@ -611,19 +519,13 @@ export class ApiResolvers extends Construct {
       code: AssetCode.fromAsset(getFunctionPath('isAuthorized', 'pipeline'))
     })
 
-    const filterListByAuthorization = new AppsyncFunction(
-      this,
-      'filterListByAuthorization',
-      {
-        name: 'filterListByAuthorization',
-        api,
-        dataSource: filterListByAuthorizationSource,
-        runtime: FunctionRuntime.JS_1_0_0,
-        code: AssetCode.fromAsset(
-          getFunctionPath('filterListByAuthorization', 'pipeline')
-        )
-      }
-    )
+    const filterListByAuthorization = new AppsyncFunction(this, 'filterListByAuthorization', {
+      name: 'filterListByAuthorization',
+      api,
+      dataSource: filterListByAuthorizationSource,
+      runtime: FunctionRuntime.JS_1_0_0,
+      code: AssetCode.fromAsset(getFunctionPath('filterListByAuthorization', 'pipeline'))
+    })
 
     /** AppSync GraphQL API Resolvers */
 
@@ -642,27 +544,16 @@ export class ApiResolvers extends Construct {
       fieldName: 'listNewsletters',
       code: AssetCode.fromAsset(getFunctionPath('listNewsletters', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        listNewslettersOwned,
-        listNewslettersDiscoverable,
-        listNewslettersShared,
-        filterListByAuthorization
-      ]
+      pipelineConfig: [listNewslettersOwned, listNewslettersDiscoverable, listNewslettersShared, filterListByAuthorization]
     })
 
     new Resolver(this, 'ListPublicationsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'listPublications',
-      code: AssetCode.fromAsset(
-        getFunctionPath('listPublications', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('listPublications', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getNewsletterFunction,
-        listPublicationsFunction,
-        filterListByAuthorization
-      ]
+      pipelineConfig: [getNewsletterFunction, listPublicationsFunction, filterListByAuthorization]
     })
 
     new Resolver(this, 'getPublicationResolverFunction', {
@@ -678,15 +569,9 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'updateNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('updateNewsletter', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('updateNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getNewsletterFunction,
-        isAuthorized,
-        updateNewsletterResolverFunction
-      ]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, updateNewsletterResolverFunction]
     })
 
     new Resolver(this, 'ListDataFeedsResolver', {
@@ -695,12 +580,7 @@ export class ApiResolvers extends Construct {
       fieldName: 'listDataFeeds',
       code: AssetCode.fromAsset(getFunctionPath('listDataFeeds', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        listDataFeedsOwnedFunction,
-        listDataFeedsSharedFunction,
-        listDataFeedsDiscoverable,
-        filterListByAuthorization
-      ]
+      pipelineConfig: [listDataFeedsOwnedFunction, listDataFeedsSharedFunction, listDataFeedsDiscoverable, filterListByAuthorization]
     })
 
     new Resolver(this, 'GetDataFeedResolver', {
@@ -718,11 +598,7 @@ export class ApiResolvers extends Construct {
       fieldName: 'updateDataFeed',
       code: AssetCode.fromAsset(getFunctionPath('updateDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getDataFeedFunction,
-        isAuthorized,
-        updateDataFeedFunction
-      ]
+      pipelineConfig: [getDataFeedFunction, isAuthorized, updateDataFeedFunction]
     })
 
     new Resolver(this, 'ListArticlesResolver', {
@@ -761,9 +637,7 @@ export class ApiResolvers extends Construct {
       dataSource: newsletterCreatorLambdaSource,
       typeName: 'Mutation',
       fieldName: 'createNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('createNewsletter', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('createNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -771,14 +645,8 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'subscribeToNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('subscribeToNewsletter', 'resolver')
-      ),
-      pipelineConfig: [
-        getNewsletterFunction,
-        isAuthorized,
-        subscribeToNewsletterFunction
-      ],
+      code: AssetCode.fromAsset(getFunctionPath('subscribeToNewsletter', 'resolver')),
+      pipelineConfig: [getNewsletterFunction, isAuthorized, subscribeToNewsletterFunction],
       runtime: FunctionRuntime.JS_1_0_0
     })
 
@@ -786,72 +654,55 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Mutation',
       fieldName: 'unsubscribeFromNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('unsubscribeFromNewsletter', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('unsubscribeFromNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [unsubscribeFromNewsletter]
     })
 
-    const externalUnsubscribeResolver = new Resolver(
-      this,
-      'ExternalUnsubscriberResolver',
-      {
-        api,
-        typeName: 'Mutation',
-        fieldName: 'externalUnsubscribeFromNewsletter',
-        code: AssetCode.fromAsset(
-          getFunctionPath('externalUnsubscribeFromNewsletter', 'resolver')
-        ),
-        runtime: FunctionRuntime.JS_1_0_0,
-        pipelineConfig: [unsubscribeFromNewsletter]
-      }
-    )
-    unauthenticatedUserRole.attachInlinePolicy(
-      new Policy(this, 'UnauthRoleUnsubscribe', {
-        statements: [
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: ['appsync:GraphQL'],
-            resources: [externalUnsubscribeResolver.arn]
-          })
-        ]
-      })
-    )
+    const externalUnsubscribeResolver = new Resolver(this, 'ExternalUnsubscriberResolver', {
+      api,
+      typeName: 'Mutation',
+      fieldName: 'externalUnsubscribeFromNewsletter',
+      code: AssetCode.fromAsset(getFunctionPath('externalUnsubscribeFromNewsletter', 'resolver')),
+      runtime: FunctionRuntime.JS_1_0_0,
+      pipelineConfig: [unsubscribeFromNewsletter]
+    })
+    unauthenticatedUserRole.attachInlinePolicy(new Policy(this, 'UnauthRoleUnsubscribe', {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['appsync:GraphQL'],
+          resources: [externalUnsubscribeResolver.arn]
+        })
+      ]
+    }))
 
     new Resolver(this, 'CheckSubscriptionToNewsletterResolver', {
       api,
       typeName: 'Query',
       fieldName: 'checkSubscriptionToNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('checkSubscriptionToNewsletter', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('checkSubscriptionToNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getNewsletterFunction,
-        isAuthorized,
-        checkSubscriptionToNewsletterFunction
-      ]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, checkSubscriptionToNewsletterFunction]
     })
 
     new Resolver(this, 'ListUserSubscriptionsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'listUserSubscriptions',
-      code: AssetCode.fromAsset(
-        getFunctionPath('listUserSubscriptions', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('listUserSubscriptions', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [listUserSubscriptionsFunction, filterListByAuthorization]
+      pipelineConfig: [
+        listUserSubscriptionsFunction,
+        filterListByAuthorization
+      ]
     })
 
     new Resolver(this, 'CanUpdateNewsletterResolver', {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateNewsletter',
-      code: AssetCode.fromAsset(
-        getFunctionPath('canUpdateNewsletter', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('canUpdateNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getNewsletterFunction, isAuthorized]
     })
@@ -860,9 +711,7 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateDataFeed',
-      code: AssetCode.fromAsset(
-        getFunctionPath('canUpdateDataFeed', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('canUpdateDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [getDataFeedFunction, isAuthorized]
     })
@@ -871,15 +720,9 @@ export class ApiResolvers extends Construct {
       api,
       typeName: 'Query',
       fieldName: 'getNewsletterSubscriberStats',
-      code: AssetCode.fromAsset(
-        getFunctionPath('getNewsletterSubscriberStats', 'resolver')
-      ),
+      code: AssetCode.fromAsset(getFunctionPath('getNewsletterSubscriberStats', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [
-        getNewsletterFunction,
-        isAuthorized,
-        getNewsletterSubscriberStatsFunction
-      ]
+      pipelineConfig: [getNewsletterFunction, isAuthorized, getNewsletterSubscriberStatsFunction]
     })
   }
 }

@@ -4,11 +4,7 @@ import {
   type AppSyncIdentityLambda
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import {
-  addAccountToItems,
-  convertFieldIdsToObjectIds,
-  filterForDuplicatesById
-} from '../../resolver-helper'
+import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const identity = ctx.identity as AppSyncIdentityLambda

@@ -120,24 +120,24 @@ export default function Authenticator(props: PropsWithChildren) {
         setAccountId: setAccount
       }}
     >
-      {isLoading ? (
+      {isLoading ?
         <SpaceBetween direction="vertical" size="l" alignItems="center">
           <Container>
-            <SpaceBetween size="l" direction="vertical" alignItems="center">
+            <SpaceBetween size='l' direction='vertical' alignItems='center'>
               <h2>Loading</h2>
-              <Spinner size="big" />
+              <Spinner size='big' />
             </SpaceBetween>
           </Container>
-        </SpaceBetween>
-      ) : userId.length < 1 ? (
-        appContext?.Auth.Cognito.loginWith?.oauth !== undefined ? (
-          <CustomAuthenticator />
+        </SpaceBetween> :
+        userId.length < 1 ? (
+          appContext?.Auth.Cognito.loginWith?.oauth !== undefined ? (
+            <CustomAuthenticator />
+          ) : (
+            <DefaultAuthenticator />
+          )
         ) : (
-          <DefaultAuthenticator />
-        )
-      ) : (
-        children
-      )}
+          children
+        )}
     </UserContext.Provider>
   )
 }

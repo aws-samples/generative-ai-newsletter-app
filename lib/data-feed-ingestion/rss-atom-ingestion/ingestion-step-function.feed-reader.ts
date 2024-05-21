@@ -25,7 +25,9 @@ interface FeedReaderInput {
   accountId: string
 }
 
-const lambdaHandler = async (event: FeedReaderInput): Promise<Article[]> => {
+const lambdaHandler = async (
+  event: FeedReaderInput
+): Promise<Article[]> => {
   const { url, id, feedType, accountId } = event
   const feed = await getFeed(url)
   metrics.addMetric('FeedReader', MetricUnits.Count, 1)

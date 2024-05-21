@@ -3,7 +3,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import { TaggedElement, MultiSizeFormattedResponse } from './prompt-processing'
+import {
+  TaggedElement,
+  MultiSizeFormattedResponse
+} from './prompt-processing'
 import { PromptHandler } from './prompt-handler'
 import { type ArticleData } from './types'
 

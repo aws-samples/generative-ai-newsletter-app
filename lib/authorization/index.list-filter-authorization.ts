@@ -9,19 +9,8 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 
 import middy from '@middy/core'
-import {
-  GetSchemaCommand,
-  VerifiedPermissionsClient,
-  type IsAuthorizedCommandInput,
-  IsAuthorizedCommand,
-  Decision
-} from '@aws-sdk/client-verifiedpermissions'
-import {
-  getEntityItem,
-  lowercaseFirstLetter,
-  queryToActionAuth,
-  queryToResourcesEntity
-} from './authorization-helper'
+import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
+import { getEntityItem, lowercaseFirstLetter, queryToActionAuth, queryToResourcesEntity } from './authorization-helper'
 
 const SERVICE_NAME = 'list-filter-authorization'
 
@@ -35,28 +24,17 @@ if (POLICY_STORE_ID === undefined || POLICY_STORE_ID === null) {
   throw new Error('POLICY_STORE_ID is not set')
 }
 
-const verifiedpermissions = tracer.captureAWSv3Client(
-  new VerifiedPermissionsClient()
-)
+const verifiedpermissions = tracer.captureAWSv3Client(new VerifiedPermissionsClient())
 
 let schema: Record<string, unknown>
 
 const lambdaHandler = async (event: any): Promise<any> => {
   logger.debug('FilterAuthorizationCheckEventTriggered', { event })
   const { userId, accountId } = event
-  if (
-    schema === undefined ||
-    schema === null ||
-    Object.keys(schema).length === 0
-  ) {
+  if (schema === undefined || schema === null || Object.keys(schema).length === 0) {
     logger.debug('AVP Schema not yet cached. Retrieving AVP Schema')
-    const schemaResponse = await verifiedpermissions.send(
-      new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID })
-    )
-    if (
-      schemaResponse.schema !== undefined &&
-      schemaResponse.schema.length > 0
-    ) {
+    const schemaResponse = await verifiedpermissions.send(new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID }))
+    if (schemaResponse.schema !== undefined && schemaResponse.schema.length > 0) {
       logger.debug('AVP Schema', { schema: schemaResponse.schema })
       schema = JSON.parse(schemaResponse.schema)
     } else {
@@ -66,25 +44,13 @@ const lambdaHandler = async (event: any): Promise<any> => {
     }
   }
   if (event.result.items !== undefined && event.result.items.length > 0) {
-    logger.debug('Checking Item Authorization for Filtering', {
-      itemCount: event.result.items.length
-    })
+    logger.debug('Checking Item Authorization for Filtering', { itemCount: event.result.items.length })
     const unfilteredItemPromises: Array<Promise<any>> = []
     event.result.items.forEach(async (item: any) => {
-      unfilteredItemPromises.push(
-        checkItemAuthorization(
-          item,
-          schema,
-          userId as string,
-          accountId as string,
-          event.requestContext
-        )
-      )
+      unfilteredItemPromises.push(checkItemAuthorization(item, schema, userId as string, accountId as string, event.requestContext))
     })
     const resolvedAuthItems = await Promise.all(unfilteredItemPromises)
-    const items = resolvedAuthItems
-      .filter((item) => item.authorization)
-      .map((item) => item.item)
+    const items = resolvedAuthItems.filter((item) => item.authorization).map((item) => item.item)
     logger.debug('Filtered Items', { itemCount: items.length })
     if (items.length > 0) {
       return {
@@ -105,13 +71,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
   }
 }
 
-const checkItemAuthorization = async (
-  item: any,
-  schema: Record<string, any>,
-  userId: string,
-  accountId: string,
-  requestContext: any
-): Promise<{ item: any; authorization: boolean }> => {
+const checkItemAuthorization = async (item: any, schema: Record<string, any>, userId: string, accountId: string, requestContext: any): Promise<{ item: any, authorization: boolean }> => {
   const queryString = requestContext.queryString as string
   const isAuthInput: IsAuthorizedCommandInput = {
     policyStoreId: POLICY_STORE_ID,
@@ -143,15 +103,10 @@ const checkItemAuthorization = async (
             }
           }
         },
-        getEntityItem(
-          schema,
-          item.id as string,
-          queryToResourcesEntity(queryString),
-          item as Record<string, any>,
-          { logger }
-        )
+        getEntityItem(schema, item.id as string, queryToResourcesEntity(queryString), item as Record<string, any>, { logger })
       ]
     }
+
   }
   logger.debug('AVP REQUEST', {
     isAuthInput

@@ -19,7 +19,7 @@ export default function NewsletterEmailWrapper (): React.ReactElement {
   return (
     <NewsletterEmail
       appHostName="XXXX"
-      newsletterId="xxxxxx"
+      newsletterId='xxxxxx'
       title="The Sample Wrapper!"
       newsletterSummary={content}
       articleSummaryType={ArticleSummaryType.SHORT_SUMMARY}

@@ -11,8 +11,8 @@ import { StorageHelper } from './common/helpers/storage-helper'
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 
-const theme = StorageHelper.getTheme()
-StorageHelper.applyTheme(theme)
+const theme = StorageHelper.getTheme();
+StorageHelper.applyTheme(theme);
 
 root.render(
   <React.StrictMode>

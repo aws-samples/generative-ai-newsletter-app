@@ -1,9 +1,6 @@
 import { type DynamoDBGetItemRequest, type Context } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import {
-  addAccountToItem,
-  convertFieldIdToObjectId
-} from '../../resolver-helper'
+import { addAccountToItem, convertFieldIdToObjectId } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBGetItemRequest {
   const { id } = ctx.args.input

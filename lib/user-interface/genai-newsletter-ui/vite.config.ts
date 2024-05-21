@@ -7,6 +7,8 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
+
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
@@ -18,8 +20,8 @@ export default defineConfig(({ mode }) => {
           target: process.env.VITE_CLOUDFRONT_ENDPOINT,
           secure: true,
           changeOrigin: true
-        }
-      }
+        },
+      },
     },
     build: {
       rollupOptions: {
@@ -29,6 +31,8 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    plugins: [react()]
+    plugins: [
+      react()
+    ]
   })
 })

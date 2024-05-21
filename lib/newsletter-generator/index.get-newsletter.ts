@@ -46,7 +46,9 @@ const lambdaHandler = async (
           dataFeedIds !== null &&
           dataFeedIds.length > 0
         ) {
-          newsletter.dataFeeds = await getNewsletterDataFeedData(dataFeedIds)
+          newsletter.dataFeeds = await getNewsletterDataFeedData(
+            dataFeedIds
+          )
         }
         return newsletter
       }
@@ -100,7 +102,11 @@ const getNewsletterDataFeedData = async (
     return dataFeeds
   } catch (error) {
     logger.error('Error getting newsletter data feeds', { error })
-    metrics.addMetric('ErrorGettingNewsletterDataFeeds', MetricUnits.Count, 1)
+    metrics.addMetric(
+      'ErrorGettingNewsletterDataFeeds',
+      MetricUnits.Count,
+      1
+    )
     return []
   }
 }

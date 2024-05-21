@@ -85,7 +85,7 @@ export const ArticlesTableColumnDefinition = (
     {
       id: 'url',
       cell: (item: Article) => (
-        <Link variant="primary" external href={item.url ?? ''}>
+        <Link variant="primary" external href={item.url ?? ""}>
           {item.url}
         </Link>
       ),
@@ -94,7 +94,8 @@ export const ArticlesTableColumnDefinition = (
     },
     {
       id: 'summary',
-      cell: (item: Article) => (
+      cell: (item: Article) =>
+      (
         <Popover content={<Box>{item.longSummary}</Box>}>
           {item.shortSummary}
         </Popover>

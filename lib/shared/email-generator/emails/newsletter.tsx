@@ -70,65 +70,66 @@ export default function NewsletterEmail (
                   <Link href={article.url}>Read the article</Link>
                 </Text>
                 {appHostName !== undefined &&
-                appHostName.length > 0 &&
-                article.flagLink !== undefined &&
-                article.flagLink.length > 0 ? (
-                  <Text>
-                    <Link
-                      href={`https://${appHostName}${article.flagLink}`}
-                      target="_blank"
-                      style={flagLink}
-                    >
-                      Flag this summary
-                    </Link>
-                  </Text>
-                ) : (
-                  <></>
-                )}
+                  appHostName.length > 0 &&
+                  article.flagLink !== undefined &&
+                  article.flagLink.length > 0
+                  ? (
+                    <Text>
+                      <Link
+                        href={`https://${appHostName}${article.flagLink}`}
+                        target="_blank"
+                        style={flagLink}
+                      >
+                        Flag this summary
+                      </Link>
+                    </Text>
+                    )
+                  : (
+                    <></>
+                    )}
               </Row>
             )
           })}
         </Section>
         <Hr />
         <Section key="FooterSection" style={footer}>
-          {footerOverride !== undefined && footerOverride.length > 0 ? (
-            footerOverride
-          ) : (
-            <Text>
-              <p>
-                This newsletter was created automatically and content was
-                summarized using generative AI services powered by Amazon
-                Bedrock.
-              </p>
-              <br />
+          {footerOverride !== undefined && footerOverride.length > 0
+            ? (
+                footerOverride
+              )
+            : (
               <Text>
-                Some content may be inaccurate or misleading. If you feel
-                content is incorrect, click the Flag this summary link to flag
-                the generated content (*If Flag this summary link is available).
+                <p>
+                  This newsletter was created automatically and content was
+                  summarized using generative AI services powered by Amazon Bedrock.
+                </p>
+                <br />
+                <Text>
+                  Some content may be inaccurate or misleading. If you feel
+                  content is incorrect, click the Flag this summary link to flag
+                  the generated content (*If Flag this summary link is available).
+                </Text>
+                <a href={`https://${appHostName}/unsubscribe/index.html?newsletterId=${newsletterId}&userId={{Id}}`} >Unsubscribe from this newsletter</a>
               </Text>
-              <a
-                href={`https://${appHostName}/unsubscribe/index.html?newsletterId=${newsletterId}&userId={{Id}}`}
-              >
-                Unsubscribe from this newsletter
-              </a>
-            </Text>
-          )}
+              )}
         </Section>
       </Container>
     </Body>
   )
 
   return !previewMode
-    ? ((
-        <Html>
-          <Head>
-            <title>{title}</title>
-          </Head>
-          <Preview>Your latest news update!</Preview>
-          {body}
-        </Html>
-      ) as React.ReactElement)
-    : body
+    ? (
+      <Html>
+        <Head>
+          <title>{title}</title>
+        </Head>
+        <Preview>Your latest news update!</Preview>
+        {body}
+      </Html>
+      ) as React.ReactElement
+    : (
+        body
+      )
 }
 
 const footer = {

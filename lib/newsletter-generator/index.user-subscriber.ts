@@ -70,11 +70,7 @@ const lambdaHandler = async (
   if (event.cognitoUserId !== undefined) {
     const userEmail = await getCognitoUserEmail(event.cognitoUserId)
     const subscriberType = SubscriberType.COGNITO_SUBSCRIBER
-    await subscribeCognitoUser(
-      event.newsletterId,
-      event.cognitoUserId,
-      event.accountId
-    )
+    await subscribeCognitoUser(event.newsletterId, event.cognitoUserId, event.accountId)
     await addPinpointEndpoint(event.cognitoUserId, userEmail, subscriberType)
   } else if (event.userEmail !== undefined) {
     const subscriberType = SubscriberType.EXTERNAL_SUBSCRIBER
@@ -93,11 +89,7 @@ const subscribeCognitoUser = async (
   cognitoUserId: string,
   accountId: string
 ): Promise<void> => {
-  logger.debug('Subscribing Cognito User', {
-    newsletterId,
-    accountId,
-    cognitoUserId
-  })
+  logger.debug('Subscribing Cognito User', { newsletterId, accountId, cognitoUserId })
   try {
     const input: PutItemCommandInput = {
       TableName: NEWSLETTER_TABLE,

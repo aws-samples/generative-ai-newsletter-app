@@ -5,10 +5,7 @@
  */
 import { ArticleSummaryType } from '../../../../../shared/api'
 import { NewsletterEmailProps } from '../../../../../shared/common'
-import {
-  ArticleData,
-  MultiSizeFormattedResponse
-} from '../../../../../shared/prompts'
+import { ArticleData, MultiSizeFormattedResponse } from '../../../../../shared/prompts'
 import NewsletterEmail from '../../../../../shared/email-generator/emails/newsletter'
 import { AppContext } from '../../common/app-context'
 import { useContext } from 'react'

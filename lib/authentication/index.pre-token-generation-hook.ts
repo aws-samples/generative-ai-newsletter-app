@@ -11,20 +11,9 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
 import { type PreTokenGenerationAuthenticationTriggerEvent } from 'aws-lambda'
-import {
-  DynamoDBClient,
-  type PutItemCommandInput,
-  PutItemCommand,
-  DynamoDBServiceException,
-  type ScanCommandInput,
-  ScanCommand
-} from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, type PutItemCommandInput, PutItemCommand, DynamoDBServiceException, type ScanCommandInput, ScanCommand } from '@aws-sdk/client-dynamodb'
 import { marshall } from '@aws-sdk/util-dynamodb'
-import {
-  AdminUpdateUserAttributesCommand,
-  CognitoIdentityProviderClient,
-  type AdminUpdateUserAttributesCommandInput
-} from '@aws-sdk/client-cognito-identity-provider'
+import { AdminUpdateUserAttributesCommand, CognitoIdentityProviderClient, type AdminUpdateUserAttributesCommandInput } from '@aws-sdk/client-cognito-identity-provider'
 
 const SERVICE_NAME = 'post-authentication-hook'
 const ACCOUNT_TABLE = process.env.ACCOUNT_TABLE
@@ -36,17 +25,11 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const cognito = tracer.captureAWSv3Client(new CognitoIdentityProviderClient())
 
-const lambdaHandler = async (
-  event: PreTokenGenerationAuthenticationTriggerEvent
-): Promise<PreTokenGenerationAuthenticationTriggerEvent> => {
+const lambdaHandler = async (event: PreTokenGenerationAuthenticationTriggerEvent): Promise<PreTokenGenerationAuthenticationTriggerEvent> => {
   logger.debug('PostAuthenticationEventTriggered', { event })
   metrics.addMetric('PostAuthenticationEventTriggered', MetricUnits.Count, 1)
   const { userAttributes } = event.request
-  if (
-    userAttributes['custom:Account'] === undefined ||
-    userAttributes['custom:Account'] === null ||
-    userAttributes['custom:Account'].length < 1
-  ) {
+  if (userAttributes['custom:Account'] === undefined || userAttributes['custom:Account'] === null || userAttributes['custom:Account'].length < 1) {
     logger.debug('No Account ID found for user! Creating a new one', { event })
     metrics.addMetric('NewAccountCreated', MetricUnits.Count, 1)
     const userId = userAttributes.sub
@@ -62,9 +45,7 @@ const lambdaHandler = async (
       }
       const command = new PutItemCommand(input)
       await dynamodb.send(command)
-      event.response.claimsOverrideDetails.claimsToAddOrOverride = {
-        'custom:Account': accountId
-      }
+      event.response.claimsOverrideDetails.claimsToAddOrOverride = { 'custom:Account': accountId }
       console.log(accountId)
     } catch (error) {
       if (error instanceof DynamoDBServiceException) {
@@ -80,14 +61,8 @@ const lambdaHandler = async (
           }
           const command = new ScanCommand(scanInput)
           const result = await dynamodb.send(command)
-          if (
-            result.Items === undefined ||
-            result.Items.length !== 1 ||
-            result.Items[0].accountId.S === undefined
-          ) {
-            throw new Error(
-              'Account already exists for user but not found in database'
-            )
+          if (result.Items === undefined || result.Items.length !== 1 || result.Items[0].accountId.S === undefined) {
+            throw new Error('Account already exists for user but not found in database')
           }
           accountId = result.Items[0].accountId.S
         }

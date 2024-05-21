@@ -5,20 +5,13 @@ import {
   type DynamoDBQueryRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import {
-  addAccountToItems,
-  convertFieldIdsToObjectIds,
-  filterForDuplicatesById
-} from '../../resolver-helper'
+import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const tableSKIndex = 'newsletter-item-type-index' // CDK doesn't have env variables yet
   const { nextToken, limit = 500 } = ctx.args
   const input = ctx.args.input
-  const includeDiscoverable =
-    input?.includeDiscoverable !== undefined
-      ? input.includeDiscoverable
-      : ctx.stash.lookupDefinition.includeDiscoverable ?? false
+  const includeDiscoverable = input?.includeDiscoverable !== undefined ? input.includeDiscoverable : ctx.stash.lookupDefinition.includeDiscoverable ?? false
   if (includeDiscoverable === true) {
     return ddb.query({
       query: {

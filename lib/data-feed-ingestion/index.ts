@@ -59,22 +59,17 @@ export class NewsSubscriptionIngestion extends Construct {
       }
     })
 
-    const rssAtomIngestion = new RssAtomFeedConstruct(
-      this,
-      'RssAtomIngestion',
-      {
-        dataFeedTable,
-        dataFeedTableTypeIndex: this.dataFeedTableTypeIndex,
-        dataFeedTableLSI: this.dataFeedTableLSI,
-        loggingBucket
-      }
-    )
+    const rssAtomIngestion = new RssAtomFeedConstruct(this, 'RssAtomIngestion', {
+      dataFeedTable,
+      dataFeedTableTypeIndex: this.dataFeedTableTypeIndex,
+      dataFeedTableLSI: this.dataFeedTableLSI,
+      loggingBucket
+    })
 
     this.dataFeedTable = dataFeedTable
     this.rssAtomDataBucket = rssAtomIngestion.rssAtomDataBucket
     this.feedSubscriberFunction = rssAtomIngestion.feedSubscriberFunction
-    this.rssAtomIngestionStepFunctionStateMachine =
-      rssAtomIngestion.ingestionStepFunction.stateMachine
+    this.rssAtomIngestionStepFunctionStateMachine = rssAtomIngestion.ingestionStepFunction.stateMachine
     this.dataFeedPollStepFunctionStateMachine =
       rssAtomIngestion.dataFeedPollStepFunction.stateMachine
   }

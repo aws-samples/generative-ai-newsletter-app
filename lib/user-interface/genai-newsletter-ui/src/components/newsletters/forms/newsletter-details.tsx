@@ -70,6 +70,8 @@ export default function NewsletterDetailsForm(
             } else {
               setNumberOfDaysToInclude(parseInt(e.detail.value))
             }
+
+
           }}
         />
       </FormField>
@@ -84,10 +86,7 @@ export default function NewsletterDetailsForm(
             value: contentSummaryConfiguration
           }}
           onChange={({ detail }) => {
-            setContentSummaryConfiguration(
-              (detail.selectedOption.value as ArticleSummaryType) ??
-                ArticleSummaryType.KEYWORDS
-            )
+            setContentSummaryConfiguration(detail.selectedOption.value as ArticleSummaryType ?? ArticleSummaryType.KEYWORDS)
           }}
           options={[
             {

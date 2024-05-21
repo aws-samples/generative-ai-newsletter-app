@@ -37,17 +37,11 @@ export interface NavigationPanelState {
   collapsedSections?: Record<number, boolean>
 }
 
-export const ArticleSummaryTypeLabel = (
-  articleSummaryType: ArticleSummaryType
-): string => {
-  switch (articleSummaryType) {
-    case ArticleSummaryType.SHORT_SUMMARY:
-      return 'Short Summary'
-    case ArticleSummaryType.LONG_SUMMARY:
-      return 'Long Summary'
-    case ArticleSummaryType.KEYWORDS:
-      return 'Keywords'
-    default:
-      return 'Keywords'
+export const ArticleSummaryTypeLabel = (articleSummaryType: ArticleSummaryType): string => {
+  switch(articleSummaryType){
+    case ArticleSummaryType.SHORT_SUMMARY: return "Short Summary";
+    case ArticleSummaryType.LONG_SUMMARY: return "Long Summary";
+    case ArticleSummaryType.KEYWORDS: return "Keywords"
+    default: return "Keywords"
   }
 }

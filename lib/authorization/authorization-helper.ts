@@ -7,19 +7,10 @@
 import * as schemaMap from '../shared/api/types.json'
 import { Kind, type OperationDefinitionNode, parse } from 'graphql'
 
-import {
-  type EntityItem,
-  type AttributeValue
-} from '@aws-sdk/client-verifiedpermissions'
+import { type EntityItem, type AttributeValue } from '@aws-sdk/client-verifiedpermissions'
 import { type Logger } from '@aws-lambda-powertools/logger'
 
-export const getEntityItem = (
-  schema: Record<string, any>,
-  entityId: string,
-  entityType: string,
-  entityData?: Record<string, any>,
-  optionals?: { logger?: Logger }
-): EntityItem => {
+export const getEntityItem = (schema: Record<string, any>, entityId: string, entityType: string, entityData?: Record<string, any>, optionals?: { logger?: Logger }): EntityItem => {
   const { logger } = optionals ?? {}
   if (logger !== undefined) {
     logger.debug(`getEntityItem: ${entityId} ${entityType}`)
@@ -36,11 +27,7 @@ export const getEntityItem = (
   return item
 }
 
-export const getEntityAttributes = (
-  schema: Record<string, any>,
-  entityType: string,
-  entityData: Record<string, any>
-): Record<string, AttributeValue> => {
+export const getEntityAttributes = (schema: Record<string, any>, entityType: string, entityData: Record<string, any>): Record<string, AttributeValue> => {
   const avpSchema = schema.GenAINewsletter
   const entityAttributes: Record<string, AttributeValue> = {}
   if (avpSchema !== undefined && avpSchema.entityTypes !== undefined) {
@@ -54,10 +41,7 @@ export const getEntityAttributes = (
             let entityDataForKey
             if (value.type === 'Entity') {
               Object.keys(entityData).forEach((dataKey) => {
-                if (
-                  entityData[dataKey].__typename !== undefined &&
-                  entityData[dataKey].__typename === key
-                ) {
+                if (entityData[dataKey].__typename !== undefined && entityData[dataKey].__typename === key) {
                   entityDataForKey = entityData[dataKey]
                 }
               })
@@ -112,19 +96,14 @@ export const lowercaseFirstLetter = (stringVal: string): string => {
 
 export const queryToActionAuth = (query: string): string => {
   const ast = parse(query)
-  const operationDefinition = ast.definitions.find((value) => {
+  const operationDefinition = ast.definitions.find(value => {
     return value.kind === Kind.OPERATION_DEFINITION
   }) as OperationDefinitionNode
   if (operationDefinition.selectionSet.kind === Kind.SELECTION_SET) {
-    const queryFieldSelection =
-      operationDefinition.selectionSet.selections.find((selection) => {
-        return selection.kind === Kind.FIELD
-      })
-    if (
-      queryFieldSelection !== undefined &&
-      queryFieldSelection !== null &&
-      queryFieldSelection.kind === Kind.FIELD
-    ) {
+    const queryFieldSelection = operationDefinition.selectionSet.selections.find((selection) => {
+      return selection.kind === Kind.FIELD
+    })
+    if (queryFieldSelection !== undefined && queryFieldSelection !== null && queryFieldSelection.kind === Kind.FIELD) {
       return queryFieldSelection.name.value
     }
   }
@@ -170,12 +149,7 @@ export const queryToResourcesEntity = (query: string): string => {
     const itemObject = queryFieldTypeObject?.fields?.find((fieldItem) => {
       return fieldItem.name === 'items'
     })
-    if (
-      itemObject !== undefined &&
-      itemObject.type.kind === 'LIST' &&
-      itemObject?.type?.ofType?.name !== undefined &&
-      itemObject?.type?.ofType?.name !== null
-    ) {
+    if (itemObject !== undefined && itemObject.type.kind === 'LIST' && itemObject?.type?.ofType?.name !== undefined && itemObject?.type?.ofType?.name !== null) {
       return itemObject.type.ofType?.name
     }
   }
@@ -193,12 +167,7 @@ export const mutationToResourceEntity = (query: string): string => {
   const queryField = queries.fields?.find((field) => {
     return field.name === action
   })
-  if (
-    queryField === undefined ||
-    queryField === null ||
-    queryField.type.kind !== Kind.OBJECT ||
-    queryField.type.name === null
-  ) {
+  if (queryField === undefined || queryField === null || queryField.type.kind !== Kind.OBJECT || queryField.type.name === null) {
     throw new Error('Unable to locate action')
   }
   return queryField.type.name

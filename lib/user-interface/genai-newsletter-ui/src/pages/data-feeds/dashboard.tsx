@@ -33,14 +33,17 @@ export default function DataFeedsDashboard() {
         <BaseContentLayout
           header={
             <Header
-              variant="awsui-h1-sticky"
-              description="Create new data feeds for Newsletters or browse/update existing feeds."
-            >
+              variant='awsui-h1-sticky'
+             description="Create new data feeds for Newsletters or browse/update existing feeds.">
               Data Feeds Dashboard
             </Header>
           }
         >
-          <DataFeedsTable includeDiscoverable includeOwned includeShared />
+          <DataFeedsTable
+            includeDiscoverable
+            includeOwned
+            includeShared
+          />
         </BaseContentLayout>
       }
     />

@@ -54,7 +54,7 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
       <Header
         description={formDescription}
         actions={
-          formMode === 'detail' && canManageNewsletter ? (
+          (formMode === 'detail' && canManageNewsletter) ? (
             <SpaceBetween size="s" direction="horizontal" alignItems="end">
               <Button
                 iconName="edit"
@@ -93,10 +93,7 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
         {formTitle}
       </Header>
       <FormField label="Newsletter Title">{title}</FormField>
-      <FormField
-        label="Private"
-        description="A private newsletter isn't discoverable. Turning off private will make the newsletter discoverable by others."
-      >
+      <FormField label="Private" description="A private newsletter isn't discoverable. Turning off private will make the newsletter discoverable by others.">
         <Toggle checked={isPrivate ?? true} disabled={true} />
       </FormField>
       <FormField
@@ -117,22 +114,27 @@ export default function NewsletterReviewForm(props: NewsletterReviewForm) {
               : 'Keywords'}
         </Badge>
       </FormField>
-
-      <FormField
-        label="Data Feeds"
-        description="The feeds that provide the content for the newsletter"
-      >
-        <ul>
-          {selectedDataFeeds.map((dataFeed) => (
-            <li key={`selected-datafeed-${dataFeed.id}`}>
-              <Link href={`/feeds/${dataFeed.id}`} target="_blank">
-                {dataFeed.title}
-              </Link>
-            </li>
-          ))}
-          {selectedDataFeeds.length === 0 && <li>No data feeds selected</li>}
-        </ul>
-      </FormField>
+      
+        <FormField
+          label="Data Feeds"
+          description="The feeds that provide the content for the newsletter"
+        >
+          <ul>
+            {selectedDataFeeds.map((dataFeed) => (
+              <li key={`selected-datafeed-${dataFeed.id}`}>
+                <Link
+                  href={`/feeds/${dataFeed.id}`}
+                  target="_blank"
+                >
+                  {dataFeed.title}
+                </Link>
+              </li>
+            ))}
+            {selectedDataFeeds.length === 0 && (
+              <li>No data feeds selected</li>
+            )}
+          </ul>
+        </FormField>
       <FormField
         label="Newsletter Intro Summary Prompt"
         description="This prompt helps influence how the Newsletter summary will be written."

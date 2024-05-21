@@ -116,7 +116,7 @@ const getNewsletterDetails = async (
 
 const getEmailBodiesFromS3 = async (
   emailKey: string
-): Promise<{ html: string; text: string }> => {
+): Promise<{ html: string, text: string }> => {
   logger.debug('Getting email bodies from S3', { emailKey })
   try {
     const htmlInput: GetObjectCommandInput = {
@@ -175,10 +175,7 @@ const createEmailTemplate = async (
     }
   } catch (error) {
     logger.error('Error creating email template', { error })
-    if (
-      error instanceof BadRequestException &&
-      error.message.includes('Pinpoint Template already exists')
-    ) {
+    if (error instanceof BadRequestException && error.message.includes('Pinpoint Template already exists')) {
       logger.warn('Pinpoint Email Template Already Exists!', { error })
       logger.info('Attempting to create a new template version')
       const input: UpdateEmailTemplateCommandInput = {
@@ -198,7 +195,9 @@ const createEmailTemplate = async (
   }
 }
 
-const createEmailCampaign = async (emailId: string): Promise<string> => {
+const createEmailCampaign = async (
+  emailId: string
+): Promise<string> => {
   logger.debug('Creating email campaign', { emailId })
   const input: CreateCampaignCommandInput = {
     ApplicationId: PINPOINT_APP_ID,

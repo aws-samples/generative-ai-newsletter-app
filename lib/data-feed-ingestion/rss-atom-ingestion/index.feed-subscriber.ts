@@ -47,9 +47,7 @@ const lambdaHander = async (event: {
   metrics.addMetric('SubscriberInvocations', MetricUnits.Count, 1)
   const { url, summarizationPrompt, title, description, enabled } = event.input
   const isPrivate: boolean = event.input.isPrivate ?? true
-  if (url === undefined) {
-    throw new Error('URL is required')
-  }
+  if (url === undefined) { throw new Error('URL is required') }
   const { accountId } = event
   try {
     const response = await axios.get(url)
@@ -62,8 +60,7 @@ const lambdaHander = async (event: {
       logger.debug('Found RSS feed')
       feedType = DataFeedType.RSS
     } else if (
-      $('feed').length > 0 &&
-      $('feed').attr('xmlns') === 'http://www.w3.org/2005/Atom'
+      $('feed').length > 0 && $('feed').attr('xmlns') === 'http://www.w3.org/2005/Atom'
     ) {
       metrics.addMetric('ATOMFeeds', MetricUnits.Count, 1)
       logger.debug('Found ATOM feed')
@@ -101,7 +98,9 @@ const lambdaHander = async (event: {
   }
 }
 
-const storeDataFeed = async (dataFeed: DataFeed): Promise<void> => {
+const storeDataFeed = async (
+  dataFeed: DataFeed
+): Promise<void> => {
   const {
     id: dataFeedId,
     url,

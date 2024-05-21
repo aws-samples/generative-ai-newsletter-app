@@ -62,7 +62,7 @@ const lambdaHandler = async (
     accountId = await getAccountIdForUserId(userId)
   }
   if (accountId === undefined) {
-    throw new Error("Account ID not found. Can't create newsletter.")
+    throw new Error('Account ID not found. Can\'t create newsletter.')
   }
   const newsletterId = uuidv4()
   const scheduleExpression = `rate(${input.numberOfDaysToInclude} ${input.numberOfDaysToInclude === 1 ? 'day' : 'days'})`
@@ -94,11 +94,7 @@ const getAccountIdForUserId = async (userId: string): Promise<string> => {
   }
   const command = new QueryCommand(input)
   const response = await dynamodb.send(command)
-  if (
-    response.Items === undefined ||
-    response.Items.length === 0 ||
-    response.Items[0].accountId.S === undefined
-  ) {
+  if (response.Items === undefined || response.Items.length === 0 || response.Items[0].accountId.S === undefined) {
     throw new Error('User not found')
   }
   return response.Items[0].accountId.S
@@ -143,13 +139,7 @@ const storeNewsletterData = async (
     input
   })
   const createdAt = new Date().toISOString()
-  const {
-    title,
-    dataFeeds: dataFeedIds,
-    numberOfDaysToInclude,
-    newsletterIntroPrompt,
-    newsletterStyle
-  } = input
+  const { title, dataFeeds: dataFeedIds, numberOfDaysToInclude, newsletterIntroPrompt, newsletterStyle } = input
   const isPrivate: boolean = input.isPrivate ?? true
   const commandInput: PutItemCommandInput = {
     TableName: NEWSLETTER_DATA_TABLE,

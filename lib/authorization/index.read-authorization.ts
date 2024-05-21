@@ -10,19 +10,8 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 
 // import { getEntityItem } from '../shared/api/schema-to-avp/permission-map'
 import middy from '@middy/core'
-import {
-  GetSchemaCommand,
-  VerifiedPermissionsClient,
-  type IsAuthorizedCommandInput,
-  IsAuthorizedCommand,
-  Decision
-} from '@aws-sdk/client-verifiedpermissions'
-import {
-  getEntityItem,
-  lowercaseFirstLetter,
-  queryToActionAuth,
-  queryToResourceEntity
-} from './authorization-helper'
+import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
+import { getEntityItem, lowercaseFirstLetter, queryToActionAuth, queryToResourceEntity } from './authorization-helper'
 
 const SERVICE_NAME = 'read-authorization'
 
@@ -36,9 +25,7 @@ if (POLICY_STORE_ID === undefined || POLICY_STORE_ID === null) {
   throw new Error('POLICY_STORE_ID is not set')
 }
 
-const verifiedpermissions = tracer.captureAWSv3Client(
-  new VerifiedPermissionsClient()
-)
+const verifiedpermissions = tracer.captureAWSv3Client(new VerifiedPermissionsClient())
 
 let schema: Record<string, unknown>
 
@@ -46,19 +33,10 @@ const lambdaHandler = async (event: any): Promise<any> => {
   logger.debug('AuthorizationCheckEventTriggered', { event })
   const root = event.root as string | undefined
   const contingentAction = event.contingentAction as string | undefined
-  if (
-    schema === undefined ||
-    schema === null ||
-    Object.keys(schema).length === 0
-  ) {
+  if (schema === undefined || schema === null || Object.keys(schema).length === 0) {
     logger.debug('AVP Schema not yet cached. Retrieving AVP Schema')
-    const schemaResponse = await verifiedpermissions.send(
-      new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID })
-    )
-    if (
-      schemaResponse.schema !== undefined &&
-      schemaResponse.schema.length > 0
-    ) {
+    const schemaResponse = await verifiedpermissions.send(new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID }))
+    if (schemaResponse.schema !== undefined && schemaResponse.schema.length > 0) {
       logger.debug('AVP Schema', { schema: schemaResponse.schema })
       schema = JSON.parse(schemaResponse.schema)
     } else {
@@ -76,9 +54,7 @@ const lambdaHandler = async (event: any): Promise<any> => {
       entityType: 'GenAINewsletter::User'
     },
     action: {
-      actionId: lowercaseFirstLetter(
-        contingentAction ?? queryToActionAuth(queryString)
-      ),
+      actionId: lowercaseFirstLetter(contingentAction ?? queryToActionAuth(queryString)),
       actionType: 'GenAINewsletter::Action'
     },
     resource: {
@@ -101,15 +77,10 @@ const lambdaHandler = async (event: any): Promise<any> => {
             }
           }
         },
-        getEntityItem(
-          schema,
-          event.result.id as string,
-          root ?? queryToResourceEntity(queryString),
-          event.result as Record<string, any>,
-          { logger }
-        )
+        getEntityItem(schema, event.result.id as string, root ?? queryToResourceEntity(queryString), event.result as Record<string, any>, { logger })
       ]
     }
+
   }
   logger.debug('AVP REQUEST', {
     isAuthInput

@@ -210,19 +210,14 @@ export class IngestionStepFunction extends Construct {
      * CDK NAG Suppressions
      */
     NagSuppressions.addResourceSuppressions(
-      [
-        feedReaderFunction,
-        articleIngestionFunction,
-        filterIngestedArticlesFunction,
-        stateMachine
-      ],
+      [feedReaderFunction, articleIngestionFunction, filterIngestedArticlesFunction,
+        stateMachine],
       [
         {
           id: 'AwsSolutions-IAM5',
           reason: 'Allowing CloudWatch/X-Ray'
         }
-      ],
-      true
+      ], true
     )
   }
 }

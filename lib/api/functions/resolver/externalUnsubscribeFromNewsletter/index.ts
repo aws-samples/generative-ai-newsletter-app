@@ -3,10 +3,7 @@ import { type Context, util, type LambdaRequest } from '@aws-appsync/utils'
 export function request (ctx: Context): LambdaRequest {
   const { newsletterId, userId } = ctx.args.input
   if (newsletterId === null || userId === null) {
-    util.error(
-      'Newsletter ID & User ID are both required',
-      'ValidationException'
-    )
+    util.error('Newsletter ID & User ID are both required', 'ValidationException')
   }
   return {
     operation: 'Invoke',

@@ -36,3 +36,4 @@ lib/user-interface/genai-newsletter-ui/.DS_Store
 .DS_Store
 lib/api/functions/out
 pages/.vitepress/cache
+eslint-results.sarif

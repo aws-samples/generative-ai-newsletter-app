@@ -22,12 +22,12 @@ export const getEntityItem = (schema: Record<string, any>, entityId: string, ent
     }
   }
   if (entityData !== undefined) {
-    item.attributes = getEntityAttributes(schema, entityType, entityData, { logger })
+    item.attributes = getEntityAttributes(schema, entityType, entityData)
   }
   return item
 }
 
-export const getEntityAttributes = (schema: Record<string, any>, entityType: string, entityData: Record<string, any>, optionals?: { logger?: Logger }): Record<string, AttributeValue> => {
+export const getEntityAttributes = (schema: Record<string, any>, entityType: string, entityData: Record<string, any>): Record<string, AttributeValue> => {
   const avpSchema = schema.GenAINewsletter
   const entityAttributes: Record<string, AttributeValue> = {}
   if (avpSchema !== undefined && avpSchema.entityTypes !== undefined) {

@@ -65,7 +65,7 @@ const lambdaHandler = async (
       ? await getEmailBodiesFromS3(emailKey)
       : await getEmailBodiesFromS3(await getEmailKey(newsletterId, emailId))
   await createEmailTemplate(emailId, html, text, title)
-  const campaignId = await createEmailCampaign(emailId, title)
+  const campaignId = await createEmailCampaign(emailId)
   await saveCampaignId(newsletterId, emailId, campaignId)
 }
 
@@ -196,8 +196,7 @@ const createEmailTemplate = async (
 }
 
 const createEmailCampaign = async (
-  emailId: string,
-  newsletterTitle: string
+  emailId: string
 ): Promise<string> => {
   logger.debug('Creating email campaign', { emailId })
   const input: CreateCampaignCommandInput = {

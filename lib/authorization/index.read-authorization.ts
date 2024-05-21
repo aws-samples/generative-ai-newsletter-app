@@ -10,7 +10,6 @@ import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 
 // import { getEntityItem } from '../shared/api/schema-to-avp/permission-map'
 import middy from '@middy/core'
-import { type Context } from 'aws-lambda'
 import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
 import { getEntityItem, lowercaseFirstLetter, queryToActionAuth, queryToResourceEntity } from './authorization-helper'
 
@@ -30,7 +29,7 @@ const verifiedpermissions = tracer.captureAWSv3Client(new VerifiedPermissionsCli
 
 let schema: Record<string, unknown>
 
-const lambdaHandler = async (event: any, context: Context): Promise<any> => {
+const lambdaHandler = async (event: any): Promise<any> => {
   logger.debug('AuthorizationCheckEventTriggered', { event })
   const root = event.root as string | undefined
   const contingentAction = event.contingentAction as string | undefined

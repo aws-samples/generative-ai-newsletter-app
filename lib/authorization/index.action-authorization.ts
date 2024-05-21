@@ -9,8 +9,7 @@ import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { CognitoJwtVerifier } from 'aws-jwt-verify'
 import { CognitoIdentityProviderClient, GetUserCommand, type GetUserCommandInput } from '@aws-sdk/client-cognito-identity-provider' // ES Modules import
-import middy from '@middy/core'
-import { type Context } from 'aws-lambda'
+import middy from '@middy/core' 
 import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
 import { queryToActionAuth } from './authorization-helper'
 
@@ -45,7 +44,7 @@ const cognitoIdp = tracer.captureAWSv3Client(new CognitoIdentityProviderClient()
 
 let schema: Record<string, unknown>
 
-const lambdaHandler = async (event: any, context: Context): Promise<any> => {
+const lambdaHandler = async (event: any): Promise<any> => {
   logger.debug('AuthorizationCheckEventTriggered', { event })
   if (schema === undefined || schema === null || Object.keys(schema).length === 0) {
     logger.debug('AVP Schema not yet cached. Retrieving AVP Schema')

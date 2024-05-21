@@ -39,17 +39,16 @@ export default function MyNewsletterSubscriptions() {
       content={
         <BaseContentLayout
           header={
-            <Header 
-            variant='awsui-h1-sticky'
-            description="View all the Newsletters that you are currently subscribed to that were created by you or others.">
+            <Header
+              variant="awsui-h1-sticky"
+              description="View all the Newsletters that you are currently subscribed to that were created by you or others."
+            >
               My Newsletter Subscriptions
             </Header>
           }
         >
           <Container>
-            <NewslettersTable
-              includeSubscriptions
-            />
+            <NewslettersTable includeSubscriptions />
           </Container>
         </BaseContentLayout>
       }

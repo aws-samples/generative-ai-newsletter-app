@@ -20,10 +20,8 @@ import Newsletter from './newsletter'
 export default function PublicationsTable() {
   const appContext = useContext(AppContext)
   const { newsletterId } = useParams()
-  const [publications, setPublications] = useState<Publication[]>(
-    []
-  )
- 
+  const [publications, setPublications] = useState<Publication[]>([])
+
   const getPublications = useCallback(async () => {
     if (!appContext) {
       return
@@ -45,20 +43,17 @@ export default function PublicationsTable() {
       console.error(result.errors)
     } else {
       setPublications([
-        ...(result.data.listPublications
-          ?.items as Publication[])
+        ...(result.data.listPublications?.items as Publication[])
       ])
-
     }
   }, [appContext, newsletterId])
-
 
   useEffect(() => {
     getPublications()
   }, [getPublications])
   return (
     <SpaceBetween direction="vertical" size="m">
-      {publications.length > 0 ?
+      {publications.length > 0 ? (
         publications.map((publication) => {
           if (publication.filePath) {
             return (
@@ -67,12 +62,15 @@ export default function PublicationsTable() {
                 headerText={publication.createdAt}
                 headerActions={
                   publication.filePath !== null &&
-                    publication.filePath !== undefined &&
-                    publication.filePath.length > 0 ? (
+                  publication.filePath !== undefined &&
+                  publication.filePath.length > 0 ? (
                     <SpaceBetween size="s" direction="horizontal">
                       <Button
                         onClick={() => {
-                            window.open(publication.filePath + '.html' as string, '_blank')
+                          window.open(
+                            (publication.filePath + '.html') as string,
+                            '_blank'
+                          )
                         }}
                       >
                         Open in a New Window
@@ -85,8 +83,10 @@ export default function PublicationsTable() {
                 variant="stacked"
               >
                 <Container>
-
-                    <Newsletter filePath={publication.filePath} key={`rendered-newsletter-${publication.id}`}/>
+                  <Newsletter
+                    filePath={publication.filePath}
+                    key={`rendered-newsletter-${publication.id}`}
+                  />
                 </Container>
               </ExpandableSection>
             )
@@ -94,8 +94,9 @@ export default function PublicationsTable() {
             return <></>
           }
         })
-        : <p>No Publications Available</p>
-      }
+      ) : (
+        <p>No Publications Available</p>
+      )}
     </SpaceBetween>
   )
 }

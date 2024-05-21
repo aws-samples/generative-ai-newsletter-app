@@ -3,18 +3,29 @@ import {
   util,
   type DynamoDBBatchGetItemRequest
 } from '@aws-appsync/utils'
-import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
+import {
+  addAccountToItems,
+  convertFieldIdsToObjectIds,
+  filterForDuplicatesById
+} from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBBatchGetItemRequest {
   const { NEWSLETTER_TABLE } = ctx.env
-  const newsletterIds = ctx.args.newsletterIds ?? ctx.prev.result.newsletterIds ?? undefined
-  if (newsletterIds === undefined) { util.error('No newsletter Ids defined', 'ValidationException') }
-  if (newsletterIds.length === 0) { runtime.earlyReturn([]) }
+  const newsletterIds =
+    ctx.args.newsletterIds ?? ctx.prev.result.newsletterIds ?? undefined
+  if (newsletterIds === undefined) {
+    util.error('No newsletter Ids defined', 'ValidationException')
+  }
+  if (newsletterIds.length === 0) {
+    runtime.earlyReturn([])
+  }
   return {
     operation: 'BatchGetItem',
     tables: {
       [NEWSLETTER_TABLE]: {
-        keys: newsletterIds.map((newsletterId: string) => util.dynamodb.toMapValues({ newsletterId, sk: 'newsletter' }))
+        keys: newsletterIds.map((newsletterId: string) =>
+          util.dynamodb.toMapValues({ newsletterId, sk: 'newsletter' })
+        )
       }
     }
   }

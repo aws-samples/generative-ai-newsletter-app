@@ -5,9 +5,24 @@
  */
 import { type PluginFunction } from '@graphql-codegen/plugin-helpers'
 import { type GraphQLSchema } from 'graphql'
-import { factory, SyntaxKind, type PropertyDeclaration, type ClassDeclaration, type ImportDeclaration, createSourceFile, ScriptTarget, ScriptKind, NewLineKind, createPrinter, EmitHint, type ClassElement } from 'typescript'
+import {
+  factory,
+  SyntaxKind,
+  type PropertyDeclaration,
+  type ClassDeclaration,
+  type ImportDeclaration,
+  createSourceFile,
+  ScriptTarget,
+  ScriptKind,
+  NewLineKind,
+  createPrinter,
+  EmitHint,
+  type ClassElement
+} from 'typescript'
 
-export const plugin: PluginFunction = async (schema: GraphQLSchema): Promise<string> => {
+export const plugin: PluginFunction = async (
+  schema: GraphQLSchema
+): Promise<string> => {
   const queryFields = schema.getQueryType()?.getFields()
   const declarations: PropertyDeclaration[] = []
   const allResolvers = []
@@ -54,66 +69,80 @@ export const plugin: PluginFunction = async (schema: GraphQLSchema): Promise<str
     false,
     ScriptKind.TS
   )
-  return printer.printNode(EmitHint.Unspecified, importDefinition(), sourceFile) +
-  printer.printNode(EmitHint.Unspecified, generateTypescript(declarations), sourceFile)
+  return (
+    printer.printNode(EmitHint.Unspecified, importDefinition(), sourceFile) +
+    printer.printNode(
+      EmitHint.Unspecified,
+      generateTypescript(declarations),
+      sourceFile
+    )
+  )
 }
 
-const generateReadDeclarations = (resolvers: string[]): PropertyDeclaration[] => {
+const generateReadDeclarations = (
+  resolvers: string[]
+): PropertyDeclaration[] => {
   const declarations = []
   for (const resolver of resolvers) {
-    declarations.push(factory.createPropertyDeclaration(
-      [factory.createToken(SyntaxKind.AbstractKeyword)],
-      factory.createIdentifier(resolver),
-      undefined,
-      factory.createUnionTypeNode([
-        factory.createTypeReferenceNode(
-          factory.createIdentifier('ReadActionStatement'),
-          undefined
-        ),
-        factory.createTypeReferenceNode(
-          factory.createIdentifier('ListActionStatement'),
-          undefined
-        )
-      ]),
-      undefined
-    ))
+    declarations.push(
+      factory.createPropertyDeclaration(
+        [factory.createToken(SyntaxKind.AbstractKeyword)],
+        factory.createIdentifier(resolver),
+        undefined,
+        factory.createUnionTypeNode([
+          factory.createTypeReferenceNode(
+            factory.createIdentifier('ReadActionStatement'),
+            undefined
+          ),
+          factory.createTypeReferenceNode(
+            factory.createIdentifier('ListActionStatement'),
+            undefined
+          )
+        ]),
+        undefined
+      )
+    )
   }
   return declarations
 }
 
-const generateWriteDeclarations = (resolvers: string[]): PropertyDeclaration[] => {
+const generateWriteDeclarations = (
+  resolvers: string[]
+): PropertyDeclaration[] => {
   const declarations = []
   for (const resolver of resolvers) {
-    declarations.push(factory.createPropertyDeclaration(
-      [factory.createToken(SyntaxKind.AbstractKeyword)],
-      factory.createIdentifier(resolver),
-      undefined,
-      factory.createUnionTypeNode([
-        factory.createTypeReferenceNode(
-          factory.createIdentifier('CreateActionStatement'),
-          undefined
-        ),
-        factory.createTypeReferenceNode(
-          factory.createIdentifier('UpdateActionStatement'),
-          undefined
-        )
-      ]),
-      undefined
-    ))
+    declarations.push(
+      factory.createPropertyDeclaration(
+        [factory.createToken(SyntaxKind.AbstractKeyword)],
+        factory.createIdentifier(resolver),
+        undefined,
+        factory.createUnionTypeNode([
+          factory.createTypeReferenceNode(
+            factory.createIdentifier('CreateActionStatement'),
+            undefined
+          ),
+          factory.createTypeReferenceNode(
+            factory.createIdentifier('UpdateActionStatement'),
+            undefined
+          )
+        ]),
+        undefined
+      )
+    )
   }
   return declarations
 }
 
 const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
   const resolverCases = resolvers.map((resolver) => {
-    return (
-      factory.createCaseClause(
-        factory.createStringLiteral(resolver),
-        [factory.createReturnStatement(factory.createPropertyAccessExpression(
+    return factory.createCaseClause(factory.createStringLiteral(resolver), [
+      factory.createReturnStatement(
+        factory.createPropertyAccessExpression(
           factory.createThis(),
           factory.createIdentifier(resolver)
-        ))]
-      ))
+        )
+      )
+    ])
   })
   return factory.createPropertyDeclaration(
     undefined,
@@ -123,14 +152,16 @@ const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
     factory.createArrowFunction(
       undefined,
       undefined,
-      [factory.createParameterDeclaration(
-        undefined,
-        undefined,
-        factory.createIdentifier('resolverName'),
-        undefined,
-        factory.createKeywordTypeNode(SyntaxKind.StringKeyword),
-        undefined
-      )],
+      [
+        factory.createParameterDeclaration(
+          undefined,
+          undefined,
+          factory.createIdentifier('resolverName'),
+          undefined,
+          factory.createKeywordTypeNode(SyntaxKind.StringKeyword),
+          undefined
+        )
+      ],
       factory.createUnionTypeNode([
         factory.createTypeReferenceNode(
           factory.createIdentifier('ReadActionStatement'),
@@ -147,21 +178,31 @@ const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
       ]),
       factory.createToken(SyntaxKind.EqualsGreaterThanToken),
       factory.createBlock(
-        [factory.createSwitchStatement(
-          factory.createIdentifier('resolverName'),
-          factory.createCaseBlock([
-            ...resolverCases,
-            factory.createDefaultClause([factory.createThrowStatement(factory.createNewExpression(
-              factory.createIdentifier('Error'),
-              undefined,
-              [factory.createBinaryExpression(
-                factory.createStringLiteral('Resolver Permission not found for '),
-                factory.createToken(SyntaxKind.PlusToken),
-                factory.createIdentifier('resolverName')
-              )]
-            ))])
-          ])
-        )],
+        [
+          factory.createSwitchStatement(
+            factory.createIdentifier('resolverName'),
+            factory.createCaseBlock([
+              ...resolverCases,
+              factory.createDefaultClause([
+                factory.createThrowStatement(
+                  factory.createNewExpression(
+                    factory.createIdentifier('Error'),
+                    undefined,
+                    [
+                      factory.createBinaryExpression(
+                        factory.createStringLiteral(
+                          'Resolver Permission not found for '
+                        ),
+                        factory.createToken(SyntaxKind.PlusToken),
+                        factory.createIdentifier('resolverName')
+                      )
+                    ]
+                  )
+                )
+              ])
+            ])
+          )
+        ],
         true
       )
     )

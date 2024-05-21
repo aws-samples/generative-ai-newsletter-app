@@ -16,7 +16,7 @@ import { Mode } from '@cloudscape-design/global-styles'
 export default function GlobalHeader() {
   const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
-  const [theme, setTheme] = useState<Mode>(StorageHelper.getTheme());
+  const [theme, setTheme] = useState<Mode>(StorageHelper.getTheme())
 
   const onUtilClick = ({
     detail
@@ -29,11 +29,11 @@ export default function GlobalHeader() {
   }
   const onChangeThemeClick = () => {
     if (theme === Mode.Dark) {
-      setTheme(StorageHelper.applyTheme(Mode.Light));
+      setTheme(StorageHelper.applyTheme(Mode.Light))
     } else {
-      setTheme(StorageHelper.applyTheme(Mode.Dark));
+      setTheme(StorageHelper.applyTheme(Mode.Dark))
     }
-  };
+  }
   const addedLinks: any[] = []
   if (appContext?.ui?.headerLinks) {
     for (const link of appContext.ui.headerLinks) {
@@ -58,7 +58,7 @@ export default function GlobalHeader() {
       <TopNavigation
         identity={{
           title: 'Generative AI Newsletter Application',
-          href: '/',
+          href: '/'
         }}
         utilities={[
           {
@@ -69,9 +69,9 @@ export default function GlobalHeader() {
             target: '_blank'
           },
           {
-            type: "button",
-            text: theme === Mode.Dark ? "Light Mode" : "Dark Mode",
-            onClick: onChangeThemeClick,
+            type: 'button',
+            text: theme === Mode.Dark ? 'Light Mode' : 'Dark Mode',
+            onClick: onChangeThemeClick
           },
           {
             type: 'menu-dropdown',

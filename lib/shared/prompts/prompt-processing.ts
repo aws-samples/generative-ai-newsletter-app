@@ -62,7 +62,7 @@ export class TaggedElement {
 export class FormattedResponse {
   summary: TaggedElement
   error: TaggedElement
-  constructor (values?: { summary?: string, error?: string }) {
+  constructor (values?: { summary?: string; error?: string }) {
     this.summary = new TaggedElement('summary')
     this.error = new TaggedElement('error')
     if (values !== undefined) {

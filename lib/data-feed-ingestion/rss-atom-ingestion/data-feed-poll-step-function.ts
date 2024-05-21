@@ -48,28 +48,23 @@ export class DataFeedPollStepFunction extends Construct {
   ) {
     super(scope, id)
 
-    const getDataFeedsFunction = new NodejsFunction(
-      this,
-      'get-data-feeds',
-      {
-        description:
-          'Function responsible for getting all enabled data feeds to poll',
-        handler: 'handler',
-        architecture: Architecture.ARM_64,
-        runtime: Runtime.NODEJS_20_X,
-        tracing: Tracing.ACTIVE,
-        logFormat: LogFormat.JSON,
-        applicationLogLevel: ApplicationLogLevel.DEBUG,
-        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-        environment: {
-          POWERTOOLS_LOG_LEVEL: 'DEBUG',
-          DATA_FEED_TABLE: props.dataFeedTable.tableName,
-          DATA_FEED_TABLE_TYPE_INDEX:
-            props.dataFeedTableTypeIndex
-        },
-        timeout: cdk.Duration.seconds(30)
-      }
-    )
+    const getDataFeedsFunction = new NodejsFunction(this, 'get-data-feeds', {
+      description:
+        'Function responsible for getting all enabled data feeds to poll',
+      handler: 'handler',
+      architecture: Architecture.ARM_64,
+      runtime: Runtime.NODEJS_20_X,
+      tracing: Tracing.ACTIVE,
+      logFormat: LogFormat.JSON,
+      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+      environment: {
+        POWERTOOLS_LOG_LEVEL: 'DEBUG',
+        DATA_FEED_TABLE: props.dataFeedTable.tableName,
+        DATA_FEED_TABLE_TYPE_INDEX: props.dataFeedTableTypeIndex
+      },
+      timeout: cdk.Duration.seconds(30)
+    })
 
     // Step Function Tasks
     // Get Data Feeds from Data Feed Table
@@ -128,10 +123,13 @@ export class DataFeedPollStepFunction extends Construct {
      */
     NagSuppressions.addResourceSuppressions(
       [stateMachine, getDataFeedsFunction],
-      [{
-        id: 'AwsSolutions-IAM5',
-        reason: 'Allowing CloudWatch & XRay'
-      }], true
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'Allowing CloudWatch & XRay'
+        }
+      ],
+      true
     )
   }
 }

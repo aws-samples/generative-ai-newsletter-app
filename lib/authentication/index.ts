@@ -18,10 +18,25 @@ import {
   ClientAttributes
 } from 'aws-cdk-lib/aws-cognito'
 import { Construct } from 'constructs'
-import { Role, type IRole, PolicyStatement, Effect, Policy, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam'
+import {
+  Role,
+  type IRole,
+  PolicyStatement,
+  Effect,
+  Policy,
+  ServicePrincipal,
+  ManagedPolicy
+} from 'aws-cdk-lib/aws-iam'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
+import {
+  ApplicationLogLevel,
+  Architecture,
+  LambdaInsightsVersion,
+  LogFormat,
+  Runtime,
+  Tracing
+} from 'aws-cdk-lib/aws-lambda'
 import { NagSuppressions } from 'cdk-nag'
 
 interface AuthenticationProps {
@@ -66,28 +81,42 @@ export class Authentication extends Construct {
       }
     })
     this.accountTable = accountTable
-    const preTokenGenerationHookFunctionRole = new Role(this, 'pre-token-generation-hook-role', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com')
-    })
-    preTokenGenerationHookFunctionRole.addManagedPolicy(ManagedPolicy.fromManagedPolicyArn(this, 'PreTokenGenRoleLambdaExecution', 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'))
-    const preTokenGenerationHookFunction = new NodejsFunction(this, 'pre-token-generation-hook', {
-      description:
-        'Post Authentication, Pre-Token Generation Hook that creates a user\'s accountId',
-      handler: 'handler',
-      role: preTokenGenerationHookFunctionRole,
-      architecture: Architecture.ARM_64,
-      runtime: Runtime.NODEJS_20_X,
-      tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
-      insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
-      memorySize: 128,
-      timeout: Duration.seconds(5),
-      environment: {
-        POWERTOOLS_LOG_LEVEL: 'DEBUG',
-        ACCOUNT_TABLE: accountTable.tableName
+    const preTokenGenerationHookFunctionRole = new Role(
+      this,
+      'pre-token-generation-hook-role',
+      {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com')
       }
-    })
+    )
+    preTokenGenerationHookFunctionRole.addManagedPolicy(
+      ManagedPolicy.fromManagedPolicyArn(
+        this,
+        'PreTokenGenRoleLambdaExecution',
+        'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      )
+    )
+    const preTokenGenerationHookFunction = new NodejsFunction(
+      this,
+      'pre-token-generation-hook',
+      {
+        description:
+          "Post Authentication, Pre-Token Generation Hook that creates a user's accountId",
+        handler: 'handler',
+        role: preTokenGenerationHookFunctionRole,
+        architecture: Architecture.ARM_64,
+        runtime: Runtime.NODEJS_20_X,
+        tracing: Tracing.ACTIVE,
+        logFormat: LogFormat.JSON,
+        applicationLogLevel: ApplicationLogLevel.DEBUG,
+        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+        memorySize: 128,
+        timeout: Duration.seconds(5),
+        environment: {
+          POWERTOOLS_LOG_LEVEL: 'DEBUG',
+          ACCOUNT_TABLE: accountTable.tableName
+        }
+      }
+    )
     if (auth === undefined || auth === null) {
       const selfSignUpEnabled =
         this.node.tryGetContext('selfSignUpEnabled') ?? false
@@ -117,12 +146,14 @@ export class Authentication extends Construct {
           postAuthentication: preTokenGenerationHookFunction
         }
       })
-      const clientWriteAttributes = new ClientAttributes().withStandardAttributes({
-        familyName: true,
-        givenName: true,
-        email: true
-      })
-      const clientReadAttributes = clientWriteAttributes.withCustomAttributes('Account')
+      const clientWriteAttributes =
+        new ClientAttributes().withStandardAttributes({
+          familyName: true,
+          givenName: true,
+          email: true
+        })
+      const clientReadAttributes =
+        clientWriteAttributes.withCustomAttributes('Account')
       const userPoolClient = userPool.addClient('UserPoolClient', {
         generateSecret: false,
         readAttributes: clientReadAttributes,
@@ -227,28 +258,30 @@ export class Authentication extends Construct {
           })
           this.identityPool = identityPool
           this.authenticatedUserRole = identityPool.authenticatedRole as Role
-          this.unauthenticatedUserRole = identityPool.unauthenticatedRole as Role
+          this.unauthenticatedUserRole =
+            identityPool.unauthenticatedRole as Role
         }
       }
       this.userPool = userPool
     }
-    preTokenGenerationHookFunctionRole.attachInlinePolicy(new Policy(this, 'pre-token-generation-hook-policy', {
-      statements: [
-        new PolicyStatement({
-          actions: ['dynamodb:PutItem', 'dynamodb:Scan'],
-          resources: [
-            accountTable.tableArn
-          ],
-          effect: Effect.ALLOW
-        }),
-        new PolicyStatement({
-          actions: ['cognito-idp:AdminUpdateUserAttributes'],
-          resources: [this.userPool.userPoolArn]
-        })
-      ]
-    }))
+    preTokenGenerationHookFunctionRole.attachInlinePolicy(
+      new Policy(this, 'pre-token-generation-hook-policy', {
+        statements: [
+          new PolicyStatement({
+            actions: ['dynamodb:PutItem', 'dynamodb:Scan'],
+            resources: [accountTable.tableArn],
+            effect: Effect.ALLOW
+          }),
+          new PolicyStatement({
+            actions: ['cognito-idp:AdminUpdateUserAttributes'],
+            resources: [this.userPool.userPoolArn]
+          })
+        ]
+      })
+    )
     preTokenGenerationHookFunctionRole.addManagedPolicy(
-      ManagedPolicy.fromAwsManagedPolicyName('AWSXrayWriteOnlyAccess'))
+      ManagedPolicy.fromAwsManagedPolicyName('AWSXrayWriteOnlyAccess')
+    )
 
     new CfnOutput(this, 'UserPoolLink', {
       value: `https://${Stack.of(this).region}.console.aws.amazon.com/cognito/v2/idp/user-pools/${this.userPool.userPoolId}/users?region=${Stack.of(this).region}`
@@ -260,28 +293,33 @@ export class Authentication extends Construct {
     this.unauthenticatedUserRoleArn = this.unauthenticatedUserRole.roleArn
     this.userPoolClientId = this.userPoolClient.userPoolClientId
     /**
-       * Adding nag suppression to decrease sec requirements for login
-       */
+     * Adding nag suppression to decrease sec requirements for login
+     */
     NagSuppressions.addResourceSuppressions(this.userPool, [
       {
         id: 'AwsSolutions-COG1',
-        reason: 'Skipping - Sample doesn\'t need advanced security'
+        reason: "Skipping - Sample doesn't need advanced security"
       },
       {
         id: 'AwsSolutions-COG2',
-        reason: 'Skipping - Sample doesn\'t need advanced security'
+        reason: "Skipping - Sample doesn't need advanced security"
       },
       {
         id: 'AwsSolutions-COG3',
-        reason: 'Skipping - Sample doesn\'t need advanced security'
+        reason: "Skipping - Sample doesn't need advanced security"
       }
     ])
 
-    NagSuppressions.addResourceSuppressions(preTokenGenerationHookFunctionRole, [
-      {
-        id: 'AwsSolutions-IAM5',
-        reason: 'Allowing PreTokenGenerationHookFunctionRole to have * policies'
-      }
-    ], true)
+    NagSuppressions.addResourceSuppressions(
+      preTokenGenerationHookFunctionRole,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason:
+            'Allowing PreTokenGenerationHookFunctionRole to have * policies'
+        }
+      ],
+      true
+    )
   }
 }

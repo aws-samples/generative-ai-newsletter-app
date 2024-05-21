@@ -9,7 +9,9 @@ export function request (ctx: Context): DynamoDBBatchGetItemRequest {
   return {
     operation: 'BatchGetItem',
     tables: {
-      [NEWSLETTER_TABLE]: ctx.args.dataFeedIds.map((dataFeedId: string) => util.dynamodb.toMapValues({ dataFeedId }))
+      [NEWSLETTER_TABLE]: ctx.args.dataFeedIds.map((dataFeedId: string) =>
+        util.dynamodb.toMapValues({ dataFeedId })
+      )
     }
   }
 }

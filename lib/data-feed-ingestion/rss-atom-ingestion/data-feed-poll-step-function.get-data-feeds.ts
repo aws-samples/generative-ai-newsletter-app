@@ -23,8 +23,7 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 
 const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
-const DATA_FEED_TABLE_TYPE_INDEX =
-  process.env.DATA_FEED_TABLE_TYPE_INDEX
+const DATA_FEED_TABLE_TYPE_INDEX = process.env.DATA_FEED_TABLE_TYPE_INDEX
 
 interface GetDataFeedsOutput {
   dataFeeds: string[]

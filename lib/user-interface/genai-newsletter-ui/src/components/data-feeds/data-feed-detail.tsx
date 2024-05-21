@@ -32,12 +32,12 @@ export default function DataFeedDetail() {
     }
     const apiClient = await generateAuthorizedClient()
     const result = await apiClient.graphql({
-        query: getDataFeed,
-        variables: {
-          input: {
-            id: dataFeedId
-          }
+      query: getDataFeed,
+      variables: {
+        input: {
+          id: dataFeedId
         }
+      }
     })
     if (result.errors) {
       console.error(result.errors)
@@ -52,8 +52,7 @@ export default function DataFeedDetail() {
   }, [getDataFeedData, dataFeedId])
 
   return (
-    <Container
-    >
+    <Container>
       {loading ? (
         <SpaceBetween size="l" alignItems="center" direction="vertical">
           <Spinner size="big" />
@@ -61,10 +60,10 @@ export default function DataFeedDetail() {
         </SpaceBetween>
       ) : (
         <SpaceBetween direction="vertical" size="s">
-          <FormField label='Data Feed Name'>
+          <FormField label="Data Feed Name">
             <span style={{ fontWeight: 'bold' }}>{setDataFeedId?.title}</span>
           </FormField>
-          <FormField label='Description'>
+          <FormField label="Description">
             <i>{setDataFeedId?.description}</i>
           </FormField>
 
@@ -74,23 +73,26 @@ export default function DataFeedDetail() {
             <Toggle checked={setDataFeedId?.enabled ?? false} disabled>
               Data Feed {setDataFeedId?.enabled ? 'Enabled' : 'Disabled'}
             </Toggle>
-            <FormField label="Private Data Feed"
-              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters.">
-              <Toggle
-                checked={setDataFeedId?.isPrivate ?? true}
-                disabled
-              >Data Feed Private
+            <FormField
+              label="Private Data Feed"
+              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters."
+            >
+              <Toggle checked={setDataFeedId?.isPrivate ?? true} disabled>
+                Data Feed Private
               </Toggle>
             </FormField>
           </FormField>
           <FormField label="Feed Type">{setDataFeedId?.feedType}</FormField>
           <FormField label="Date Created">{setDataFeedId?.createdAt}</FormField>
           <FormField label="Article Summarization Prompt">
-            {setDataFeedId?.summarizationPrompt ??  <span style={{ fontStyle: 'italic' }}>No Custom Prompt Provided</span>}
+            {setDataFeedId?.summarizationPrompt ?? (
+              <span style={{ fontStyle: 'italic' }}>
+                No Custom Prompt Provided
+              </span>
+            )}
           </FormField>
         </SpaceBetween>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   )
 }

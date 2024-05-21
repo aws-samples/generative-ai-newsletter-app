@@ -27,12 +27,15 @@ import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function DataFeedsTable(input?: ListDataFeedsInput) {
   const appContext = useContext(AppContext)
-  const { includeOwned = true, includeShared = false, includeDiscoverable = false } = input ?? {}
+  const {
+    includeOwned = true,
+    includeShared = false,
+    includeDiscoverable = false
+  } = input ?? {}
   const navigate = useNavigate()
   const onFollow = useOnFollow()
   const [dataFeeds, setDataFeeds] = useState<DataFeed[]>([])
-  const [selectedDataFeed, setSelectedDataFeed] =
-    useState<DataFeed>()
+  const [selectedDataFeed, setSelectedDataFeed] = useState<DataFeed>()
   const [loadingDataFeeds, setLoadingDataFeeds] = useState<boolean>(true)
 
   const getDataFeeds = useCallback(async () => {
@@ -51,8 +54,11 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
           }
         }
       })
-    
-      if (result.data?.listDataFeeds?.items !== undefined && result.data.listDataFeeds.items !== null) {
+
+      if (
+        result.data?.listDataFeeds?.items !== undefined &&
+        result.data.listDataFeeds.items !== null
+      ) {
         setDataFeeds(result.data.listDataFeeds.items as DataFeed[])
         setLoadingDataFeeds(false)
       }
@@ -109,7 +115,11 @@ export default function DataFeedsTable(input?: ListDataFeedsInput) {
     {
       id: 'title',
       cell: (item: DataFeed) => (
-        <Link onFollow={onFollow} href={`/feeds/${item.id}`} key={"FEED-LINK-" + item.id}>
+        <Link
+          onFollow={onFollow}
+          href={`/feeds/${item.id}`}
+          key={'FEED-LINK-' + item.id}
+        >
           {item.title}
         </Link>
       ),

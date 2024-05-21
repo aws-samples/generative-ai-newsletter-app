@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: MIT-0
  */
 import { type ArticleSummaryType } from '../../shared/api/API'
-import {
-  type ArticleData,
-  type MultiSizeFormattedResponse
-} from '../prompts'
+import { type ArticleData, type MultiSizeFormattedResponse } from '../prompts'
 import { type NewsletterStyle } from './newsletter-style'
 
 export interface ReadAuthCheckInput {

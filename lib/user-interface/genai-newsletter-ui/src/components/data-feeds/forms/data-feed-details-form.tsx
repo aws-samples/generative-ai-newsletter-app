@@ -18,7 +18,10 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../../../common/app-context'
 import { getDataFeed } from '../../../../../../shared/api/graphql/queries'
-import { createDataFeed, updateDataFeed } from '../../../../../../shared/api/graphql/mutations'
+import {
+  createDataFeed,
+  updateDataFeed
+} from '../../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../../common/helpers'
 
 export default function DataFeedDetailsForm() {
@@ -48,11 +51,11 @@ export default function DataFeedDetailsForm() {
       query: getDataFeed,
       variables: {
         input: {
-          id: dataFeedId,
-        },
-      },
+          id: dataFeedId
+        }
+      }
     })
-    
+
     if (result.errors) {
       console.log(result.errors)
       return
@@ -61,9 +64,7 @@ export default function DataFeedDetailsForm() {
     setEnabled(result.data.getDataFeed?.enabled ?? true)
     setTitle(result.data.getDataFeed?.title ?? '')
     setDescription(result.data.getDataFeed?.description ?? '')
-    setSummarizationPrompt(
-      result.data.getDataFeed?.summarizationPrompt ?? ''
-    )
+    setSummarizationPrompt(result.data.getDataFeed?.summarizationPrompt ?? '')
     setIsPrivate(result.data.getDataFeed?.isPrivate ?? true)
     setLoading(false)
   }, [appContext, dataFeedId])
@@ -132,7 +133,16 @@ export default function DataFeedDetailsForm() {
       return
     }
     navigate(`/feeds/${result.data.createDataFeed?.id}`)
-  }, [appContext, description, enabled, isPrivate, navigate, summarizationPrompt, title, url])
+  }, [
+    appContext,
+    description,
+    enabled,
+    isPrivate,
+    navigate,
+    summarizationPrompt,
+    title,
+    url
+  ])
 
   useEffect(() => {
     if (dataFeedId) {
@@ -148,7 +158,7 @@ export default function DataFeedDetailsForm() {
           <Spinner size="big" />
           <h4>Loading...</h4>
         </SpaceBetween>
-      ) :
+      ) : (
         <Form
           actions={
             <SpaceBetween size="s" direction="horizontal">
@@ -165,7 +175,9 @@ export default function DataFeedDetailsForm() {
               </Button>
               <Button
                 variant="primary"
-                onClick={dataFeedId ? updateDataFeedAction : createDataFeedAction}
+                onClick={
+                  dataFeedId ? updateDataFeedAction : createDataFeedAction
+                }
               >
                 {dataFeedId ? 'Update' : 'Add'}
               </Button>
@@ -221,14 +233,16 @@ export default function DataFeedDetailsForm() {
                 Enabled
               </Toggle>
             </FormField>
-            <FormField label="Private Data Feed"
-              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters.">
+            <FormField
+              label="Private Data Feed"
+              description="By default, Data Feeds are private to you. Disable Private Data Feed to allow others to discover your data feed and use in their own newsletters."
+            >
               <Toggle
                 checked={isPrivate}
                 onChange={(e) => setIsPrivate(e.detail.checked)}
-              >Data Feed Private
+              >
+                Data Feed Private
               </Toggle>
-
             </FormField>
             <FormField
               label="Summarization Prompt"
@@ -242,7 +256,7 @@ export default function DataFeedDetailsForm() {
             </FormField>
           </SpaceBetween>
         </Form>
-      }
+      )}
     </Container>
   )
 }

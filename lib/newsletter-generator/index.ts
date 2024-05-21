@@ -45,8 +45,10 @@ interface NewsletterGeneratorProps {
 }
 
 export class NewsletterGenerator extends Construct {
-  public readonly newsletterTableCampaignGSI: string = 'newsletter-campaign-index'
-  public readonly newsletterTableItemTypeGSI: string = 'newsletter-item-type-index'
+  public readonly newsletterTableCampaignGSI: string =
+    'newsletter-campaign-index'
+  public readonly newsletterTableItemTypeGSI: string =
+    'newsletter-item-type-index'
   public readonly newsletterTable: Table
   public readonly createNewsletterFunction: NodejsFunction
   public readonly userSubscriberFunction: NodejsFunction
@@ -293,15 +295,17 @@ export class NewsletterGenerator extends Construct {
       pinpointApp.pinpointSubscribeUserToNewsletterPolicyStatement
     )
 
-    userSubscriberFunction.role?.attachInlinePolicy(new Policy(this, 'UserSubscriberCognitoLookup', {
-      statements: [
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          actions: ['cognito-idp:ListUsers'],
-          resources: [userPool.userPoolArn]
-        })
-      ]
-    }))
+    userSubscriberFunction.role?.attachInlinePolicy(
+      new Policy(this, 'UserSubscriberCognitoLookup', {
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: ['cognito-idp:ListUsers'],
+            resources: [userPool.userPoolArn]
+          })
+        ]
+      })
+    )
 
     const userUnsubscriberFunction = new NodejsFunction(
       this,
@@ -325,15 +329,17 @@ export class NewsletterGenerator extends Construct {
         }
       }
     )
-    userUnsubscriberFunction.role?.attachInlinePolicy(new Policy(this, 'UserUnsubscriberCognitoLookup', {
-      statements: [
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          actions: ['cognito-idp:ListUsers'],
-          resources: [userPool.userPoolArn]
-        })
-      ]
-    }))
+    userUnsubscriberFunction.role?.attachInlinePolicy(
+      new Policy(this, 'UserUnsubscriberCognitoLookup', {
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: ['cognito-idp:ListUsers'],
+            resources: [userPool.userPoolArn]
+          })
+        ]
+      })
+    )
     newsletterTable.grantReadWriteData(userUnsubscriberFunction)
 
     this.emailBucket = emailBucket
@@ -348,13 +354,23 @@ export class NewsletterGenerator extends Construct {
      * CDK NAG Suppressions
      */
     NagSuppressions.addResourceSuppressions(
-      [newsletterCampaignCreatorFunction, userSubscriberFunction, userUnsubscriberFunction,
-        getNewsletterFunction, emailGeneratorFunction, emailGeneratorSchedulerInvokeRole,
-        newsletterCreatorFunction],
-      [{
-        id: 'AwsSolutions-IAM5',
-        reason: 'Allowing * for CloudWatch, Xray, Pinpoint App Project, Scheduler'
-      }], true
+      [
+        newsletterCampaignCreatorFunction,
+        userSubscriberFunction,
+        userUnsubscriberFunction,
+        getNewsletterFunction,
+        emailGeneratorFunction,
+        emailGeneratorSchedulerInvokeRole,
+        newsletterCreatorFunction
+      ],
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason:
+            'Allowing * for CloudWatch, Xray, Pinpoint App Project, Scheduler'
+        }
+      ],
+      true
     )
   }
 }

@@ -10,7 +10,14 @@ import { Construct } from 'constructs'
 import { IngestionStepFunction } from './ingestion-step-function'
 import { DataFeedPollStepFunction } from './data-feed-poll-step-function'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { ApplicationLogLevel, Architecture, LambdaInsightsVersion, LogFormat, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
+import {
+  ApplicationLogLevel,
+  Architecture,
+  LambdaInsightsVersion,
+  LogFormat,
+  Runtime,
+  Tracing
+} from 'aws-cdk-lib/aws-lambda'
 import { NagSuppressions } from 'cdk-nag'
 
 interface RssAtomFeedProps {
@@ -42,7 +49,7 @@ export class RssAtomFeedConstruct extends Construct {
       'IngestionStepFunction',
       {
         description:
-'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
+          'Step Function Responsible for ingesting data from RSS/ATOM feeds, generating summarizations and storing the information.',
         dataFeedTable,
         rssAtomDataBucket
       }
@@ -53,7 +60,7 @@ export class RssAtomFeedConstruct extends Construct {
       'DataFeedPollStepFunction',
       {
         description:
-'Step Function Responsible for getting enabled data feeds and starting ingestion for each one.',
+          'Step Function Responsible for getting enabled data feeds and starting ingestion for each one.',
         dataFeedIngestionStateMachine: ingestionStepFunction.stateMachine,
         dataFeedTable,
         dataFeedTableTypeIndex
@@ -62,7 +69,7 @@ export class RssAtomFeedConstruct extends Construct {
 
     const feedSubscriberFunction = new NodejsFunction(this, 'feed-subscriber', {
       description:
-'Function responsible for subscribing to a specified RSS/ATOM feed',
+        'Function responsible for subscribing to a specified RSS/ATOM feed',
       handler: 'handler',
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
@@ -74,7 +81,7 @@ export class RssAtomFeedConstruct extends Construct {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',
         DATA_FEED_TABLE: dataFeedTable.tableName,
         INGESTION_STEP_FUNCTION:
-ingestionStepFunction.stateMachine.stateMachineArn
+          ingestionStepFunction.stateMachine.stateMachineArn
       },
       timeout: Duration.minutes(1)
     })
@@ -97,10 +104,13 @@ ingestionStepFunction.stateMachine.stateMachineArn
      */
     NagSuppressions.addResourceSuppressions(
       [feedSubscriberFunction],
-      [{
-        id: 'AwsSolutions-IAM5',
-        reason: 'Allowing CloudWatch & XRay'
-      }], true
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'Allowing CloudWatch & XRay'
+        }
+      ],
+      true
     )
   }
 }

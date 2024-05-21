@@ -30,8 +30,14 @@ import NewsletterReviewForm from './newsletter-review'
 import NewsletterIntroPrompt from './newsletter-intro-prompt'
 import { NewsletterStyle } from '../../../../../../shared/common/newsletter-style'
 import NewsletterDesignerForm from './newsletter-designer'
-import { createNewsletter, updateNewsletter } from '../../../../../../shared/api/graphql/mutations'
-import { getDataFeed, getNewsletter } from '../../../../../../shared/api/graphql/queries'
+import {
+  createNewsletter,
+  updateNewsletter
+} from '../../../../../../shared/api/graphql/mutations'
+import {
+  getDataFeed,
+  getNewsletter
+} from '../../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../../common/helpers'
 
 interface NewsletterWizardProps {
@@ -57,12 +63,10 @@ export default function NewsletterWizard({
   const [title, setTitle] = useState<string>('')
   const [isPrivate, setIsPrivate] = useState<boolean>(true)
   const [numberOfDaysToInclude, setNumberOfDaysToInclude] = useState<number>(7)
-  const [selectedDataFeeds, setSelectedDataFeeds] = useState<
-    DataFeed[]
-  >([])
+  const [selectedDataFeeds, setSelectedDataFeeds] = useState<DataFeed[]>([])
   const [activeWizardStep, setActiveWizardStep] = useState<number>(0)
-  const [articleSummaryType, setArticleSummaryType] = useState<ArticleSummaryType>(
-    ArticleSummaryType.SHORT_SUMMARY)
+  const [articleSummaryType, setArticleSummaryType] =
+    useState<ArticleSummaryType>(ArticleSummaryType.SHORT_SUMMARY)
   const [newsletterIntroPrompt, setNewsletterIntroPrompt] = useState<string>('')
   const [titleError, setTitleError] = useState<string>('')
   const [numberOfDaysToIncludeError, setNumberOfDaysToIncludeError] =
@@ -161,11 +165,15 @@ export default function NewsletterWizard({
     } else {
       setTitle(result.data.getNewsletter?.title ?? '')
       setIsPrivate(result.data.getNewsletter?.isPrivate ?? true)
-      setNumberOfDaysToInclude(result.data.getNewsletter?.numberOfDaysToInclude ?? 7)
+      setNumberOfDaysToInclude(
+        result.data.getNewsletter?.numberOfDaysToInclude ?? 7
+      )
 
-      const filteredDataFeeds = result.data?.getNewsletter?.dataFeedIds?.filter((feedId) => {
-        return (feedId !== undefined && feedId !== null)
-      })
+      const filteredDataFeeds = result.data?.getNewsletter?.dataFeedIds?.filter(
+        (feedId) => {
+          return feedId !== undefined && feedId !== null
+        }
+      )
 
       if (filteredDataFeeds !== undefined && filteredDataFeeds.length > 0) {
         const selectedDataFeedItems: DataFeed[] = []
@@ -180,19 +188,22 @@ export default function NewsletterWizard({
               }
             })
 
-            console.log('Adding selected data feed', { result: dataFeedResult.data.getDataFeed })
-            selectedDataFeedItems.push(dataFeedResult.data.getDataFeed as DataFeed)
-
+            console.log('Adding selected data feed', {
+              result: dataFeedResult.data.getDataFeed
+            })
+            selectedDataFeedItems.push(
+              dataFeedResult.data.getDataFeed as DataFeed
+            )
           }
-
         }
         console.log('Selected data feeds', selectedDataFeedItems)
         setSelectedDataFeeds(selectedDataFeedItems)
-
       }
 
       setArticleSummaryType(
-        result.data.getNewsletter?.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY)
+        result.data.getNewsletter?.articleSummaryType ??
+          ArticleSummaryType.SHORT_SUMMARY
+      )
       setNewsletterIntroPrompt(
         result.data.getNewsletter?.newsletterIntroPrompt ?? ''
       )
@@ -248,7 +259,18 @@ export default function NewsletterWizard({
         navigate(`/newsletters/${newsletterId}`)
       }
     }
-  }, [newsletterId, appContext, title, isPrivate, numberOfDaysToInclude, selectedDataFeeds, newsletterIntroPrompt, articleSummaryType, newsletterStyle, navigate])
+  }, [
+    newsletterId,
+    appContext,
+    title,
+    isPrivate,
+    numberOfDaysToInclude,
+    selectedDataFeeds,
+    newsletterIntroPrompt,
+    articleSummaryType,
+    newsletterStyle,
+    navigate
+  ])
 
   const cancelWizard = useCallback(async () => {
     navigate(newsletterId ? `/newsletters/${newsletterId}` : '/newsletters')
@@ -310,8 +332,8 @@ export default function NewsletterWizard({
       activeStepIndex={activeWizardStep}
       onSubmit={
         newsletterId !== undefined &&
-          newsletterId !== null &&
-          newsletterId.length > 0
+        newsletterId !== null &&
+        newsletterId.length > 0
           ? updateNewsletterAction
           : submitCreateNewsletter
       }
@@ -374,8 +396,7 @@ export default function NewsletterWizard({
               />
             </Container>
           ),
-          isOptional:
-            newsletterId !== undefined
+          isOptional: newsletterId !== undefined
         },
         {
           title: 'Define your Newsletter Intro',
@@ -501,9 +522,7 @@ export default function NewsletterWizard({
                   formTitle="Review and Finalize Details"
                   formDescription="Review and finalize the details of your newsletter before saving."
                   newsletterIntroPrompt={newsletterIntroPrompt}
-                  articleSummaryType={
-                    articleSummaryType
-                  }
+                  articleSummaryType={articleSummaryType}
                 />
               </Container>
             </SpaceBetween>

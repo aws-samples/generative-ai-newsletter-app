@@ -8,7 +8,7 @@
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
     "build:appsync": "ts-node ./lib/api/functions/bundle.ts",
     "watch": "tsc -w",
-    "lint": "eslint . --fix --ext .ts,.tsx --report-unused-disable-directives",
+    "lint": "eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --fix",
     "prettier": "prettier --write \"**/*.{ts,tsx}\"",
     "format": "npm run prettier && npm run lint",
     "test": "jest",
@@ -70,6 +70,7 @@
     "ts-node": "^10.9.2",
     "typescript": "5.3",
     "vite": "^5.0.12",
+    "vite-plugin-eslint": "^1.8.1",
     "vitepress": "^1.1.4"
   },
   "dependencies": {

@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 import * as fs from 'fs'
 import { type DeployConfig } from '../lib/shared/common/deploy-config'
 import { formatText } from './consts'

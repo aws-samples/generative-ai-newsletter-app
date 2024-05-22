@@ -23,7 +23,7 @@ import { listArticles } from '../../../../../shared/api/graphql/queries'
 import { flagArticle } from '../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../common/helpers'
 
-export default function DataFeedArticleTable() {
+export default function DataFeedArticleTable () {
   const { dataFeedId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const appContext = useContext(AppContext)

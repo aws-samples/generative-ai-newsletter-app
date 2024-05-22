@@ -11,14 +11,14 @@ const THEME_STORAGE_NAME = `${PREFIX}-theme`
 const NAVIGATION_PANEL_STATE_STORAGE_NAME = `${PREFIX}-navigation-panel-state`
 
 export abstract class StorageHelper {
-  static getTheme() {
+  static getTheme () {
     const value = localStorage.getItem(THEME_STORAGE_NAME) ?? Mode.Light
     const theme = value === Mode.Dark ? Mode.Dark : Mode.Light
 
     return theme
   }
 
-  static applyTheme(theme: Mode) {
+  static applyTheme (theme: Mode) {
     localStorage.setItem(THEME_STORAGE_NAME, theme)
     applyMode(theme)
 
@@ -30,7 +30,7 @@ export abstract class StorageHelper {
     return theme
   }
 
-  static getNavigationPanelState(): NavigationPanelState {
+  static getNavigationPanelState (): NavigationPanelState {
     const value =
       localStorage.getItem(NAVIGATION_PANEL_STATE_STORAGE_NAME) ??
       JSON.stringify({
@@ -47,7 +47,7 @@ export abstract class StorageHelper {
     return state ?? {}
   }
 
-  static setNavigationPanelState(state: Partial<NavigationPanelState>) {
+  static setNavigationPanelState (state: Partial<NavigationPanelState>) {
     const currentState = this.getNavigationPanelState()
     const newState = { ...currentState, ...state }
     const stateStr = JSON.stringify(newState)

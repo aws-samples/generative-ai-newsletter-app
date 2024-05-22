@@ -13,7 +13,7 @@ import NewsletterPreview from '../../components/newsletters/preview'
 import { NewsletterStyle } from '../../../../../shared/common/newsletter-style'
 import { useState } from 'react'
 
-export default function EditNewsletter() {
+export default function EditNewsletter () {
   const { newsletterId } = useParams()
   const onFollow = useOnFollow()
   const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(

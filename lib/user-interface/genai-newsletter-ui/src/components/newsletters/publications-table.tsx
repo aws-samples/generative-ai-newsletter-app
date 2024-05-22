@@ -17,7 +17,7 @@ import { listPublications } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 import Newsletter from './newsletter'
 
-export default function PublicationsTable() {
+export default function PublicationsTable () {
   const appContext = useContext(AppContext)
   const { newsletterId } = useParams()
   const [publications, setPublications] = useState<Publication[]>(

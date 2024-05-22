@@ -16,7 +16,7 @@ interface BaseContentLayoutProps extends PropsWithChildren {
   header?: JSX.Element
 }
 
-export default function BaseContentLayout(props: BaseContentLayoutProps) {
+export default function BaseContentLayout (props: BaseContentLayoutProps) {
   const appContext = useContext(AppContext)
   const { children, header } = props
   const [dismissed, setDismissed] = useState(false)

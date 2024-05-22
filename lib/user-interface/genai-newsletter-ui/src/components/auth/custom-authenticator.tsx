@@ -14,7 +14,7 @@ import {
 } from './authenticator-views'
 import { Container, SpaceBetween, Spinner } from '@cloudscape-design/components'
 
-export default function Authenticator(props: PropsWithChildren) {
+export default function Authenticator (props: PropsWithChildren) {
   const appContext = useContext(AppContext)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [userId, setUserId] = useState(userContextDefault.userId)

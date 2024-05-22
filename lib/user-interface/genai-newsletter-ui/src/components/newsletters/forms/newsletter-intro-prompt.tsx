@@ -10,7 +10,7 @@ interface NewsletterIntroPromptProps {
   setNewsletterIntroPrompt: (newsletterIntroPrompt: string) => void
 }
 
-export default function NewsletterIntroPrompt(
+export default function NewsletterIntroPrompt (
   props: NewsletterIntroPromptProps
 ) {
   const { newsletterIntroPrompt, setNewsletterIntroPrompt } = props

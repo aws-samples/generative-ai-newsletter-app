@@ -18,7 +18,7 @@ import { checkSubscriptionToNewsletter, getNewsletterSubscriberStats } from '../
 import { subscribeToNewsletter, unsubscribeFromNewsletter } from '../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../common/helpers'
 
-export default function UserSubscriberData() {
+export default function UserSubscriberData () {
   const appContext = useContext(AppContext)
   const { newsletterId } = useParams()
   const [userSubscriberCount, setUserSubscriberCount] = useState<number>(0)

@@ -2,7 +2,7 @@ import { Box, Container, Header, Link, StatusIndicator } from '@cloudscape-desig
 import { NewsletterJSONData } from '../../../../../shared/email-generator/newsletter-json-data'
 import { useCallback, useEffect, useState } from 'react'
 
-export default function Newsletter(props: { filePath: string }) {
+export default function Newsletter (props: { filePath: string }) {
     const [loading, setLoading] = useState<boolean>(true)
     const [data, setData] = useState<NewsletterJSONData>()
     const loadData = useCallback(async () => {

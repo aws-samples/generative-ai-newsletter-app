@@ -32,7 +32,7 @@ interface NewsletterReviewForm {
   }
 }
 
-export default function NewsletterReviewForm(props: NewsletterReviewForm) {
+export default function NewsletterReviewForm (props: NewsletterReviewForm) {
   const navigate = useNavigate()
   const { newsletterId } = useParams()
   const {

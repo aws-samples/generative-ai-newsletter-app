@@ -26,7 +26,7 @@ interface NewsletterDetailsFormProps {
   numberOfDaysToIncludeError: string
 }
 
-export default function NewsletterDetailsForm(
+export default function NewsletterDetailsForm (
   props: NewsletterDetailsFormProps
 ) {
   const {

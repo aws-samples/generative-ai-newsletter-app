@@ -11,7 +11,7 @@ interface FollowDetail {
   href?: string
 }
 
-export default function useOnFollow() {
+export default function useOnFollow () {
   const navigate = useNavigate()
 
   return useCallback(

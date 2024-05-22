@@ -9,7 +9,7 @@ import useOnFollow from '../../common/hooks/use-on-follow'
 import DataFeedsTable from '../../components/data-feeds/data-feeds-table'
 import BaseContentLayout from '../../components/base-content-layout'
 
-export default function DataFeedsDashboard() {
+export default function DataFeedsDashboard () {
   const onFollow = useOnFollow()
 
   return (

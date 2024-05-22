@@ -44,7 +44,7 @@ interface NewsletterWizardProps {
   }
 }
 
-export default function NewsletterWizard({
+export default function NewsletterWizard ({
   newsletterId,
   previewPane
 }: NewsletterWizardProps) {

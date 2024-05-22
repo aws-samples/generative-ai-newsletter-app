@@ -10,7 +10,7 @@ import DataFeedDetailsForm from '../../components/data-feeds/forms/data-feed-det
 import BaseContentLayout from '../../components/base-content-layout'
 import { useParams } from 'react-router-dom'
 
-export default function EditDataFeed() {
+export default function EditDataFeed () {
   const onFollow = useOnFollow()
   const { subscriptionId } = useParams()
   return (

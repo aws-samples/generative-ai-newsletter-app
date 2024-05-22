@@ -17,7 +17,7 @@ import {
 import { getDataFeed } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
-export default function DataFeedDetail() {
+export default function DataFeedDetail () {
   const { dataFeedId } = useParams()
   const appContext = useContext(AppContext)
   const [setDataFeedId, setDataFeed] = useState<DataFeed | null>(null)

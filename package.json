@@ -2,9 +2,6 @@
   "type": "commonjs",
   "name": "genai-newsletter",
   "version": "1.1.15",
-  "bin": {
-    "genai-newsletter-app": "bin/genai-newsletter-app.js"
-  },
   "scripts": {
     "config": "node -r ts-node/register ./cli/config.ts",
     "build": "tsc && npm run codegen && npm run build:appsync && npm run build:ui",
@@ -50,8 +47,8 @@
     "@types/jest": "^29.5.8",
     "@types/node": "20.9.0",
     "@types/prompt-sync": "^4.2.3",
-    "@types/react": "^18.2.46",
-    "@types/react-dom": "^18.2.18",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
     "@types/uuid": "^9.0.7",
     "@vitejs/plugin-react": "^4.2.1",
     "ansi-escape-sequences": "^6.2.2",
@@ -105,8 +102,8 @@
     "esbuild": "^0.21.2",
     "graphql": "^16.8.1",
     "mui-color-input": "^2.0.3",
-    "react": "18.2",
-    "react-dom": "18.2",
+    "react": "^18.2.0",
+    "react-dom": "18.0",
     "react-router": "^6.23.1",
     "source-map-support": "^0.5.21",
     "typescript-eslint": "^7.9.0",

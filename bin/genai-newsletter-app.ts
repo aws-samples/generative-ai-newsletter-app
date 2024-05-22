@@ -5,7 +5,7 @@ import { GenAINewsletter } from '../lib'
 import getConfig from '../lib/config'
 import path from 'path'
 import { AwsSolutionsChecks } from 'cdk-nag'
-import { addNagSuppressions } from './cdk-nag-supressions'
+import { addNagSuppressions } from '../lib/cdk-nag-supressions'
 
 const app = new App()
 

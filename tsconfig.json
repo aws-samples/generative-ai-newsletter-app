@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
+    "rootDir": "./",
     "jsx": "react-jsx",
     "target": "ES2020",
     "module": "commonjs",
@@ -10,9 +11,9 @@
       "dom",
       "DOM.Iterable"
     ],
-    "declaration": true,
+    "declaration": false,
     "strict": true,
-    "checkJs": true,
+    "checkJs": false,
     "noImplicitAny": true,
     "noEmit": true,
     "strictNullChecks": true,
@@ -26,8 +27,8 @@
     "inlineSources": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "moduleDetection": "force",
-    "allowSyntheticDefaultImports": true,
+    "moduleDetection": "auto",
+    "allowSyntheticDefaultImports": true, 
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
@@ -41,11 +42,11 @@
     "node_modules",
     "cdk.out",
     "lib/user-interface/genai-newsletter-ui/dist",
-    "lib/api/functions/out"
+    "lib/api/functions/out",
+    "bin/*.json"
   ],
   "include": [
-    "jest.config.ts",
-    "bin/",
+    "bin/*",
     "lib/**/*",
     "cli/"
   ]

@@ -29,7 +29,7 @@
     "@aws-appsync/utils": "^1.7.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.554.0",
     "@aws-sdk/client-lambda": "^3.496.0",
-    "@aws-sdk/client-s3": "^3.472.0",
+    "@aws-sdk/client-s3": "^3.582.0",
     "@aws-sdk/client-verifiedpermissions": "^3.515.0",
     "@cloudscape-design/components": "^3.0.593",
     "@graphql-codegen/cli": "^5.0.2",

@@ -1,4 +1,3 @@
-/* eslint-disable no-constant-condition */
 import * as fs from 'fs'
 import { type DeployConfig } from '../lib/shared/common/deploy-config'
 import { formatText } from './consts'
@@ -296,15 +295,18 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
       console.log(formatText('Requires a hostname & a pre-existing AWS Certificate Manager public cert ARN.' +
       'For more information, visit https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html',
       { italic: true }))
-      while (true) {
+      let loopA = true
+      while (loopA) {
         const response = prompter(
           formatText('Do you want to proceed? (y/N):', { bold: true, textColor: 'blue' }),
           'N'
         )
         if (response.toLowerCase() === 'y') {
           configHostname = true
+          loopA = false
           break
         } else if (response.toLowerCase() === 'n') {
+          loopA = false
           break
         } else {
           console.log(
@@ -317,7 +319,8 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
         }
       }
       if (configHostname) {
-        while (true) {
+        let loopB = true
+        while (loopB) {
           const existingHostname = ((config.ui?.hostName) != null) ? config.ui.hostName : ''
           const response = prompter(
             formatText(`Enter the hostname you want to use for the frontend:(${existingHostname})`, { textColor: 'blue' })
@@ -328,8 +331,10 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
               config.ui = {}
             }
             config.ui.hostName = response
+            loopB = false
             break
           } else if (response.length < 1 && config.ui?.hostName !== undefined && config.ui.hostName !== null) {
+            loopB = false
             break
           } else {
             console.log(
@@ -341,7 +346,8 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
             )
           }
         }
-        while (true) {
+        let loopC = true
+        while (loopC) {
           const existingAcmCert = ((config.ui?.acmCertificateArn) != null) ? config.ui.acmCertificateArn : ''
           const response = prompter(
             formatText(`Enter the ACM Certificate ARN you want to use for the frontend:(${existingAcmCert})`, { textColor: 'blue' })
@@ -352,8 +358,10 @@ if (['UPDATE', 'NEW'].includes(configStyle)) {
               config.ui = {}
             }
             config.ui.acmCertificateArn = response
+            loopC = false
             break
           } else if (response.length < 1 && config.ui?.acmCertificateArn !== undefined && config.ui.acmCertificateArn !== null) {
+            loopC = false;
             break
           } else {
             console.log(

@@ -10,7 +10,7 @@ import NewsletterEmail from '../../../../../shared/email-generator/emails/newsle
 import { AppContext } from '../../common/app-context'
 import { useContext } from 'react'
 
-export default function NewsletterPreview(props?: NewsletterEmailProps) {
+export default function NewsletterPreview (props?: NewsletterEmailProps) {
   const appContext = useContext(AppContext)
   const longSummary =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In fermentum et sollicitudin ac orci. Tristique sollicitudin nibh sit amet commodo nulla facilisi. Morbi tempus iaculis urna id volutpat lacus laoreet non. Diam maecenas ultricies mi eget mauris pharetra et. Pellentesque elit eget gravida cum. Curabitur gravida arcu ac tortor dignissim convallis aenean et tortor. Tincidunt eget nullam non nisi est sit. Cursus vitae congue mauris rhoncus aenean vel. Metus vulputate eu scelerisque felis imperdiet proin fermentum leo vel. Lorem donec massa sapien faucibus et molestie.' +

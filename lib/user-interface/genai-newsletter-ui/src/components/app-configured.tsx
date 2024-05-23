@@ -14,7 +14,7 @@ import Authenticator from './auth/custom-authenticator'
 import { StorageHelper } from '../common/helpers/storage-helper'
 import { Mode } from '@cloudscape-design/global-styles'
 
-export default function AppConfigured() {
+export default function AppConfigured () {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [error, setError] = useState<boolean | null>(null)
   const [theme, setTheme] = useState(StorageHelper.getTheme());

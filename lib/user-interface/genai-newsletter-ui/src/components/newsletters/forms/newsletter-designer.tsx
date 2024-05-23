@@ -20,7 +20,7 @@ interface NewsletterDesignerFormProps {
   setStyle: (style: NewsletterStyle) => void
 }
 
-export default function NewsletterDesignerForm(
+export default function NewsletterDesignerForm (
   props: NewsletterDesignerFormProps
 ) {
   const { style, setStyle } = props

@@ -7,7 +7,7 @@ import { AppLayout, AppLayoutProps } from '@cloudscape-design/components'
 import NavigationPanel from './navigation-panel'
 import { useNavigationPanelState } from '../common/hooks/use-navigation-panel-state'
 
-export default function BaseAppLayout(props: AppLayoutProps) {
+export default function BaseAppLayout (props: AppLayoutProps) {
   const [navigationPanelState, setNavigationPanelState] =
     useNavigationPanelState()
   return (

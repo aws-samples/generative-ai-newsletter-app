@@ -44,8 +44,7 @@ interface PinpointCampaignHookInput {
 }
 
 const lambdaHandler = async (
-  event: PinpointCampaignHookInput,
-  context: any
+  event: PinpointCampaignHookInput
 ): Promise<any> => {
   logger.debug('Filter event called.', { event })
   const newsletterId = await getNewsletterForCampaign(event.CampaignId)

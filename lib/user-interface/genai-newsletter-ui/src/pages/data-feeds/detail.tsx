@@ -18,7 +18,7 @@ import BaseContentLayout from '../../components/base-content-layout'
 // import { useCallback, useContext, useEffect, useState } from 'react'
 // import { AppContext } from '../../common/app-context'
 
-export default function DataFeedDetails() {
+export default function DataFeedDetails () {
   const navigate = useNavigate()
   // const appContext = useContext(AppContext)
   const { dataFeedId } = useParams()

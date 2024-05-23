@@ -21,7 +21,7 @@ import { getDataFeed } from '../../../../../../shared/api/graphql/queries'
 import { createDataFeed, updateDataFeed } from '../../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../../common/helpers'
 
-export default function DataFeedDetailsForm() {
+export default function DataFeedDetailsForm () {
   const { dataFeedId } = useParams()
   const appContext = useContext(AppContext)
   const [loading, setLoading] = useState<boolean>(true)

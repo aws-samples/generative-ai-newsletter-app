@@ -13,7 +13,7 @@ import useOnFollow from '../../common/hooks/use-on-follow'
 import NewslettersTable from '../../components/newsletters/newsletters-table'
 import BaseContentLayout from '../../components/base-content-layout'
 
-export default function MyNewsletterSubscriptions() {
+export default function MyNewsletterSubscriptions () {
   const onFollow = useOnFollow()
   return (
     <BaseAppLayout

@@ -24,7 +24,7 @@ import {
 import { useCallback, useContext, useState } from 'react'
 import { AppContext } from '../../common/app-context'
 
-export function DefaultAuthenticator() {
+export function DefaultAuthenticator () {
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
@@ -208,7 +208,7 @@ export function DefaultAuthenticator() {
   )
 }
 
-export function CustomAuthenticator() {
+export function CustomAuthenticator () {
   const appContext = useContext(AppContext)
   const handleFederateClick = () => {
     let provider = null

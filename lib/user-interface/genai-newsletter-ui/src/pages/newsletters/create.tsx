@@ -12,7 +12,7 @@ import { useState } from 'react'
 import NewsletterPreview from '../../components/newsletters/preview'
 import { NewsletterStyle } from '../../../../../shared/common'
 
-export default function CreateNewsletter() {
+export default function CreateNewsletter () {
   const [splitPanelOpen, setSplitPanelOpen] = useState<boolean>(false)
   const [newsletterStyle, setNewsletterStyle] = useState<NewsletterStyle>(
     new NewsletterStyle()

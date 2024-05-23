@@ -13,7 +13,7 @@ import { UserContext } from '../common/user-context'
 import { AppContext } from '../common/app-context'
 import { StorageHelper } from '../common/helpers/storage-helper'
 import { Mode } from '@cloudscape-design/global-styles'
-export default function GlobalHeader() {
+export default function GlobalHeader () {
   const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
   const [theme, setTheme] = useState<Mode>(StorageHelper.getTheme());

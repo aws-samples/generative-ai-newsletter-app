@@ -41,7 +41,7 @@ export interface UserSubscriptionNewslettersTableProps {
   includeSubscriptions?: boolean
 }
 
-export default function NewslettersTable(props: ListableNewslettersTableProps | UserSubscriptionNewslettersTableProps) {
+export default function NewslettersTable (props: ListableNewslettersTableProps | UserSubscriptionNewslettersTableProps) {
   const appContext = useContext(AppContext)
   const userContext = useContext(UserContext)
   const navigate = useNavigate()

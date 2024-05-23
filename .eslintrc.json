@@ -5,9 +5,7 @@
     "node": true
   },
   "extends": [
-    "plugin:react/jsx-runtime",
-    "standard-with-typescript",
-    "plugin:react/recommended",
+    "eslint:recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "parserOptions": {

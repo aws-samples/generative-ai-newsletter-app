@@ -25,7 +25,7 @@ import useOnFollow from '../../common/hooks/use-on-follow'
 import { listDataFeeds } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
-export default function DataFeedsTable(input?: ListDataFeedsInput) {
+export default function DataFeedsTable (input?: ListDataFeedsInput) {
   const appContext = useContext(AppContext)
   const { includeOwned = true, includeShared = false, includeDiscoverable = false } = input ?? {}
   const navigate = useNavigate()

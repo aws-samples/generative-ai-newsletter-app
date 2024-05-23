@@ -8,7 +8,7 @@ import { useEffect } from 'react'
 import BaseAppLayout from '../components/base-app-layout'
 import BaseContentLayout from '../components/base-content-layout'
 
-export default function Welcome() {
+export default function Welcome () {
   useEffect(() => { })
   return (
     <BaseAppLayout

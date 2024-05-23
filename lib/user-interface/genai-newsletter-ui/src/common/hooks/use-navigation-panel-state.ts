@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { StorageHelper } from '../helpers/storage-helper'
 import { NavigationPanelState } from '../types'
 
-export function useNavigationPanelState(): [
+export function useNavigationPanelState (): [
   NavigationPanelState,
   (state: Partial<NavigationPanelState>) => void
 ] {

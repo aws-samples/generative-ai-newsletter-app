@@ -28,7 +28,7 @@ import BaseContentLayout from '../../components/base-content-layout'
 import { canUpdateNewsletter, getNewsletter } from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
-export default function NewsletterDetail() {
+export default function NewsletterDetail () {
   const { newsletterId } = useParams()
   const navigate = useNavigate()
   const onFollow = useOnFollow()

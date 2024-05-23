@@ -20,7 +20,7 @@ import DataFeedDetails from './pages/data-feeds/detail'
 import MyNewsletters from './pages/newsletters/my-newsletters'
 import MyNewsletterSubscriptions from './pages/newsletters/my-subscriptions'
 import EditDataFeed from './pages/data-feeds/edit'
-function App() {
+function App () {
   return (
     <div style={{ height: '100%' }}>
       <BrowserRouter>

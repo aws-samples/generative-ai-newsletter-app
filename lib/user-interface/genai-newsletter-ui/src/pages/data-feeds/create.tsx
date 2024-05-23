@@ -9,7 +9,7 @@ import BaseAppLayout from '../../components/base-app-layout'
 import DataFeedDetailsForm from '../../components/data-feeds/forms/data-feed-details-form'
 import BaseContentLayout from '../../components/base-content-layout'
 
-export default function CreateDataFeed() {
+export default function CreateDataFeed () {
   const onFollow = useOnFollow()
   return (
     <BaseAppLayout

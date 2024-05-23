@@ -21,7 +21,7 @@ export interface NewsletterNewsFeedFormProps extends ListDataFeedsInput {
   setSelectedDataFeeds: (dataFeeds: DataFeed[]) => void
 }
 
-export default function NewsletterDataFeedsSelectionForm(
+export default function NewsletterDataFeedsSelectionForm (
   props: NewsletterNewsFeedFormProps
 ) {
   const { selectedDataFeeds, setSelectedDataFeeds, includeOwned, includeShared } = props

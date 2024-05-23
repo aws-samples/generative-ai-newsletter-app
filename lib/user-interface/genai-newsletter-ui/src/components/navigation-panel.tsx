@@ -11,7 +11,7 @@ import { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../common/app-context'
 import { useNavigationPanelState } from '../common/hooks/use-navigation-panel-state'
 import { useLocation, useNavigate } from 'react-router-dom'
-export default function NavigationPanel() {
+export default function NavigationPanel () {
   const navigate = useNavigate()
   const appContext = useContext(AppContext)
   const location = useLocation()

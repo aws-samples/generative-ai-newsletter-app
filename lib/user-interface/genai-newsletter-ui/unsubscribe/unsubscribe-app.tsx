@@ -11,7 +11,7 @@ import { useSearchParams } from "react-router-dom";
 import { externalUnsubscribeFromNewsletter } from "../../../../lib/shared/api/graphql/mutations";
 import { generateAuthorizedClient } from "../src/common/helpers";
 
-export function UnsubscribeApp() {
+export function UnsubscribeApp () {
 	const [searchParams] = useSearchParams()
 	const [config, setConfig] = useState<AppConfig | null>(null)
 	const [loading, setLoading] = useState(true)

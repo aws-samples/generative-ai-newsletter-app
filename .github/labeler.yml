@@ -1,0 +1,63 @@
+CodeChange:
+- changed-files:
+  - any-change-to-any-file: 
+    - '**/*.ts'
+
+GitHubPages:
+- changed-files:
+  - any-glob-to-any-file: pages/*
+
+Documentation:
+- changed-files:
+  - any-glob-to-any-file:
+    - pages/*
+    - docs/*
+    - README.md
+
+API:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/api/*
+    - lib/shared/api/*
+
+Auth:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/authentication/*
+    - lib/authorization/*
+
+AuthN:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/authentication/*
+
+AuthZ:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/authorization/*
+
+DataFeed:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/data-feed-ingestion/*
+
+Newsletter:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/newsletter-generator/*
+    - lib/shared/email-generator/*
+
+LLMPrompting:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/shared/prompts/*
+
+UserInterface:
+- changed-files:
+  - any-change-to-any-file:
+    - lib/user-interface/*
+
+CLI:
+- changed-files:
+  - any-change-to-any-file:
+    - cli/*

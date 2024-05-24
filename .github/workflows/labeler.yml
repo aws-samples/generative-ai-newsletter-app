@@ -7,7 +7,11 @@
 
 
 name: Labeler
-on: [pull_request_target]
+on: 
+  pull_request_target:
+    branches: '*'
+  schedule:
+      - cron: "0 1 * * 1"
 
 jobs:
   labeler:
@@ -19,3 +23,5 @@ jobs:
     steps:
     - name: Run Labeler
       uses: actions/labeler@v5
+      with:
+        sync-labels: true

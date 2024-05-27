@@ -45,7 +45,7 @@
     "@types/figlet": "^1.5.8",
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^29.5.8",
-    "@types/node": "20.9.0",
+    "@types/node": "20.12.12",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",

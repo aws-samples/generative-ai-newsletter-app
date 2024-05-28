@@ -25,7 +25,7 @@
     "docs:preview": "vitepress preview pages"
   },
   "devDependencies": {
-    "@aws-amplify/cli": "^12.10.1",
+    "@aws-amplify/cli": "^12.12.1",
     "@aws-appsync/utils": "^1.7.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.554.0",
     "@aws-sdk/client-lambda": "^3.496.0",

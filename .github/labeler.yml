@@ -3,6 +3,7 @@ CodeChange:
   - any-glob-to-any-file: 
     - '**/*.ts'
 
+
 GitHubPages:
 - changed-files:
   - any-glob-to-any-file: pages/*
@@ -61,3 +62,8 @@ CLI:
 - changed-files:
   - any-glob-to-any-file:
     - cli/*
+
+GitHubFiles:
+- changed-files:
+  - any-glob-to-any-file:
+    - .github/*

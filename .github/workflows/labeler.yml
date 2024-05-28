@@ -10,8 +10,6 @@ name: Labeler
 on: 
   pull_request_target:
     branches: '*'
-  schedule:
-      - cron: "0 1 * * 1"
 
 jobs:
   labeler:

@@ -14,8 +14,14 @@ import {
   SpaceBetween,
   StatusIndicator
 } from '@cloudscape-design/components'
-import { checkSubscriptionToNewsletter, getNewsletterSubscriberStats } from '../../../../../shared/api/graphql/queries'
-import { subscribeToNewsletter, unsubscribeFromNewsletter } from '../../../../../shared/api/graphql/mutations'
+import {
+  checkSubscriptionToNewsletter,
+  getNewsletterSubscriberStats
+} from '../../../../../shared/api/graphql/queries'
+import {
+  subscribeToNewsletter,
+  unsubscribeFromNewsletter
+} from '../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function UserSubscriberData () {
@@ -24,7 +30,8 @@ export default function UserSubscriberData () {
   const [userSubscriberCount, setUserSubscriberCount] = useState<number>(0)
   const [isCurrentUserSubscribed, setIsCurrentUserSubscribed] =
     useState<boolean>(false)
-  const [subscriberCountLoading, setSubscriberCountLoading] = useState<boolean>(true)
+  const [subscriberCountLoading, setSubscriberCountLoading] =
+    useState<boolean>(true)
   const [subscriptionStatusLoading, setSubscriptionStatusLoading] =
     useState<boolean>(true)
 
@@ -46,7 +53,7 @@ export default function UserSubscriberData () {
       }
     })
 
-    if (result.data.getNewsletterSubscriberStats?.count){
+    if (result.data.getNewsletterSubscriberStats?.count) {
       setUserSubscriberCount(result.data.getNewsletterSubscriberStats?.count)
     }
     setSubscriberCountLoading(false)
@@ -69,7 +76,9 @@ export default function UserSubscriberData () {
         }
       }
     })
-    setIsCurrentUserSubscribed(result.data.checkSubscriptionToNewsletter ?? false)
+    setIsCurrentUserSubscribed(
+      result.data.checkSubscriptionToNewsletter ?? false
+    )
     setSubscriptionStatusLoading(false)
   }, [appContext, newsletterId])
 

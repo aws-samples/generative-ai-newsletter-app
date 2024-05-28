@@ -39,17 +39,16 @@ export default function MyNewsletters () {
       content={
         <BaseContentLayout
           header={
-            <Header 
-            variant='awsui-h1-sticky'
-            description="View the Newsletters you have created.">
+            <Header
+              variant="awsui-h1-sticky"
+              description="View the Newsletters you have created."
+            >
               My Newsletters
             </Header>
           }
         >
           <Container>
-            <NewslettersTable
-              includeOwned
-            />
+            <NewslettersTable includeOwned />
           </Container>
         </BaseContentLayout>
       }

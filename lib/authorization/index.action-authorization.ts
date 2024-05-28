@@ -8,9 +8,19 @@ import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { CognitoJwtVerifier } from 'aws-jwt-verify'
-import { CognitoIdentityProviderClient, GetUserCommand, type GetUserCommandInput } from '@aws-sdk/client-cognito-identity-provider' // ES Modules import
-import middy from '@middy/core' 
-import { GetSchemaCommand, VerifiedPermissionsClient, type IsAuthorizedCommandInput, IsAuthorizedCommand, Decision } from '@aws-sdk/client-verifiedpermissions'
+import {
+  CognitoIdentityProviderClient,
+  GetUserCommand,
+  type GetUserCommandInput
+} from '@aws-sdk/client-cognito-identity-provider' // ES Modules import
+import middy from '@middy/core'
+import {
+  GetSchemaCommand,
+  VerifiedPermissionsClient,
+  type IsAuthorizedCommandInput,
+  IsAuthorizedCommand,
+  Decision
+} from '@aws-sdk/client-verifiedpermissions'
 import { queryToActionAuth } from './authorization-helper'
 
 const SERVICE_NAME = 'authorization-check'
@@ -19,7 +29,8 @@ const tracer = new Tracer({ serviceName: SERVICE_NAME })
 const logger = new Logger({ serviceName: SERVICE_NAME })
 const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
-const { USER_POOL_ID, USER_POOL_CLIENT_ID, POLICY_STORE_ID, VALIDATION_REGEX } = process.env
+const { USER_POOL_ID, USER_POOL_CLIENT_ID, POLICY_STORE_ID, VALIDATION_REGEX } =
+  process.env
 if (VALIDATION_REGEX === undefined || VALIDATION_REGEX === null) {
   logger.error('VALIDATION_REGEX is not set')
   throw new Error('VALIDATION_REGEX is not set')
@@ -39,17 +50,30 @@ const jwtVerifier = CognitoJwtVerifier.create({
   tokenUse: 'access'
 })
 
-const verifiedpermissions = tracer.captureAWSv3Client(new VerifiedPermissionsClient())
-const cognitoIdp = tracer.captureAWSv3Client(new CognitoIdentityProviderClient())
+const verifiedpermissions = tracer.captureAWSv3Client(
+  new VerifiedPermissionsClient()
+)
+const cognitoIdp = tracer.captureAWSv3Client(
+  new CognitoIdentityProviderClient()
+)
 
 let schema: Record<string, unknown>
 
 const lambdaHandler = async (event: any): Promise<any> => {
   logger.debug('AuthorizationCheckEventTriggered', { event })
-  if (schema === undefined || schema === null || Object.keys(schema).length === 0) {
+  if (
+    schema === undefined ||
+    schema === null ||
+    Object.keys(schema).length === 0
+  ) {
     logger.debug('AVP Schema not yet cached. Retrieving AVP Schema')
-    const schemaResponse = await verifiedpermissions.send(new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID }))
-    if (schemaResponse.schema !== undefined && schemaResponse.schema.length > 0) {
+    const schemaResponse = await verifiedpermissions.send(
+      new GetSchemaCommand({ policyStoreId: POLICY_STORE_ID })
+    )
+    if (
+      schemaResponse.schema !== undefined &&
+      schemaResponse.schema.length > 0
+    ) {
       schema = JSON.parse(schemaResponse.schema)
     } else {
       metrics.addMetric('AuthCheckFailed', MetricUnits.Count, 1)
@@ -84,7 +108,9 @@ const lambdaHandler = async (event: any): Promise<any> => {
     },
     resource: {
       entityType: 'GenAINewsletter::Operation',
-      entityId: lowercaseFirstLetter(queryToActionAuth(event.requestContext.queryString as string))
+      entityId: lowercaseFirstLetter(
+        queryToActionAuth(event.requestContext.queryString as string)
+      )
     },
     entities: {
       entityList: [
@@ -105,12 +131,13 @@ const lambdaHandler = async (event: any): Promise<any> => {
         {
           identifier: {
             entityType: 'GenAINewsletter::Operation',
-            entityId: lowercaseFirstLetter(queryToActionAuth(event.requestContext.queryString as string))
+            entityId: lowercaseFirstLetter(
+              queryToActionAuth(event.requestContext.queryString as string)
+            )
           }
         }
       ]
     }
-
   }
   const command = new IsAuthorizedCommand(isAuthInput)
   const response = await verifiedpermissions.send(command)
@@ -144,16 +171,24 @@ const lambdaHandler = async (event: any): Promise<any> => {
   }
 }
 
-const getUserAccountId = async (authorizationToken: string): Promise<string> => {
+const getUserAccountId = async (
+  authorizationToken: string
+): Promise<string> => {
   logger.debug('getting accountId for authToken', { authorizationToken })
   const input: GetUserCommandInput = {
     AccessToken: authorizationToken
   }
   const command = new GetUserCommand(input)
   const response = await cognitoIdp.send(command)
-  if (response.UserAttributes !== undefined && response.UserAttributes.length > 0) {
+  if (
+    response.UserAttributes !== undefined &&
+    response.UserAttributes.length > 0
+  ) {
     for (const attribute of response.UserAttributes) {
-      if (attribute.Name === 'custom:Account' && attribute.Value !== undefined) {
+      if (
+        attribute.Name === 'custom:Account' &&
+        attribute.Value !== undefined
+      ) {
         return attribute.Value
       }
     }

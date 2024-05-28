@@ -5,9 +5,7 @@
  */
 
 import { Stack } from 'aws-cdk-lib'
-import {
-  NewsSubscriptionIngestion
-} from './data-feed-ingestion'
+import { NewsSubscriptionIngestion } from './data-feed-ingestion'
 import { NewsletterGenerator } from './newsletter-generator'
 import { Authentication } from './authentication'
 import { API } from './api'
@@ -84,19 +82,22 @@ export class GenAINewsletter extends Stack {
       accountTable: authentication.accountTable,
       accountTableUserIndex: authentication.accountTableUserIndex,
       newsletterTable: newsletterGenerator.newsletterTable,
-      newsletterTableItemTypeGSI: newsletterGenerator.newsletterTableItemTypeGSI,
+      newsletterTableItemTypeGSI:
+        newsletterGenerator.newsletterTableItemTypeGSI,
       avpPolicyStore: authorization.policyStore,
       loggingBucket,
       avpAuthorizerValidationRegex: authorization.avpAuthorizerValidationRegex,
       functions: {
-        graphqlActionAuthorizerFunction: authorization.graphqlActionAuthorizerFunction,
-        graphqlReadAuthorizerFunction: authorization.graphqlReadAuthorizerFunction,
-        graphqlFilterReadAuthorizerFunction: authorization.graphqlFilterReadAuthorizerFunction,
+        graphqlActionAuthorizerFunction:
+          authorization.graphqlActionAuthorizerFunction,
+        graphqlReadAuthorizerFunction:
+          authorization.graphqlReadAuthorizerFunction,
+        graphqlFilterReadAuthorizerFunction:
+          authorization.graphqlFilterReadAuthorizerFunction,
         createNewsletterFunction: newsletterGenerator.createNewsletterFunction,
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
         userUnsubscriberFunction: newsletterGenerator.userUnsubscriberFunction,
-        feedSubscriberFunction:
-          dataFeedIngestion.feedSubscriberFunction,
+        feedSubscriberFunction: dataFeedIngestion.feedSubscriberFunction,
         getNewsletterFunction: newsletterGenerator.getNewsletterFunction
       }
     })

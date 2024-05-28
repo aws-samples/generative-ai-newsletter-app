@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-import { type LambdaRequest, util, type Context, type AppSyncIdentityLambda } from '@aws-appsync/utils'
+import {
+  type LambdaRequest,
+  util,
+  type Context,
+  type AppSyncIdentityLambda
+} from '@aws-appsync/utils'
 import { convertAvpObjectToGraphql } from '../../resolver-helper'
 
 export function request (ctx: Context): LambdaRequest {
@@ -15,7 +20,9 @@ export function request (ctx: Context): LambdaRequest {
     payload: {
       userId: identity.resolverContext.userId,
       accountId: identity.resolverContext.accountId,
-      requestContext: JSON.parse(identity.resolverContext.requestContext as string),
+      requestContext: JSON.parse(
+        identity.resolverContext.requestContext as string
+      ),
       result: ctx.prev.result,
       arguments: args,
       source,

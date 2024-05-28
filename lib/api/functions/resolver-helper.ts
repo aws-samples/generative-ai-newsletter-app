@@ -44,17 +44,20 @@ export const convertAvpObjectsToGraphql = (obj: any): any => {
 }
 
 /**
-   * Converts field id to object's "id" field and removes the provided id field
-   * @param item
-   * @param idFieldName
-   * @returns item
-   */
-export const convertFieldIdToObjectId = (obj: any, idFieldName: string): any => {
+ * Converts field id to object's "id" field and removes the provided id field
+ * @param item
+ * @param idFieldName
+ * @returns item
+ */
+export const convertFieldIdToObjectId = (
+  obj: any,
+  idFieldName: string
+): any => {
   if (obj === undefined) {
     return obj
   }
   obj.id = obj[idFieldName]
-   
+
   delete obj[idFieldName]
   return obj
 }
@@ -65,7 +68,11 @@ export const convertFieldIdToObjectId = (obj: any, idFieldName: string): any => 
  * @param objectName
  * @returns
  */
-export const convertFieldIdToObject = (obj: any, fieldIdName: string, objectName: string): any => {
+export const convertFieldIdToObject = (
+  obj: any,
+  fieldIdName: string,
+  objectName: string
+): any => {
   if (obj === undefined) {
     return obj
   }
@@ -73,7 +80,7 @@ export const convertFieldIdToObject = (obj: any, fieldIdName: string, objectName
     __typename: objectName,
     id: obj[fieldIdName]
   }
-   
+
   delete obj[fieldIdName]
   return obj
 }
@@ -88,9 +95,13 @@ export const filterForDuplicatesById = (obj: any): any => {
     return obj
   }
   return {
-    items: obj.items.filter((item: { id: any }, index: any, itemArray: any[]) => {
-      return itemArray.findIndex((i: { id: any }) => i.id === item.id) === index
-    })
+    items: obj.items.filter(
+      (item: { id: any }, index: any, itemArray: any[]) => {
+        return (
+          itemArray.findIndex((i: { id: any }) => i.id === item.id) === index
+        )
+      }
+    )
   }
 }
 
@@ -99,7 +110,10 @@ export const filterForDuplicatesById = (obj: any): any => {
  * @param idFieldName
  * @returns
  */
-export const convertFieldIdsToObjectIds = (obj: any, idFieldName: string): any => {
+export const convertFieldIdsToObjectIds = (
+  obj: any,
+  idFieldName: string
+): any => {
   if (obj === undefined || obj.items === undefined) {
     return obj
   }
@@ -117,7 +131,11 @@ export const convertFieldIdsToObjectIds = (obj: any, idFieldName: string): any =
  * @param objectName
  * @returns
  */
-export const convertFieldIdsToObjects = (obj: any, idFieldName: string, objectName: string): any => {
+export const convertFieldIdsToObjects = (
+  obj: any,
+  idFieldName: string,
+  objectName: string
+): any => {
   if (obj === undefined || obj.items === undefined) {
     return obj
   }

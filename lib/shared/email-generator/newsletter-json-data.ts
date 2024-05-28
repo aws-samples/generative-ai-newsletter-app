@@ -23,11 +23,19 @@ export interface NewsletterJSONData {
 }
 
 export const generateNewsletterJSON = (props: NewsletterJSONProps): string => {
-  const { newsletterId, title, newsletterSummary, articles, articleSummaryType } = props
+  const {
+    newsletterId,
+    title,
+    newsletterSummary,
+    articles,
+    articleSummaryType
+  } = props
   const newsletterJSONData: NewsletterJSONData = {
     newsletterId,
     title,
-    newsletterSummary: newsletterSummary.longSummary.response ?? 'Error with Newsletter Summary!',
+    newsletterSummary:
+      newsletterSummary.longSummary.response ??
+      'Error with Newsletter Summary!',
     articles: articles.map((article) => {
       let content
       if (articleSummaryType === ArticleSummaryType.KEYWORDS) {

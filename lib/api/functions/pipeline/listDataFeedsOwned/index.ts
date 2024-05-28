@@ -11,13 +11,20 @@ import {
   type AppSyncIdentityLambda
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { addAccountToItems, convertFieldIdsToObjectIds, filterForDuplicatesById } from '../../resolver-helper'
+import {
+  addAccountToItems,
+  convertFieldIdsToObjectIds,
+  filterForDuplicatesById
+} from '../../resolver-helper'
 const dataFeedTypeIndex = 'type-index' // TODO - Make ENV variable
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const identity = ctx.identity as AppSyncIdentityLambda
   const input = ctx.args.input
-  const includeOwned = input?.includeOwned !== undefined ? input.includeOwned : ctx.stash.lookupDefinition.includeOwned ?? true
+  const includeOwned =
+    input?.includeOwned !== undefined
+      ? input.includeOwned
+      : ctx.stash.lookupDefinition.includeOwned ?? true
   if (includeOwned === false) {
     runtime.earlyReturn(ctx.prev.result)
   }

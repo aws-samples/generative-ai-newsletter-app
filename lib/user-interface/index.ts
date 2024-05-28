@@ -3,13 +3,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import {
-  Aws,
-  CfnOutput,
-  Duration,
-  RemovalPolicy,
-  Stack
-} from 'aws-cdk-lib'
+import { Aws, CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
 import {
   CloudFrontAllowedMethods,
   CloudFrontWebDistribution,
@@ -18,7 +12,12 @@ import {
   ViewerProtocolPolicy
 } from 'aws-cdk-lib/aws-cloudfront'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
-import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
+import {
+  BlockPublicAccess,
+  Bucket,
+  BucketEncryption,
+  ObjectOwnership
+} from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import * as path from 'path'
 import { type UIConfig } from '../shared/common/deploy-config'
@@ -38,9 +37,7 @@ interface UserInterfaceProps {
 export class UserInterface extends Construct {
   constructor (scope: Construct, id: string, props: UserInterfaceProps) {
     super(scope, id)
-    const {
-      emailBucket
-    } = props
+    const { emailBucket } = props
 
     const ui = this.node.tryGetContext('ui') as UIConfig
     const appPath = path.join(__dirname, 'genai-newsletter-ui')
@@ -59,14 +56,8 @@ export class UserInterface extends Construct {
     const websiteOAI = new OriginAccessIdentity(this, 'S3OriginWebsite')
     websiteBucket.addToResourcePolicy(
       new PolicyStatement({
-        actions: [
-          's3:ListBucket',
-          's3:GetObject'
-        ],
-        resources: [
-          websiteBucket.bucketArn,
-          websiteBucket.arnForObjects('*')
-        ],
+        actions: ['s3:ListBucket', 's3:GetObject'],
+        resources: [websiteBucket.bucketArn, websiteBucket.arnForObjects('*')],
         principals: [websiteOAI.grantPrincipal],
         effect: Effect.ALLOW
       })
@@ -75,14 +66,8 @@ export class UserInterface extends Construct {
     const newslettersOAI = new OriginAccessIdentity(this, 'S3OriginNewsletters')
     emailBucket.addToResourcePolicy(
       new PolicyStatement({
-        actions: [
-          's3:ListBucket',
-          's3:GetObject'
-        ],
-        resources: [
-          emailBucket.bucketArn,
-          emailBucket.arnForObjects('*')
-        ],
+        actions: ['s3:ListBucket', 's3:GetObject'],
+        resources: [emailBucket.bucketArn, emailBucket.arnForObjects('*')],
         principals: [newslettersOAI.grantPrincipal],
         effect: Effect.ALLOW
       })
@@ -105,11 +90,19 @@ export class UserInterface extends Construct {
           prefix: 'cloudfront-access-logs/'
         },
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        viewerCertificate: (ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined)
-          ? ViewerCertificate.fromAcmCertificate(Certificate.fromCertificateArn(this, 'AcmCertificate', ui.acmCertificateArn), {
-            aliases: [ui.hostName]
-          })
-          : undefined,
+        viewerCertificate:
+          ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined
+            ? ViewerCertificate.fromAcmCertificate(
+                Certificate.fromCertificateArn(
+                  this,
+                  'AcmCertificate',
+                  ui.acmCertificateArn
+                ),
+                {
+                  aliases: [ui.hostName]
+                }
+              )
+            : undefined,
         originConfigs: [
           {
             behaviors: [{ isDefaultBehavior: true }],
@@ -198,7 +191,7 @@ export class UserInterface extends Construct {
     })
 
     new CfnOutput(this, 'AppLink', {
-      value: `https://${(ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined) ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
+      value: `https://${ui?.acmCertificateArn !== undefined && ui?.hostName !== undefined ? ui.hostName : cloudfrontDistribution.distributionDomainName}/`
     })
 
     NagSuppressions.addResourceSuppressions(
@@ -209,23 +202,22 @@ export class UserInterface extends Construct {
           reason: 'OAI requires ListBucket permission'
         }
       ],
-      true)
-    NagSuppressions.addResourceSuppressions(
-      cloudfrontDistribution,
-      [
-        {
-          id: 'AwsSolutions-CFR2',
-          reason: 'WAF not required for solution'
-        },
-        {
-          id: 'AwsSolutions-CFR4',
-          reason: 'Using default CloudFront cert which doesn\'t allow for customized TLS versions'
-        },
-        {
-          id: 'AwsSolutions-CFR1',
-          reason: 'Not requiring any geo-restrictions'
-        }
-      ]
+      true
     )
+    NagSuppressions.addResourceSuppressions(cloudfrontDistribution, [
+      {
+        id: 'AwsSolutions-CFR2',
+        reason: 'WAF not required for solution'
+      },
+      {
+        id: 'AwsSolutions-CFR4',
+        reason:
+          "Using default CloudFront cert which doesn't allow for customized TLS versions"
+      },
+      {
+        id: 'AwsSolutions-CFR1',
+        reason: 'Not requiring any geo-restrictions'
+      }
+    ])
   }
 }

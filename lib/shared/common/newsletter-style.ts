@@ -36,7 +36,7 @@ export class ContentStyle {
   margin?: 'auto'
   paddingLeft?: '10px'
   paddingRight?: '10px'
-  constructor (values?: { backgroundColor?: string, fontSize?: string }) {
+  constructor (values?: { backgroundColor?: string; fontSize?: string }) {
     if (values?.backgroundColor !== undefined) {
       this.backgroundColor = values.backgroundColor
     } else {

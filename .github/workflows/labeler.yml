@@ -5,13 +5,10 @@
 # file with configuration.  For more information, see:
 # https://github.com/actions/labeler
 
-
 name: Labeler
 on: 
   pull_request_target:
     branches: '*'
-  schedule:
-      - cron: "0 1 * * 1"
 
 jobs:
   labeler:
@@ -21,6 +18,10 @@ jobs:
       pull-requests: write
 
     steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        repository: aws-samples/generative-ai-newsletter-app
     - name: Run Labeler
       uses: actions/labeler@v5
       with:

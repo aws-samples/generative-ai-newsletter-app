@@ -19,6 +19,10 @@ jobs:
       pull-requests: write
 
     steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        repository: aws-samples/generative-ai-newsletter-app
     - name: Run Labeler
       uses: actions/labeler@v5
       with:

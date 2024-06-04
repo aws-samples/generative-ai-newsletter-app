@@ -1,4 +1,4 @@
-/*
+/*`
  *
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
@@ -28,6 +28,11 @@ import {
 } from 'aws-cdk-lib/aws-iam'
 import { type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions'
 import { NagSuppressions } from 'cdk-nag'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface PermissionsProps {
   userPoolId: string
@@ -120,6 +125,12 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to create items using Amazon Verified Permissions',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'action-authorization' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -146,6 +157,12 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to read/view data items using Amazon Verified Permissions',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'read-authorization' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -171,6 +188,12 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requested resources are authorized for viewing data and filtering out unauthorized data from the list.',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'list-filter-authorization' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,

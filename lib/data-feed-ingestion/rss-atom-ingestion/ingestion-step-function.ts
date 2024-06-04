@@ -49,6 +49,9 @@ export class IngestionStepFunction extends Construct {
       description:
         'Function responsible for reading feeds and return the articles for ingestion',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'feed-reader' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -68,6 +71,12 @@ export class IngestionStepFunction extends Construct {
         description:
           'Function responsible for filtering out already ingested articles',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'filter-ingested-articles' + '$2'
+          )
+        ).pathname,
         runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         tracing: Tracing.ACTIVE,
@@ -89,6 +98,12 @@ export class IngestionStepFunction extends Construct {
         description:
           "Function responsible for ingesting each article's content, summarizing it, and storing the data in DDB",
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'article-ingestor' + '$2'
+          )
+        ).pathname,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
         architecture: Architecture.ARM_64,

@@ -102,6 +102,7 @@ export class Authentication extends Construct {
         description:
           "Post Authentication, Pre-Token Generation Hook that creates a user's accountId",
         handler: 'handler',
+        entry: new URL(import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'feed-reader' + '$2')).pathname,
         role: preTokenGenerationHookFunctionRole,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,

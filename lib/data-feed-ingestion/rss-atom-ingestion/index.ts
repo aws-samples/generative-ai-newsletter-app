@@ -71,6 +71,9 @@ export class RssAtomFeedConstruct extends Construct {
       description:
         'Function responsible for subscribing to a specified RSS/ATOM feed',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'feed-subscriber' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,

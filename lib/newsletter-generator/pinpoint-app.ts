@@ -70,6 +70,12 @@ export class PinpointApp extends Construct {
         description:
           'Function responsible for filtering Pinpoint Endpoints for a Pinpoint Campaign to only subscribed users',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'pinpoint-campaign-hook' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,

@@ -1,3 +1,17 @@
+## **1.1.16**&emsp;<sub><sup>2024-06-04 ([b79f6ca...be31508](https://github.com/aws-samples/generative-ai-newsletter-app/compare/b79f6cae5c322c99defb4838c71145fad8ec1840...be315086ff9a7a603d23313400c13b7a50574252?diff=split))</sup></sub>
+
+### Bug Fixes
+
+##### &ensp;`authz`
+
+- fixed bug causing accountId to not be properly added to listPublication result \(\#80\) ([408adac](https://github.com/aws-samples/generative-ai-newsletter-app/commit/408adac22ad3ec1831ef356c119e9898c5000af1), [#79](https://github.com/aws-samples/generative-ai-newsletter-app/issues/#79))
+
+##### &ensp;`node`
+
+- resolved mismatched dependencies \(\#47\) ([fe3518c](https://github.com/aws-samples/generative-ai-newsletter-app/commit/fe3518c36ccdb5c5687e0fbbeb045a8031c60969))
+
+<br>
+
 ## **1.1.15**&emsp;<sub><sup>2024-05-14 (9dbc6a385ef48cc635f4f4fd43ff42a5d28df534...9dbc6a385ef48cc635f4f4fd43ff42a5d28df534)</sup></sub>
 
 ### Bug Fixes

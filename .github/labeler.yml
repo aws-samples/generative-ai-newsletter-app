@@ -11,59 +11,59 @@ GitHubPages:
 Documentation:
 - changed-files:
   - any-glob-to-any-file:
-    - pages/*
-    - docs/*
+    - pages/**/*
+    - docs/**/*
     - README.md
 
 API:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/api/*
-    - lib/shared/api/*
+    - lib/api/**/*
+    - lib/shared/api/**/*
 
 Auth:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/authentication/*
-    - lib/authorization/*
+    - lib/authentication/**/*
+    - lib/authorization/**/*
 
 AuthN:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/authentication/*
+    - lib/authentication/**/*
 
 AuthZ:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/authorization/*
+    - lib/authorization/**/*
 
 DataFeed:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/data-feed-ingestion/*
+    - lib/data-feed-ingestion/**/*
 
 Newsletter:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/newsletter-generator/*
-    - lib/shared/email-generator/*
+    - lib/newsletter-generator/**/*
+    - lib/shared/email-generator/**/*
 
 LLMPrompting:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/shared/prompts/*
+    - lib/shared/prompts/**/*
 
 UserInterface:
 - changed-files:
   - any-glob-to-any-file:
-    - lib/user-interface/*
+    - lib/user-interface/**/*
 
 CLI:
 - changed-files:
   - any-glob-to-any-file:
-    - cli/*
+    - cli/**/*
 
 GitHubFiles:
 - changed-files:
   - any-glob-to-any-file:
-    - .github/*
+    - .github/**/*

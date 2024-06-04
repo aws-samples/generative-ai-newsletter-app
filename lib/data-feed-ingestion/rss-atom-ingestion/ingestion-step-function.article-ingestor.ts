@@ -226,7 +226,13 @@ const generateArticleSummarization = async (
     messages: [{ role: 'user', content: prompt }]
   })
   logger.debug('GenAI Output', { response })
-  const processedResponse = summaryBuilder.getProcessedResponse(response.content.map((item) => { return item.type === 'text' ? item.text : '' }).join('\n'))
+  const processedResponse = summaryBuilder.getProcessedResponse(
+    response.content
+      .map((item) => {
+        return item.type === 'text' ? item.text : ''
+      })
+      .join('\n')
+  )
   logger.debug('Formatted response from Model:', { processedResponse })
   if (processedResponse.error.response !== null) {
     logger.error('Error in processed response from LLM', {
@@ -282,7 +288,9 @@ const saveArticleData = async (
 const checkForRedirectFallback = ($: cheerio.Root): string | null => {
   logger.debug('Checking for redirect fallback in <noscript> tag')
   if ($('noscript').length > 0 && $('noscript').children('a').length === 1) {
-    logger.debug('<noscript> exists with one anchor URL.', { noscript: $('noscript').html()?.toString() })
+    logger.debug('<noscript> exists with one anchor URL.', {
+      noscript: $('noscript').html()?.toString()
+    })
     tracer.putAnnotation('redirectFallback', true)
     metrics.addMetric('RedirectFallback', MetricUnits.Count, 1)
     const redirectFallback = $('noscript').children('a').first().attr('href')

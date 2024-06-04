@@ -65,6 +65,8 @@ export abstract class PromptHandler {
     }
   }
 
-  abstract getCompiledPrompt (): string
-  abstract getProcessedResponse (): MultiSizeFormattedResponse | FormattedResponse
+  abstract getCompiledPrompt(): string
+  abstract getProcessedResponse():
+    | MultiSizeFormattedResponse
+    | FormattedResponse
 }

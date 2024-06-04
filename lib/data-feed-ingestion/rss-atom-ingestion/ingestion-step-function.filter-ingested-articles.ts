@@ -47,9 +47,7 @@ const lambdaHandler = async (
   return filteredArticles
 }
 
-const getExistingArticles = async (
-  dataFeedId: string
-): Promise<string[]> => {
+const getExistingArticles = async (dataFeedId: string): Promise<string[]> => {
   logger.debug('Getting existing articles for data feed ' + dataFeedId)
   const input: QueryCommandInput = {
     TableName: DATA_FEED_TABLE,

@@ -53,9 +53,7 @@ export default function DataFeedArticleTable () {
       return
     }
     if (result.data.listArticles?.items !== null) {
-      setArticles(
-        result.data.listArticles?.items as Article[]
-      )
+      setArticles(result.data.listArticles?.items as Article[])
     }
 
     setLoading(false)
@@ -132,9 +130,7 @@ export default function DataFeedArticleTable () {
         <></>
       )}
       <Table
-        columnDefinitions={ArticlesTableColumnDefinition(
-          flagDataFeedArticle
-        )}
+        columnDefinitions={ArticlesTableColumnDefinition(flagDataFeedArticle)}
         columnDisplay={DataFeedArticlesTableColumnDisplay()}
         resizableColumns
         items={articles}

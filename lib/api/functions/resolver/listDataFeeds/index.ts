@@ -3,7 +3,12 @@ import { type Context, util } from '@aws-appsync/utils'
 export function request (ctx: Context): any {
   const input = ctx.args.input
   ctx.stash.root = 'DataFeeds'
-  if (input === undefined || (input.includeOwned === undefined && input.includeShared === undefined && input.includeDiscoverable === undefined)) {
+  if (
+    input === undefined ||
+    (input.includeOwned === undefined &&
+      input.includeShared === undefined &&
+      input.includeDiscoverable === undefined)
+  ) {
     ctx.stash.lookupDefinition = {
       includeOwned: true,
       includeShared: false,

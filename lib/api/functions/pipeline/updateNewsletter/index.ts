@@ -27,9 +27,9 @@ export function request (ctx: Context): DynamoDBUpdateItemRequest {
   if (input.dataFeeds != null) {
     expression += '#dataFeedIds = :dataFeedIds, '
     expressionNames['#dataFeedIds'] = 'dataFeedIds'
-    expressionValues[':dataFeedIds'] = util.dynamodb.toDynamoDB(
-      [...input.dataFeeds]
-    )
+    expressionValues[':dataFeedIds'] = util.dynamodb.toDynamoDB([
+      ...input.dataFeeds
+    ])
     updates = updates + 1
   }
   if (input.isPrivate !== null) {

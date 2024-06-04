@@ -76,7 +76,11 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
     throw new Error('No account id found')
   }
   tracer.putMetadata('numberOfDaysToInclude', newsletter.numberOfDaysToInclude)
-  if (newsletter.dataFeedIds !== undefined && newsletter.dataFeedIds !== null && newsletter.dataFeedIds.length > 0) {
+  if (
+    newsletter.dataFeedIds !== undefined &&
+    newsletter.dataFeedIds !== null &&
+    newsletter.dataFeedIds.length > 0
+  ) {
     const articles = await getArticlesForDataFeeds(
       newsletter.dataFeedIds,
       newsletter.numberOfDaysToInclude ?? 7
@@ -96,7 +100,9 @@ const lambdaHandler = async (event: EmailGeneratorInput): Promise<void> => {
         newsletter.title ?? 'Generative AI Newsletter Sample',
         newsletterId,
         newsletter.articleSummaryType ?? ArticleSummaryType.SHORT_SUMMARY,
-        newsletter.newsletterStyle !== null ? newsletter.newsletterStyle as unknown as NewsletterStyle : undefined
+        newsletter.newsletterStyle !== null
+          ? (newsletter.newsletterStyle as unknown as NewsletterStyle)
+          : undefined
       )
       const emailKey = await storeEmailInS3(emailContents, date, emailId)
       await recordEmailDetails(newsletterId, emailId, date, emailKey, accountId)
@@ -228,7 +234,9 @@ const generateNewsletterSummary = async (
     messages: [{ role: 'user', content: prompt }]
   })
   logger.debug('GenAI Output', { response })
-  const formattedResponse = summaryBuilder.getProcessedResponse(response.content.map(item => item.text).join('\n'))
+  const formattedResponse = summaryBuilder.getProcessedResponse(
+    response.content.map((item) => item.text).join('\n')
+  )
   logger.debug('Formatted response from Model:', { formattedResponse })
   if (
     formattedResponse.error.response === null &&

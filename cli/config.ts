@@ -4,9 +4,11 @@ import figlet from 'figlet'
 
 const program = new Command()
 
-console.log(figlet.textSync('GenAI Newsletter', {
-  font: 'Slant'
-}))
+console.log(
+  figlet.textSync('GenAI Newsletter', {
+    font: 'Slant'
+  })
+)
 
 program
   .name('npm run config')

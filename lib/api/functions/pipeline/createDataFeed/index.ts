@@ -1,4 +1,9 @@
-import { type Context, util, type LambdaRequest, type AppSyncIdentityLambda } from '@aws-appsync/utils'
+import {
+  type Context,
+  util,
+  type LambdaRequest,
+  type AppSyncIdentityLambda
+} from '@aws-appsync/utils'
 
 export function request (ctx: Context): LambdaRequest {
   const { args } = ctx

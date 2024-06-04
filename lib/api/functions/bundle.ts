@@ -16,26 +16,29 @@ import path from 'path'
 
 const outDir = path.join(__dirname, 'out')
 
-const resolverFunctions = fs.readdirSync(path.join(__dirname, 'resolver')).map((functionName) => {
-  return path.join(__dirname, 'resolver', functionName, 'index.ts')
-})
-const pipelineFunctions = fs.readdirSync(path.join(__dirname, 'pipeline')).map((functionName) => {
-  return path.join(__dirname, 'pipeline', functionName, 'index.ts')
-})
+const resolverFunctions = fs
+  .readdirSync(path.join(__dirname, 'resolver'))
+  .map((functionName) => {
+    return path.join(__dirname, 'resolver', functionName, 'index.ts')
+  })
+const pipelineFunctions = fs
+  .readdirSync(path.join(__dirname, 'pipeline'))
+  .map((functionName) => {
+    return path.join(__dirname, 'pipeline', functionName, 'index.ts')
+  })
 
-esbuild.build({
-  bundle: true,
-  entryPoints: [
-    ...resolverFunctions,
-    ...pipelineFunctions
-  ],
-  outdir: outDir,
-  sourcemap: 'inline',
-  sourcesContent: false,
-  external: ['@aws-appsync/utils'],
-  platform: 'node',
-  target: 'esnext',
-  format: 'esm',
-  minify: false,
-  logLevel: 'info'
-}).catch(() => process.exit(1))
+esbuild
+  .build({
+    bundle: true,
+    entryPoints: [...resolverFunctions, ...pipelineFunctions],
+    outdir: outDir,
+    sourcemap: 'inline',
+    sourcesContent: false,
+    external: ['@aws-appsync/utils'],
+    platform: 'node',
+    target: 'esnext',
+    format: 'esm',
+    minify: false,
+    logLevel: 'info'
+  })
+  .catch(() => process.exit(1))

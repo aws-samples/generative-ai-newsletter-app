@@ -17,7 +17,9 @@ export const addNagSuppressions = (stack: Stack): void => {
     },
     {
       id: 'AwsSolutions-IAM5',
-      appliesTo: ['Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs'],
+      appliesTo: [
+        'Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs'
+      ],
       reason: 'Allowing managed policy: AWSAppSyncPushToCloudWatchLogs'
     }
   ])
@@ -25,31 +27,38 @@ export const addNagSuppressions = (stack: Stack): void => {
    * This is the Stack-Level Log Retention Custom Resource.
    * If cdk_nag throws an IAM5 error for LogRetention, confirm the logical ID hasn't changed.
    */
-  NagSuppressions.addResourceSuppressionsByPath(stack,
-    `/${stack.stackName}/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource`, [
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack,
+    `/${stack.stackName}/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource`,
+    [
       {
         id: 'AwsSolutions-IAM5',
         reason: 'Allowing LogRetention to apply to any CloudWatch Resource'
       }
-    ])
+    ]
+  )
   /**
    * CDKBucketDeployment Resource must be referenced by Path
    * If cdk_nag throws errors for this resource, confirm the logical ID hasn't changed.
-  */
-  NagSuppressions.addResourceSuppressionsByPath(stack,
-  `/${stack.stackName}/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource`,
-  [
-    {
-      id: 'AwsSolutions-IAM5',
-      reason: 'Allowing CDKBucketDeployment to have * policies'
-    }
-  ])
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+   */
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack,
+    `/${stack.stackName}/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource`,
+    [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'Allowing CDKBucketDeployment to have * policies'
+      }
+    ]
+  )
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack,
     `/${stack.stackName}/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource`,
     [
       {
         id: 'AwsSolutions-L1',
-        reason: 'Allowing CDKBucketDeployment Lambda Runtime version to be managed by CDK version'
+        reason:
+          'Allowing CDKBucketDeployment Lambda Runtime version to be managed by CDK version'
       }
     ]
   )

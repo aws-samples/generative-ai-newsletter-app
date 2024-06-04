@@ -17,7 +17,7 @@ import { Mode } from '@cloudscape-design/global-styles'
 export default function AppConfigured () {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [error, setError] = useState<boolean | null>(null)
-  const [theme, setTheme] = useState(StorageHelper.getTheme());
+  const [theme, setTheme] = useState(StorageHelper.getTheme())
   useEffect(() => {
     (async () => {
       try {
@@ -37,32 +37,31 @@ export default function AppConfigured () {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "style"
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'style'
         ) {
           const newValue =
             document.documentElement.style.getPropertyValue(
-              "--app-color-scheme"
-            );
+              '--app-color-scheme'
+            )
 
-          const mode = newValue === "dark" ? Mode.Dark : Mode.Light;
+          const mode = newValue === 'dark' ? Mode.Dark : Mode.Light
           if (mode !== theme) {
-            setTheme(mode);
+            setTheme(mode)
           }
         }
       })
-    });
+    })
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["style"],
-    });
+      attributeFilter: ['style']
+    })
 
     return () => {
-      observer.disconnect();
-    };
-  }, [theme]);
-
+      observer.disconnect()
+    }
+  }, [theme])
 
   if (!config) {
     if (error) {
@@ -93,10 +92,10 @@ export default function AppConfigured () {
     <AppContext.Provider value={config}>
       <ThemeProvider
         theme={{
-          name: "default-theme",
-          overrides: [defaultDarkModeOverride],
+          name: 'default-theme',
+          overrides: [defaultDarkModeOverride]
         }}
-        colorMode={theme === Mode.Dark ? "dark" : "light"}
+        colorMode={theme === Mode.Dark ? 'dark' : 'light'}
       >
         <Authenticator>
           <App />

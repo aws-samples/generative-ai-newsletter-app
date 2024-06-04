@@ -4,11 +4,12 @@ import {
   type DynamoDBGetItemRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { addAccountToItem, convertFieldIdToObjectId } from '../../resolver-helper'
+import {
+  addAccountToItem,
+  convertFieldIdToObjectId
+} from '../../resolver-helper'
 
-export function request (
-  ctx: Context
-): DynamoDBGetItemRequest {
+export function request (ctx: Context): DynamoDBGetItemRequest {
   console.log('getNewsletter request', { ctx })
   const { id } = ctx.args.input
   return ddb.get({

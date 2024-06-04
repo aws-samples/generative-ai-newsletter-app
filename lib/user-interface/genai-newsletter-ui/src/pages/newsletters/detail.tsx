@@ -25,7 +25,10 @@ import NewsletterReviewForm from '../../components/newsletters/forms/newsletter-
 import PublicationsTable from '../../components/newsletters/publications-table'
 import UserSubscriberData from '../../components/newsletters/user-subscriber-data'
 import BaseContentLayout from '../../components/base-content-layout'
-import { canUpdateNewsletter, getNewsletter } from '../../../../../shared/api/graphql/queries'
+import {
+  canUpdateNewsletter,
+  getNewsletter
+} from '../../../../../shared/api/graphql/queries'
 import { generateAuthorizedClient } from '../../common/helpers'
 
 export default function NewsletterDetail () {
@@ -33,9 +36,9 @@ export default function NewsletterDetail () {
   const navigate = useNavigate()
   const onFollow = useOnFollow()
   const appContext = useContext(AppContext)
-  const [canUpdateNewsletterVal, setCanUpdateNewsletterVal] = useState<boolean>(false)
+  const [canUpdateNewsletterVal, setCanUpdateNewsletterVal] =
+    useState<boolean>(false)
   const [newsletter, setNewsletter] = useState<Newsletter | null>(null)
-
 
   const getNewsletterCall = useCallback(async () => {
     if (!appContext) {
@@ -105,24 +108,26 @@ export default function NewsletterDetail () {
       }
       content={
         <BaseContentLayout
-          header={<Header
-            variant="awsui-h1-sticky"
-            description="Browse the details of the Data Feed"
-            actions={
-              <SpaceBetween size="xs" direction="horizontal">
-                <Button
-                  disabled={!canUpdateNewsletterVal}
-                  onClick={() => {
-                    navigate(`/newsletters/${newsletterId}/edit`)
-                  }}
-                >
-                  Edit
-                </Button>
-              </SpaceBetween>
-            }
-          >
-            Newsletter Details
-          </Header>}
+          header={
+            <Header
+              variant="awsui-h1-sticky"
+              description="Browse the details of the Data Feed"
+              actions={
+                <SpaceBetween size="xs" direction="horizontal">
+                  <Button
+                    disabled={!canUpdateNewsletterVal}
+                    onClick={() => {
+                      navigate(`/newsletters/${newsletterId}/edit`)
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </SpaceBetween>
+              }
+            >
+              Newsletter Details
+            </Header>
+          }
         >
           <SpaceBetween direction="vertical" size="m">
             <Container>
@@ -131,20 +136,22 @@ export default function NewsletterDetail () {
                   isPrivate={newsletter.isPrivate ?? true}
                   numberOfDaysToInclude={newsletter.numberOfDaysToInclude ?? 0}
                   selectedDataFeeds={
-                    newsletter.dataFeeds !== null ? newsletter.dataFeeds as DataFeed[] : []
+                    newsletter.dataFeeds !== null
+                      ? (newsletter.dataFeeds as DataFeed[])
+                      : []
                   }
-                  title={newsletter.title ?? ""}
+                  title={newsletter.title ?? ''}
                   formMode="detail"
                   newsletterIntroPrompt={
-                    (newsletter.newsletterIntroPrompt !== null &&
-                      newsletter.newsletterIntroPrompt !== undefined &&
-                      newsletter.newsletterIntroPrompt.length > 0)
+                    newsletter.newsletterIntroPrompt !== null &&
+                    newsletter.newsletterIntroPrompt !== undefined &&
+                    newsletter.newsletterIntroPrompt.length > 0
                       ? newsletter.newsletterIntroPrompt
                       : undefined
                   }
                   articleSummaryType={
                     newsletter.articleSummaryType !== undefined &&
-                      newsletter.articleSummaryType !== null
+                    newsletter.articleSummaryType !== null
                       ? newsletter.articleSummaryType
                       : ArticleSummaryType.SHORT_SUMMARY
                   }

@@ -4,7 +4,7 @@ import {
   type DynamoDBQueryRequest
 } from '@aws-appsync/utils'
 import * as ddb from '@aws-appsync/utils/dynamodb'
-import { filterForDuplicatesById } from '../../resolver-helper'
+import { addAccountToItem, filterForDuplicatesById } from '../../resolver-helper'
 
 export function request (ctx: Context): DynamoDBQueryRequest {
   const { nextToken, limit = 250 } = ctx.args
@@ -51,16 +51,15 @@ export const response = (ctx: Context): any => {
           filePath = '/' + filePath
         }
       }
-
-      items.push({
+      let itemToPush = {
         newsletterId,
+        accountId,
         id: publicationId,
-        account: {
-          id: accountId
-        },
         createdAt,
         filePath
-      })
+      }
+      itemToPush = addAccountToItem(itemToPush)
+      items.push(itemToPush)
     }
   }
   let result = {

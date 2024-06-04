@@ -2,6 +2,9 @@
   "GenAINewsletter": {
     "entityTypes": {
       "Publication": {
+        "memberOfTypes": [
+          "Newsletter"
+        ],
         "shape": {
           "type": "Record",
           "attributes": {
@@ -13,12 +16,14 @@
             "id": {
               "required": true,
               "type": "String"
+            },
+            "Account": {
+              "required": true,
+              "type": "Entity",
+              "name": "Account"
             }
           }
-        },
-        "memberOfTypes": [
-          "Newsletter"
-        ]
+        }
       },
       "Account": {
         "memberOfTypes": [],

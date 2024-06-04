@@ -3,11 +3,11 @@
     "baseUrl": "./",
     "rootDir": "./",
     "jsx": "react-jsx",
-    "target": "ES2020",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "lib": [
-      "es2020",
+      "ESNext",
       "dom",
       "DOM.Iterable"
     ],
@@ -35,6 +35,7 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
+    
   },
   "exclude": [
     "misc",
@@ -49,5 +50,8 @@
     "bin/*",
     "lib/**/*",
     "cli/"
-  ]
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
 }

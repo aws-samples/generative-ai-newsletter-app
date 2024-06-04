@@ -13,6 +13,7 @@ convention:
     - chore
     - merge
     - revert
+    - ci
   commitScopes: []
   releaseTagGlobPattern: v[0-9]*.[0-9]*.[0-9]*
 changelog:
@@ -30,13 +31,13 @@ changelog:
     merge: Merges
     breakingChange: BREAKING CHANGES
 
-  ## GitHub
-  # commitUrl: https://github.com/ACCOUNT/REPOSITORY/commit/%commit%
-  # commitRangeUrl: https://github.com/ACCOUNT/REPOSITORY/compare/%from%...%to%?diff=split
+  # GitHub
+  commitUrl: https://github.com/aws-samples/generative-ai-newsletter-app/commit/%commit%
+  commitRangeUrl: https://github.com/aws-samples/generative-ai-newsletter-app/compare/%from%...%to%?diff=split
 
-  ## GitHub Issues
-  # issueRegexPattern: "#[0-9]+"
-  # issueUrl: https://github.com/ACCOUNT/REPOSITORY/issues/%issue%
+  # GitHub Issues
+  issueRegexPattern: "#[0-9]+"
+  issueUrl: https://github.com/aws-samples/generative-ai-newsletter-app/issues/%issue%
 
   ## Jira Issues
   # issueRegexPattern: "[A-Z][A-Z0-9]+-[0-9]+"

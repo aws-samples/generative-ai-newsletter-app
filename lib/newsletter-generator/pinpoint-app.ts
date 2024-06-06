@@ -18,7 +18,7 @@ import {
   ApplicationLogLevel,
   Architecture,
   LambdaInsightsVersion,
-  LogFormat,
+  LoggingFormat,
   Runtime,
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
@@ -73,9 +73,9 @@ export class PinpointApp extends Construct {
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
-        logFormat: LogFormat.JSON,
+        loggingFormat: LoggingFormat.JSON,
         logRetention: RetentionDays.ONE_WEEK,
-        applicationLogLevel: ApplicationLogLevel.DEBUG,
+        applicationLogLevelV2: ApplicationLogLevel.DEBUG,
         insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
         timeout: Duration.minutes(5),
         environment: {

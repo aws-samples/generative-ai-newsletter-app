@@ -11,7 +11,7 @@ import {
   ApplicationLogLevel,
   Architecture,
   LambdaInsightsVersion,
-  LogFormat,
+  LoggingFormat,
   Runtime,
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
@@ -55,8 +55,8 @@ export class DataFeedPollStepFunction extends Construct {
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
-      logFormat: LogFormat.JSON,
-      applicationLogLevel: ApplicationLogLevel.DEBUG,
+      loggingFormat: LoggingFormat.JSON,
+      applicationLogLevelV2: ApplicationLogLevel.DEBUG,
       insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
       environment: {
         POWERTOOLS_LOG_LEVEL: 'DEBUG',

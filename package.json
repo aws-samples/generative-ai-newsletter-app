@@ -74,7 +74,6 @@
     "vitepress": "^1.1.4"
   },
   "dependencies": {
-    "@anthropic-ai/bedrock-sdk": "^0.9.8",
     "@aws-amplify/auth": "^6.3.1",
     "@aws-amplify/core": "^6.2.1",
     "@aws-amplify/ui-react": "^6.1.6",
@@ -82,6 +81,7 @@
     "@aws-lambda-powertools/logger": "^1.17.0",
     "@aws-lambda-powertools/metrics": "^1.17.0",
     "@aws-lambda-powertools/tracer": "^2.1.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.590.0",
     "@aws-sdk/client-dynamodb": "^3.584.0",
     "@aws-sdk/client-pinpoint": "^3.478.0",
     "@aws-sdk/client-scheduler": "^3.478.0",

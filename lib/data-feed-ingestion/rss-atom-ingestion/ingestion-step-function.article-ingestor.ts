@@ -8,7 +8,7 @@ import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
 import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { S3Client } from '@aws-sdk/client-s3'
-import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
+
 import {
   DynamoDBClient,
   PutItemCommand,
@@ -22,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
 import { ArticleSummaryBuilder } from '../../shared/prompts/article-summary-prompt'
 import { type MultiSizeFormattedResponse } from '../../shared/prompts/prompt-processing'
+import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
 
 const SERVICE_NAME = 'article-ingestor'
 
@@ -31,7 +32,7 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const s3Client = tracer.captureAWSv3Client(new S3Client())
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient())
-const anthropic = new AnthropicBedrock()
+const bedrockRuntimeClient = tracer.captureAWSv3Client(new BedrockRuntimeClient())
 
 const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
@@ -220,15 +221,24 @@ const generateArticleSummarization = async (
   )
   const prompt = summaryBuilder.getCompiledPrompt()
   console.debug(prompt)
-  const response = await anthropic.messages.create({
-    model: BEDROCK_MODEL_ID,
-    max_tokens: 500,
-    messages: [{ role: 'user', content: prompt }]
-  })
+  const input: InvokeModelCommandInput = {
+    modelId: BEDROCK_MODEL_ID,
+    contentType: "application/json",
+    accept: "application/json",
+    body: new TextEncoder().encode(JSON.stringify({
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    }))
+  }
+  const command = new InvokeModelCommand(input)
+  const response = await bedrockRuntimeClient.send(command)
   logger.debug('GenAI Output', { response })
+  const responseText = new TextDecoder().decode(response.body)
+  const responseObject = JSON.parse(responseText)
   const processedResponse = summaryBuilder.getProcessedResponse(
-    response.content
-      .map((item) => {
+    responseObject.content
+      .map((item: { type: string; text: any }) => {
         return item.type === 'text' ? item.text : ''
       })
       .join('\n')

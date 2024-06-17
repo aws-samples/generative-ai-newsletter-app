@@ -39,7 +39,7 @@
     "@middy/core": "^5.2.1",
     "@react-email/components": "0.0.12",
     "@react-email/markdown": "^0.0.8",
-    "@react-email/render": "^0.0.10",
+    "@react-email/render": "^0.0.15",
     "@types/ansi-escape-sequences": "^4.0.4",
     "@types/aws-lambda": "^8.10.130",
     "@types/figlet": "^1.5.8",

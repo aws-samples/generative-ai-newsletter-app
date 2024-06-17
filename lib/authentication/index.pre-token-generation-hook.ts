@@ -5,8 +5,9 @@
  */
 
 import { Tracer } from '@aws-lambda-powertools/tracer'
+import { Logger } from '@aws-lambda-powertools/logger'
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
-import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'

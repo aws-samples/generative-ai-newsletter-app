@@ -68,7 +68,7 @@ GitHubFiles:
   - any-glob-to-any-file:
     - .github/**/*
 
-DependencyChange:
+dependencies:
 - changed-files:
   - any-glob-to-any-file:
     - package.json

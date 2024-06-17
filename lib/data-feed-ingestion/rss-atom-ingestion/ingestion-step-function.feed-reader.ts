@@ -5,7 +5,8 @@
  */
 import { Tracer } from '@aws-lambda-powertools/tracer'
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
-import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
+import { Logger } from '@aws-lambda-powertools/logger'
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
@@ -57,7 +58,7 @@ const parseRssFeed = async (
 ): Promise<any[]> => {
   logger.debug('Parsing Articles from RSS Feed')
   const $ = cheerio.load(feedContents, { xmlMode: true })
-  const articles = []
+  const articles: Array<any> = []
   for (const article of $('item')) {
     try {
       logger.debug('Parsing RSS article: ' + $(article).html())

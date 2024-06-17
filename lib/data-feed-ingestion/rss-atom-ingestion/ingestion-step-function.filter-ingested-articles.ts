@@ -5,7 +5,8 @@
  */
 import { Tracer } from '@aws-lambda-powertools/tracer'
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
-import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
+import { Logger } from '@aws-lambda-powertools/logger'
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware'
 import middy from '@middy/core'
 import {
   DynamoDBClient,
@@ -68,7 +69,7 @@ const getExistingArticles = async (dataFeedId: string): Promise<string[]> => {
     logger.debug('Found existing articles', {
       itemCount: result.Items.length
     })
-    const articles = []
+    const articles: Array<any> = []
     for (const item of result.Items) {
       if (item.articleId?.S !== undefined) {
         articles.push(item.articleId.S)

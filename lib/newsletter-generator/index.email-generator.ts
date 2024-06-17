@@ -5,7 +5,8 @@
  */
 import { Tracer } from '@aws-lambda-powertools/tracer'
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
-import { Logger, injectLambdaContext } from '@aws-lambda-powertools/logger'
+import { Logger } from '@aws-lambda-powertools/logger'
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware'
 import { MetricUnits, Metrics } from '@aws-lambda-powertools/metrics'
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda'
 import {

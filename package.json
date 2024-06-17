@@ -106,7 +106,7 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.11.0",
     "typescript-eslint": "^7.9.0",
-    "uuid": "^9.0.1"
+    "uuid": "^10.0.0"
   },
   "config": {
     "commitizen": {

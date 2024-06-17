@@ -24,6 +24,11 @@ import { type UIConfig } from '../shared/common/deploy-config'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { NagSuppressions } from 'cdk-nag'
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface UserInterfaceProps {
   emailBucket: Bucket

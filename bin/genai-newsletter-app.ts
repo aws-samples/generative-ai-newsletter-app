@@ -6,6 +6,11 @@ import getConfig from '../lib/config'
 import path from 'path'
 import { AwsSolutionsChecks } from 'cdk-nag'
 import { addNagSuppressions } from '../lib/cdk-nag-supressions'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const app = new App()
 

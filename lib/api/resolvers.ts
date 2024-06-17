@@ -23,6 +23,11 @@ import {
   Role,
   ServicePrincipal
 } from 'aws-cdk-lib/aws-iam'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface ApiResolversProps extends ApiProps {
   api: GraphqlApi

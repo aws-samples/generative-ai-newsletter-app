@@ -1,12 +1,12 @@
 {
-  "type": "commonjs",
   "name": "genai-newsletter",
   "version": "1.1.16",
+  "type": "module",
   "scripts": {
     "config": "node -r ts-node/register ./cli/config.ts",
     "build": "tsc && npm run codegen && npm run build:appsync && npm run build:ui",
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
-    "build:appsync": "ts-node ./lib/api/functions/bundle.ts",
+    "build:appsync": "tsx ./lib/api/functions/bundle.ts",
     "watch": "tsc -w",
     "lint": "eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --fix",
     "prettier": "prettier --write \"**/*.{ts,tsx}\"",
@@ -103,6 +103,8 @@
     "react-dom": "18.0",
     "react-router": "^6.23.1",
     "source-map-support": "^0.5.21",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.11.0",
     "typescript-eslint": "^7.9.0",
     "uuid": "^9.0.1"
   },

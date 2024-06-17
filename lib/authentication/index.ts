@@ -101,6 +101,12 @@ export class Authentication extends Construct {
       {
         description:
           "Post Authentication, Pre-Token Generation Hook that creates a user's accountId",
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'pre-token-generation-hook' + '$2'
+          )
+        ).pathname,
         handler: 'handler',
         role: preTokenGenerationHookFunctionRole,
         architecture: Architecture.ARM_64,

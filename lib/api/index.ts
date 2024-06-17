@@ -20,6 +20,11 @@ import { type CfnPolicyStore } from 'aws-cdk-lib/aws-verifiedpermissions'
 import { type Bucket } from 'aws-cdk-lib/aws-s3'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { type IRole } from 'aws-cdk-lib/aws-iam'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export interface ApiProps {
   userPoolId: string

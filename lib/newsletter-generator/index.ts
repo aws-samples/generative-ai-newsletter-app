@@ -126,6 +126,12 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for creating the newsletter campaigns for each unique email',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'newsletter-campaign-creator' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -155,6 +161,9 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for generating the newsletter HTML & Plain Text emails',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'email-generator' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -212,6 +221,12 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for creating and scheduling the newsletter',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'newsletter-creator' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -253,6 +268,9 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for getting looking up a Newsletter and its associated details',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'get-newsletter' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -275,6 +293,9 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for subscribing a user to the newsletter',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'user-subscriber' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -314,6 +335,12 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for unsubscribing a user from the newsletter',
         handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'user-unsubscriber' + '$2'
+          )
+        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,

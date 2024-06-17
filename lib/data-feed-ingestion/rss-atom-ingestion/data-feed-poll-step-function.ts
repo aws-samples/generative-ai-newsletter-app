@@ -52,6 +52,9 @@ export class DataFeedPollStepFunction extends Construct {
       description:
         'Function responsible for getting all enabled data feeds to poll',
       handler: 'handler',
+      entry: new URL(
+        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'get-data-feeds' + '$2')
+      ).pathname,
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,

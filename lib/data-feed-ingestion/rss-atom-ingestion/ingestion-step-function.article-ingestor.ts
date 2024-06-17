@@ -23,7 +23,11 @@ import { v4 as uuidv4 } from 'uuid'
 import middy from '@middy/core'
 import { ArticleSummaryBuilder } from '../../shared/prompts/article-summary-prompt'
 import { type MultiSizeFormattedResponse } from '../../shared/prompts/prompt-processing'
-import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+  InvokeModelCommandInput
+} from '@aws-sdk/client-bedrock-runtime'
 
 const SERVICE_NAME = 'article-ingestor'
 
@@ -33,7 +37,9 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 
 const s3Client = tracer.captureAWSv3Client(new S3Client())
 const dynamodbClient = tracer.captureAWSv3Client(new DynamoDBClient())
-const bedrockRuntimeClient = tracer.captureAWSv3Client(new BedrockRuntimeClient())
+const bedrockRuntimeClient = tracer.captureAWSv3Client(
+  new BedrockRuntimeClient()
+)
 
 const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 const NEWS_DATA_INGEST_BUCKET = process.env.NEWS_DATA_INGEST_BUCKET
@@ -224,13 +230,15 @@ const generateArticleSummarization = async (
   console.debug(prompt)
   const input: InvokeModelCommandInput = {
     modelId: BEDROCK_MODEL_ID,
-    contentType: "application/json",
-    accept: "application/json",
-    body: new TextEncoder().encode(JSON.stringify({
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
-    }))
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: new TextEncoder().encode(
+      JSON.stringify({
+        anthropic_version: 'bedrock-2023-05-31',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    )
   }
   const command = new InvokeModelCommand(input)
   const response = await bedrockRuntimeClient.send(command)

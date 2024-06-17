@@ -43,7 +43,7 @@ const lambdaHandler = async (
   logger.debug('Filtered new article count = ' + filteredArticles.length)
   logger.debug(
     'Filtered new article IDs = ' +
-    filteredArticles.map((article) => article.guid).join(', ')
+      filteredArticles.map((article) => article.guid).join(', ')
   )
   return filteredArticles
 }

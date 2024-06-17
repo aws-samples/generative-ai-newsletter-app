@@ -21,7 +21,6 @@ import { S3Client } from '@aws-sdk/client-s3'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import NewsletterEmail from '../shared/email-generator/emails/newsletter'
-import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 import { render } from '@react-email/render'
 import { Upload } from '@aws-sdk/lib-storage'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
@@ -31,6 +30,7 @@ import { MultiSizeFormattedResponse } from '../shared/prompts/prompt-processing'
 import { ArticleSummaryType, type Newsletter } from '../shared/api/API'
 import { type NewsletterStyle } from '../shared/common/newsletter-style'
 import { generateNewsletterJSON } from '../shared/email-generator/newsletter-json-data'
+import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelCommandInput } from '@aws-sdk/client-bedrock-runtime'
 
 const SERVICE_NAME = 'email-generator'
 
@@ -41,7 +41,7 @@ const metrics = new Metrics({ serviceName: SERVICE_NAME })
 const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
 const s3 = tracer.captureAWSv3Client(new S3Client())
 const lambda = tracer.captureAWSv3Client(new LambdaClient())
-const anthropic = new AnthropicBedrock()
+const bedrock = tracer.captureAWSv3Client(new BedrockRuntimeClient())
 
 const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
 
@@ -228,14 +228,22 @@ const generateNewsletterSummary = async (
   )
   const prompt = summaryBuilder.getCompiledPrompt()
   logger.debug('Prompt generated', { prompt })
-  const response = await anthropic.messages.create({
-    model: BEDROCK_MODEL_ID,
-    max_tokens: 1000,
-    messages: [{ role: 'user', content: prompt }]
-  })
-  logger.debug('GenAI Output', { response })
+  const input: InvokeModelCommandInput = {
+    modelId: BEDROCK_MODEL_ID,
+    contentType: "application/json",
+    accept: "application/json",
+    body: new TextEncoder().encode(JSON.stringify({
+      anthropic_version: 'bedrock-2023-05-31',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    }))
+  }
+  const command = new InvokeModelCommand(input)
+  const response = await bedrock.send(command)
+  const responseText = new TextDecoder().decode(response.body)
+  const responseObject = JSON.parse(responseText)
   const formattedResponse = summaryBuilder.getProcessedResponse(
-    response.content.map((item) => item.text).join('\n')
+    responseObject.content.map((item: { text: any }) => item.text).join('\n')
   )
   logger.debug('Formatted response from Model:', { formattedResponse })
   if (

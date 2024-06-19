@@ -3,7 +3,8 @@
   "version": "1.1.16",
   "type": "module",
   "scripts": {
-    "config": "node -r ts-node/register ./cli/config.ts",
+    "preinstall": "npx only-allow pnpm",
+    "config": "tsx ./cli/config.ts",
     "build": "tsc && npm run codegen && npm run build:appsync && npm run build:ui",
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
     "build:appsync": "tsx ./lib/api/functions/bundle.ts",
@@ -37,9 +38,6 @@
     "@graphql-codegen/plugin-helpers": "^5.0.3",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "@middy/core": "^5.2.1",
-    "@react-email/components": "0.0.12",
-    "@react-email/markdown": "^0.0.8",
-    "@react-email/render": "^0.0.15",
     "@types/ansi-escape-sequences": "^4.0.4",
     "@types/aws-lambda": "^8.10.130",
     "@types/figlet": "^1.5.8",
@@ -74,6 +72,8 @@
     "vitepress": "^1.1.4"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^6.3.5",
+    "@aws-amplify/core": "^6.3.2",
     "@aws-amplify/ui-react": "^6.1.12",
     "@aws-cdk/aws-cognito-identitypool-alpha": "^2.134.0-alpha.0",
     "@aws-lambda-powertools/logger": "^2.2.0",
@@ -88,6 +88,9 @@
     "@aws-sdk/util-dynamodb": "^3.473.0",
     "@cloudscape-design/collection-hooks": "^1.0.45",
     "@cloudscape-design/global-styles": "^1.0.26",
+    "@react-email/components": "0.0.19",
+    "@react-email/markdown": "^0.0.10",
+    "@react-email/render": "^0.0.15",
     "@types/cheerio": "^0.22.35",
     "aws-cdk-lib": "^2.144.0",
     "aws-jwt-verify": "^4.0.1",
@@ -112,5 +115,6 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "packageManager": "pnpm@9.3.0+sha512.ee7b93e0c2bd11409c6424f92b866f31d3ea1bef5fbe47d3c7500cdc3c9668833d2e55681ad66df5b640c61fa9dc25d546efa54d76d7f8bf54b13614ac293631"
 }

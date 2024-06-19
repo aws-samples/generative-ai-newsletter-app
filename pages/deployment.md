@@ -8,6 +8,7 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 * Either an [IAM User](https://console.aws.amazon.com/iamv2/home?#/users/create) or [IAM Identity Center User](https://aws.amazon.com/iam/identity-center/) with `AdministratorAccess` policy granted to your user. *Not recommended for a production environment.*
 * [AWS CLI](https://aws.amazon.com/cli/) installed and configured to use with your AWS account.
 * [NodeJS 20](https://nodejs.org/en/download/) installed
+* [pnpm](https://pnpm.io/installation) installed
 * The `ARN` of your [verified email identity](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-email-manage-verify.html) that you will send newsletter emails from. You will also be asked to provide an email address that will be the sender, which must be associated with the verified email identity.
 
 
@@ -23,11 +24,11 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 	```
 1. Install the project dependencies & build the project
 	```
-	npm install && npm run build
+	pnpm install && pnpm run build
 	```
 1. Run the configuration wizard to create a deployment configuration file.
 	```
-	npm run config manage
+	pnpm run config manage
 	```
 	The configuration wizard will generate a configuration file in `bin/config.json`. This file will be used during the deployment. Unless you need to change the configuration file, you do not need to run the configuration wizard for future deployments. If you change the **Stack Name**, it will cause a new deployment to occur. 
 
@@ -36,7 +37,7 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 
 1. Deploy the solution
 	```
-	npx cdk deploy
+	pnpm run deploy
 	```
 	You can view the progress of your CDK deployment in the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home) in the selected region.
 

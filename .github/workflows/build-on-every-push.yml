@@ -14,17 +14,36 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        run_install: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 20
-        
+        cache: 'pnpm'
+    
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    
+    - uses: actions/cache@v4
+      name: Setup pnpm cache
+      with:
+          path: ${{ vars.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
     - name: Install dependencies
-      run: npm ci
-        
+      run: pnpm install
+
     - name: Build project
-      run: npm run build
+      run: pnpm run build
         
     - name: Upload UI Artifact
       uses: actions/upload-artifact@v4
@@ -43,14 +62,28 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        run_install: false
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 20
+        cache: 'pnpm'
     
+    - uses: actions/cache@v4
+      name: Setup pnpm cache
+      with:
+          path: ${{ vars.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install
         
     - name: Download UI Artifact
       uses: actions/download-artifact@v4

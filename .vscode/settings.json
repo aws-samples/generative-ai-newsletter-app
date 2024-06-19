@@ -10,4 +10,5 @@
   "cSpell.enableFiletypes": [
     "cedarschema"
   ],
+  "npm.packageManager": "pnpm",
 }

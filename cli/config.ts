@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { CONFIG_VERSION } from './config-version'
+import * as CONFIG from './config-version'
 import figlet from 'figlet'
 
 const program = new Command()
@@ -15,7 +15,7 @@ program
   .description(
     'CLI utility for creating, viewing, and updating you GenAI Newsletter deployment configuration.'
   )
-  .version(CONFIG_VERSION)
+  .version(CONFIG.CONFIG_VERSION)
   .configureOutput({
     writeOut: (str) => {
       try {

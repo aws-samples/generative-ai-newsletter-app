@@ -1,4 +1,4 @@
-import ansi from 'ansi-escape-sequences'
+import * as ansi from 'ansi-escape-sequences'
 
 interface FormattingOptions {
   bigHeader?: boolean

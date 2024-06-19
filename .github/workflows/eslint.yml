@@ -28,25 +28,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-            path: ${{ vars.STORE_PATH }}
-            key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-            restore-keys: |
-              ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install Node Packages
+        run: npm install --save-dev
       - name: Run ESLint
         run: npx eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --debug
         continue-on-error: false

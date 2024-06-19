@@ -5,10 +5,6 @@ import prompt from 'prompt-sync'
 import { CONFIG_VERSION } from './config-version'
 import path from 'path'
 import figlet from 'figlet'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 const deployConfig = path.join(__dirname, '../bin/config.json')
 
 const prompter = prompt({ sigint: true })

@@ -1,6 +1,6 @@
 {
   "name": "genai-newsletter",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "type": "module",
   "scripts": {
     "config": "node -r ts-node/register ./cli/config.ts",

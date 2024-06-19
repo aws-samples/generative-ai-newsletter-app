@@ -1,3 +1,20 @@
+## **1.1.17**&emsp;<sub><sup>2024-06-19 ([2a5b067...44754b8](https://github.com/aws-samples/generative-ai-newsletter-app/compare/2a5b0674afd6fc2014efdf7ed36b464e7eb0694e...44754b85c88b55379814fcffb96177f055ab6571?diff=split))</sup></sub>
+
+### Bug Fixes
+
+- resolved deprecation warning with querystring@0\.2\.0 \(\#83\) ([2a5b067](https://github.com/aws-samples/generative-ai-newsletter-app/commit/2a5b0674afd6fc2014efdf7ed36b464e7eb0694e), [#72](https://github.com/aws-samples/generative-ai-newsletter-app/issues/#72))
+- resolved core\-js deprecation warning \(\#82\) ([d1fe8de](https://github.com/aws-samples/generative-ai-newsletter-app/commit/d1fe8de99c0fb8813020570622b6c36f28fc4253), [#73](https://github.com/aws-samples/generative-ai-newsletter-app/issues/#73))
+
+
+### BREAKING CHANGES
+-  npm commands will fail compared to previous commits ([4df25b0](https://github.com/aws-samples/generative-ai-newsletter-app/commit/4df25b0471f681cb174c42157d1c446ce67e785d))
+- `iac` Potentially will cause issues if rollback is needed due to logging upgrade\. May be ([201c06f](https://github.com/aws-samples/generative-ai-newsletter-app/commit/201c06f0609ad92af68239a1e188fd6330689a17))
+
+fine though
+  
+  re: \#81
+<br>
+
 ## **1.1.16**&emsp;<sub><sup>2024-06-04 ([b79f6ca...be31508](https://github.com/aws-samples/generative-ai-newsletter-app/compare/b79f6cae5c322c99defb4838c71145fad8ec1840...be315086ff9a7a603d23313400c13b7a50574252?diff=split))</sup></sub>
 
 ### Bug Fixes

@@ -7,7 +7,9 @@ import * as ddb from '@aws-appsync/utils/dynamodb'
 
 export function request (ctx: Context): DynamoDBUpdateItemRequest {
   const values: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(ctx.args.input as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    ctx.args.input as Record<string, unknown>
+  )) {
     if (key !== 'id' && value !== undefined && value !== null) {
       values[key] = value
     }

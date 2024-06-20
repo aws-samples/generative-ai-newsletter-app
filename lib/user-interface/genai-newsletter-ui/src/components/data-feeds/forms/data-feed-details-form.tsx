@@ -24,7 +24,7 @@ import {
 } from '../../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../../common/helpers'
 
-export default function DataFeedDetailsForm() {
+export default function DataFeedDetailsForm () {
   const { dataFeedId } = useParams()
   const appContext = useContext(AppContext)
   const [loading, setLoading] = useState<boolean>(true)
@@ -100,7 +100,18 @@ export default function DataFeedDetailsForm() {
       return
     }
     navigate(`/feeds/${dataFeedId}`)
-  }, [appContext, dataFeedId, url, enabled, title, description, summarizationPrompt, articleFilterPrompt, isPrivate, navigate])
+  }, [
+    appContext,
+    dataFeedId,
+    url,
+    enabled,
+    title,
+    description,
+    summarizationPrompt,
+    articleFilterPrompt,
+    isPrivate,
+    navigate
+  ])
 
   const createDataFeedAction = useCallback(async () => {
     setLoading(true)
@@ -127,7 +138,17 @@ export default function DataFeedDetailsForm() {
       return
     }
     navigate(`/feeds/${result.data.createDataFeed?.id}`)
-  }, [appContext, articleFilterPrompt, description, enabled, isPrivate, navigate, summarizationPrompt, title, url])
+  }, [
+    appContext,
+    articleFilterPrompt,
+    description,
+    enabled,
+    isPrivate,
+    navigate,
+    summarizationPrompt,
+    title,
+    url
+  ])
 
   useEffect(() => {
     if (dataFeedId) {

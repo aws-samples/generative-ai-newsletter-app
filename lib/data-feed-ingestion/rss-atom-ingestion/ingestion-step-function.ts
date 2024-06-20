@@ -216,18 +216,22 @@ export class IngestionStepFunction extends Construct {
       payload: TaskInput.fromJsonPathAt('$')
     })
 
-    const filterArticlesWithBedrockJob = new LambdaInvoke(this, 'FilterArticlesWithBedrock', {
-      lambdaFunction: filterArticlesWithBedrockFunction,
-      inputPath: JsonPath.stringAt('$'),
-      payload: TaskInput.fromObject({
-        dataFeedId: JsonPath.stringAt('$.dataFeedId'),
-        articles: JsonPath.objectAt('$.articlesData.articles')
-      }),
-      resultSelector: {
-        'articles.$': '$.Payload'
-      },
-      resultPath: '$.articlesData'
-    })
+    const filterArticlesWithBedrockJob = new LambdaInvoke(
+      this,
+      'FilterArticlesWithBedrock',
+      {
+        lambdaFunction: filterArticlesWithBedrockFunction,
+        inputPath: JsonPath.stringAt('$'),
+        payload: TaskInput.fromObject({
+          dataFeedId: JsonPath.stringAt('$.dataFeedId'),
+          articles: JsonPath.objectAt('$.articlesData.articles')
+        }),
+        resultSelector: {
+          'articles.$': '$.Payload'
+        },
+        resultPath: '$.articlesData'
+      }
+    )
 
     const mapArticles = new Map(this, 'MapArticles', {
       itemsPath: '$.articlesData.articles',

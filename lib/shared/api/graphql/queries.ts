@@ -58,6 +58,7 @@ export const getNewsletter = /* GraphQL */ `query GetNewsletter($input: GetNewsl
       title
       description
       summarizationPrompt
+      articleFilterPrompt
       isPrivate
       authGranted
       __typename
@@ -96,6 +97,7 @@ export const listDataFeeds = /* GraphQL */ `query ListDataFeeds(
       title
       description
       summarizationPrompt
+      articleFilterPrompt
       isPrivate
       authGranted
       __typename
@@ -139,6 +141,7 @@ export const getDataFeed = /* GraphQL */ `query GetDataFeed($input: GetDataFeedI
     title
     description
     summarizationPrompt
+    articleFilterPrompt
     isPrivate
     authGranted
     __typename

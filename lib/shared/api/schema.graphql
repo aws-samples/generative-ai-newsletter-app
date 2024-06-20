@@ -66,6 +66,7 @@ type DataFeed  {
   title: String!
   description: String
   summarizationPrompt: String
+  articleFilterPrompt: String
   isPrivate: Boolean!
   authGranted: AuthGranted
 }
@@ -125,6 +126,7 @@ input CreateDataFeedInput {
   description: String
   enabled: Boolean!
   summarizationPrompt: String
+  articleFilterPrompt: String
   isPrivate: Boolean
 }
 
@@ -136,6 +138,7 @@ input UpdateDataFeedInput {
   title: String
   description: String
   summarizationPrompt: String
+  articleFilterPrompt: String
   isPrivate: Boolean
 }
 

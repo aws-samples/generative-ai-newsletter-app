@@ -24,7 +24,7 @@ import {
 } from '../../../../../../shared/api/graphql/mutations'
 import { generateAuthorizedClient } from '../../../common/helpers'
 
-export default function DataFeedDetailsForm () {
+export default function DataFeedDetailsForm() {
   const { dataFeedId } = useParams()
   const appContext = useContext(AppContext)
   const [loading, setLoading] = useState<boolean>(true)
@@ -36,6 +36,7 @@ export default function DataFeedDetailsForm () {
   const [titleError] = useState<string>('')
   const [description, setDescription] = useState<string>('')
   const [summarizationPrompt, setSummarizationPrompt] = useState<string>('')
+  const [articleFilterPrompt, setArticleFilterPrompt] = useState<string>('')
   const [isPrivate, setIsPrivate] = useState<boolean>(true)
 
   const getDataFeedData = useCallback(async () => {
@@ -66,6 +67,7 @@ export default function DataFeedDetailsForm () {
     setDescription(result.data.getDataFeed?.description ?? '')
     setSummarizationPrompt(result.data.getDataFeed?.summarizationPrompt ?? '')
     setIsPrivate(result.data.getDataFeed?.isPrivate ?? true)
+    setArticleFilterPrompt(result.data.getDataFeed?.articleFilterPrompt ?? '')
     setLoading(false)
   }, [appContext, dataFeedId])
 
@@ -88,6 +90,7 @@ export default function DataFeedDetailsForm () {
           title,
           description,
           summarizationPrompt,
+          articleFilterPrompt,
           isPrivate
         }
       }
@@ -97,17 +100,7 @@ export default function DataFeedDetailsForm () {
       return
     }
     navigate(`/feeds/${dataFeedId}`)
-  }, [
-    appContext,
-    description,
-    enabled,
-    navigate,
-    dataFeedId,
-    summarizationPrompt,
-    title,
-    url,
-    isPrivate
-  ])
+  }, [appContext, dataFeedId, url, enabled, title, description, summarizationPrompt, articleFilterPrompt, isPrivate, navigate])
 
   const createDataFeedAction = useCallback(async () => {
     setLoading(true)
@@ -124,6 +117,7 @@ export default function DataFeedDetailsForm () {
           title,
           description,
           summarizationPrompt,
+          articleFilterPrompt,
           isPrivate
         }
       }
@@ -133,16 +127,7 @@ export default function DataFeedDetailsForm () {
       return
     }
     navigate(`/feeds/${result.data.createDataFeed?.id}`)
-  }, [
-    appContext,
-    description,
-    enabled,
-    isPrivate,
-    navigate,
-    summarizationPrompt,
-    title,
-    url
-  ])
+  }, [appContext, articleFilterPrompt, description, enabled, isPrivate, navigate, summarizationPrompt, title, url])
 
   useEffect(() => {
     if (dataFeedId) {
@@ -252,6 +237,16 @@ export default function DataFeedDetailsForm () {
                 placeholder="Example: The target audience for reading the articles have little background knowledge on GenAI technology"
                 value={summarizationPrompt}
                 onChange={(e) => setSummarizationPrompt(e.detail.value)}
+              />
+            </FormField>
+            <FormField
+              label="Article Filter Prompt"
+              description="A prompt to add guidance for how you'd like the article filter. This prompt will be evaluated against each article to determine if the article is supposed to be excluded from the ingested articles."
+            >
+              <Textarea
+                placeholder="Example: exclude any article that mentions the word 'chicken'"
+                value={articleFilterPrompt}
+                onChange={(e) => setArticleFilterPrompt(e.detail.value)}
               />
             </FormField>
           </SpaceBetween>

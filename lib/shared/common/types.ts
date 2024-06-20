@@ -34,7 +34,7 @@ export interface CreateAuthCheckInput {
   }
 }
 export interface FeedArticle {
-  link: string
+  url: string
   title: string
   guid: string
   subscriptionId?: string

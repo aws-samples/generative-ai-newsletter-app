@@ -176,7 +176,6 @@ const getSiteContent = async (url: string): Promise<string | null> => {
 }
 
 const extractResponseValue = (response: string, xml_tag: string): boolean => {
-    console.debug('extractResponseValue; Response from Bedrock: ' + response)
     const formattedInput = response
         .replace(/(\r\n|\n|\r)/gm, '')
         .replace(/\\n/g, '')
@@ -187,7 +186,6 @@ const extractResponseValue = (response: string, xml_tag: string): boolean => {
         'g'
     )
     const match = formattedInput.match(regex)
-    console.debug('Matched value: ' + match?.[0])
     const isFiltered = match?.[0].toLocaleLowerCase() === 'true'
     return isFiltered
 

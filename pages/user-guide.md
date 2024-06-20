@@ -17,7 +17,7 @@ To create your data feed:
 
 1. Complete the details of the data feed form including a title, optional description, URL of the ATOM or RSS feed.
 
-1. The **Summarization Prompt** instructs the Data Feed ingestion process on how to summarize the articles it consumes. Because this makes Data Feed summaries unique, you can create multiple Data Feeds for the same source and prompt each one to summarize differently. 
+1. The **Summarization Prompt** instructs the Data Feed ingestion process on how to summarize the articles it consumes. Because this makes Data Feed summaries unique, you can create multiple Data Feeds for the same source and prompt each one to summarize differently. The **Article Filter Prompt** offers users the ability to provide prompted instructions on how to filter out articles that shouldn't be ingested. When an article filter prompt is provided, both the article content and the filter are sent to Bedrock to determine if the article content is supposed to be filtered out or included. 
 ![Data Feed Create](./images/DataFeed-Create-Image.png)
 
 1. Click **Add** to create the Data Feed. 

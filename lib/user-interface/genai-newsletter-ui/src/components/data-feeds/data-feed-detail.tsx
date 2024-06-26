@@ -91,6 +91,13 @@ export default function DataFeedDetail () {
               </span>
             )}
           </FormField>
+          <FormField label="Article Filter Prompt">
+            {setDataFeedId?.articleFilterPrompt ?? (
+              <span style={{ fontStyle: 'italic' }}>
+                No Custom Filter Provided
+              </span>
+            )}
+          </FormField>
         </SpaceBetween>
       )}
     </Container>

@@ -39,6 +39,7 @@ export const createDataFeed = /* GraphQL */ `mutation CreateDataFeed($input: Cre
     title
     description
     summarizationPrompt
+    articleFilterPrompt
     isPrivate
     authGranted
     __typename
@@ -68,6 +69,7 @@ export const createNewsletter = /* GraphQL */ `mutation CreateNewsletter($input:
       title
       description
       summarizationPrompt
+      articleFilterPrompt
       isPrivate
       authGranted
       __typename

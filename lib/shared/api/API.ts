@@ -8,6 +8,7 @@ export type CreateDataFeedInput = {
   description?: string | null,
   enabled: boolean,
   summarizationPrompt?: string | null,
+  articleFilterPrompt?: string | null,
   isPrivate?: boolean | null,
 };
 
@@ -23,6 +24,7 @@ export type DataFeed = {
   title: string,
   description?: string | null,
   summarizationPrompt?: string | null,
+  articleFilterPrompt?: string | null,
   isPrivate: boolean,
   authGranted?: AuthGranted | null,
 };
@@ -134,6 +136,7 @@ export type UpdateDataFeedInput = {
   title?: string | null,
   description?: string | null,
   summarizationPrompt?: string | null,
+  articleFilterPrompt?: string | null,
   isPrivate?: boolean | null,
 };
 
@@ -272,6 +275,7 @@ export type CreateDataFeedMutation = {
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
+    articleFilterPrompt?: string | null,
     isPrivate: boolean,
     authGranted?: AuthGranted | null,
   } | null,
@@ -303,6 +307,7 @@ export type CreateNewsletterMutation = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      articleFilterPrompt?: string | null,
       isPrivate: boolean,
       authGranted?: AuthGranted | null,
     } | null > | null,
@@ -424,6 +429,7 @@ export type GetNewsletterQuery = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      articleFilterPrompt?: string | null,
       isPrivate: boolean,
       authGranted?: AuthGranted | null,
     } | null > | null,
@@ -461,6 +467,7 @@ export type ListDataFeedsQuery = {
       title: string,
       description?: string | null,
       summarizationPrompt?: string | null,
+      articleFilterPrompt?: string | null,
       isPrivate: boolean,
       authGranted?: AuthGranted | null,
     } | null > | null,
@@ -504,6 +511,7 @@ export type GetDataFeedQuery = {
     title: string,
     description?: string | null,
     summarizationPrompt?: string | null,
+    articleFilterPrompt?: string | null,
     isPrivate: boolean,
     authGranted?: AuthGranted | null,
   } | null,

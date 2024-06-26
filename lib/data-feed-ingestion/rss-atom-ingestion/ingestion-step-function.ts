@@ -127,6 +127,40 @@ export class IngestionStepFunction extends Construct {
       })
     )
 
+    const filterArticlesWithBedrockFunction = new NodejsFunction(
+      this,
+      'filter-articles-with-bedrock',
+      {
+        description:
+          'Function responsible for filtering out using a user provided prompt and Amazon Bedrock.',
+        handler: 'handler',
+        entry: new URL(
+          import.meta.url.replace(
+            /(.*)(\..+)/,
+            '$1.' + 'filter-articles-with-bedrock' + '$2'
+          )
+        ).pathname,
+        runtime: Runtime.NODEJS_20_X,
+        architecture: Architecture.ARM_64,
+        tracing: Tracing.ACTIVE,
+        loggingFormat: LoggingFormat.JSON,
+        applicationLogLevelV2: ApplicationLogLevel.DEBUG,
+        insightsVersion: LambdaInsightsVersion.VERSION_1_0_229_0,
+        timeout: cdk.Duration.minutes(5),
+        environment: {
+          DATA_FEED_TABLE: dataFeedTable.tableName
+        }
+      }
+    )
+    dataFeedTable.grantReadData(filterArticlesWithBedrockFunction)
+    filterArticlesWithBedrockFunction.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: ['*'],
+        effect: Effect.ALLOW
+      })
+    )
+
     const getDataFeedDetailsJob = new DynamoGetItem(
       this,
       'GetDataFeedDetailsJob',
@@ -182,6 +216,23 @@ export class IngestionStepFunction extends Construct {
       payload: TaskInput.fromJsonPathAt('$')
     })
 
+    const filterArticlesWithBedrockJob = new LambdaInvoke(
+      this,
+      'FilterArticlesWithBedrock',
+      {
+        lambdaFunction: filterArticlesWithBedrockFunction,
+        inputPath: JsonPath.stringAt('$'),
+        payload: TaskInput.fromObject({
+          dataFeedId: JsonPath.stringAt('$.dataFeedId'),
+          articles: JsonPath.objectAt('$.articlesData.articles')
+        }),
+        resultSelector: {
+          'articles.$': '$.Payload'
+        },
+        resultPath: '$.articlesData'
+      }
+    )
+
     const mapArticles = new Map(this, 'MapArticles', {
       itemsPath: '$.articlesData.articles',
       itemSelector: {
@@ -197,6 +248,7 @@ export class IngestionStepFunction extends Construct {
     const definition = getDataFeedDetailsJob
       .next(readFeedJob)
       .next(filterIngestedArticlesJob)
+      .next(filterArticlesWithBedrockJob)
       .next(mapArticles)
 
     const stateMachine = new StateMachine(this, 'IngestionStateMachine', {
@@ -217,6 +269,7 @@ export class IngestionStepFunction extends Construct {
     feedReaderFunction.grantInvoke(stateMachine)
     filterIngestedArticlesFunction.grantInvoke(stateMachine)
     articleIngestionFunction.grantInvoke(stateMachine)
+    filterArticlesWithBedrockFunction.grantInvoke(stateMachine)
     props.dataFeedTable.grantWriteData(articleIngestionFunction)
     props.rssAtomDataBucket.grantPut(stateMachine)
     this.stateMachine = stateMachine
@@ -229,6 +282,7 @@ export class IngestionStepFunction extends Construct {
         feedReaderFunction,
         articleIngestionFunction,
         filterIngestedArticlesFunction,
+        filterArticlesWithBedrockFunction,
         stateMachine
       ],
       [

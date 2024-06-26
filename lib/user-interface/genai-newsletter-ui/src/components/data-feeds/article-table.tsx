@@ -135,7 +135,7 @@ export default function DataFeedArticleTable () {
         resizableColumns
         items={articles}
         loading={loading}
-        trackBy="articleId"
+        trackBy="id"
         loadingText="Loading data feed articles"
         empty={
           <SpaceBetween direction="vertical" size="s">

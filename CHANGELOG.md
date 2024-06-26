@@ -1,3 +1,13 @@
+## **1.2.0**&emsp;<sub><sup>2024-06-26 ([0a654a9...0a654a9](https://github.com/aws-samples/generative-ai-newsletter-app/compare/0a654a94330567dddfd2892a7fd43459a83ce895...0a654a94330567dddfd2892a7fd43459a83ce895?diff=split))</sup></sub>
+
+### Features
+
+##### &ensp;`datafeed`
+
+- automatically filter data feed articles using Generative AI \(\#99\) ([0a654a9](https://github.com/aws-samples/generative-ai-newsletter-app/commit/0a654a94330567dddfd2892a7fd43459a83ce895))
+
+<br>
+
 ## **1.1.17**&emsp;<sub><sup>2024-06-19 ([2a5b067...44754b8](https://github.com/aws-samples/generative-ai-newsletter-app/compare/2a5b0674afd6fc2014efdf7ed36b464e7eb0694e...44754b85c88b55379814fcffb96177f055ab6571?diff=split))</sup></sub>
 
 ### Bug Fixes

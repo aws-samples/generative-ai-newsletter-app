@@ -37,15 +37,20 @@ export default function PublicationsTable () {
           id: newsletterId
         }
       }
-    })
+    });
 
     if (result.errors) {
-      console.error(result.errors)
+      console.error(result.errors);
     } else {
-      setPublications([
-        ...(result.data.listPublications?.items as Publication[])
-      ])
+      const sortedPublications = [...(result.data.listPublications?.items as Publication[])]
+        .sort((a, b) => {
+          const dateA = new Date(a.createdAt ?? 0);
+          const dateB = new Date(b.createdAt ?? 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+      setPublications(sortedPublications);
     }
+
   }, [appContext, newsletterId])
 
   useEffect(() => {

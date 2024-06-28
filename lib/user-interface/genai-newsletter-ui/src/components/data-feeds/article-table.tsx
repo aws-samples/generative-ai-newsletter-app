@@ -53,8 +53,15 @@ export default function DataFeedArticleTable () {
       return
     }
     if (result.data.listArticles?.items !== null) {
-      setArticles(result.data.listArticles?.items as Article[])
+      const sortedArticles = [...(result.data.listArticles?.items as Article[])]
+        .sort((a, b) => {
+          const dateA = new Date(a.createdAt ?? 0);
+          const dateB = new Date(b.createdAt ?? 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+      setArticles(sortedArticles);
     }
+
 
     setLoading(false)
   }, [appContext, dataFeedId])
@@ -101,7 +108,6 @@ export default function DataFeedArticleTable () {
     if (flagArticle !== null && flagArticle == 'true' && articleId !== null) {
       setLoading(true)
       try {
-        console.log('TRIGGER')
         flagDataFeedArticle(articleId, true)
       } catch (error) {
         console.log(error)

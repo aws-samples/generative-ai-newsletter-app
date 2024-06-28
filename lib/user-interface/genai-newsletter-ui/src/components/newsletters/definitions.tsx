@@ -105,9 +105,9 @@ export const ArticlesTableColumnDefinition = (
     {
       id: 'keywords',
       cell: (item: Article) => (
-        <SpaceBetween size="xs" direction="horizontal">
+        <SpaceBetween key={'keywords-'+item.keywords+'spacer'} size="xs" direction="horizontal">
           {item.keywords?.split(',').map((keyword: string) => {
-            return <Badge color="blue">{keyword}</Badge>
+            return <Badge key={'keywords-' + item.keywords + '-' + keyword} color="blue">{keyword}</Badge>
           })}
         </SpaceBetween>
       ),

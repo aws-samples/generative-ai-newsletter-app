@@ -88,6 +88,7 @@
     "@aws-sdk/util-dynamodb": "^3.473.0",
     "@cloudscape-design/chat-components": "^1.0.0",
     "@cloudscape-design/collection-hooks": "^1.0.45",
+    "@cloudscape-design/component-toolkit": "^1.0.0-beta.51",
     "@cloudscape-design/global-styles": "^1.0.26",
     "@types/cheerio": "^0.22.35",
     "aws-cdk-lib": "^2.144.0",

@@ -83,7 +83,7 @@
     "@aws-sdk/client-dynamodb": "^3.584.0",
     "@aws-sdk/client-pinpoint": "^3.478.0",
     "@aws-sdk/client-scheduler": "^3.478.0",
-    "@aws-sdk/client-sfn": "^3.569.0",
+    "@aws-sdk/client-sfn": "^3.616.0",
     "@aws-sdk/lib-storage": "^3.472.0",
     "@aws-sdk/util-dynamodb": "^3.473.0",
     "@cloudscape-design/chat-components": "^1.0.0",

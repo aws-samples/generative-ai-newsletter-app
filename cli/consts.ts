@@ -1,4 +1,4 @@
-import * as ansi from 'ansi-escape-sequences'
+import ansi from 'ansi-escape-sequences'
 
 interface FormattingOptions {
   bigHeader?: boolean
@@ -59,7 +59,7 @@ export const formatText = (
   let outputText = ''
   const styles: ansi.Style[] = []
   if (formatting.bold === true) {
-    styles.push(ansi.style.bold as ansi.Style)
+    styles.push('bold')
   }
   if (formatting.textColor !== undefined) {
     styles.push(formatting.textColor)
@@ -68,10 +68,10 @@ export const formatText = (
     styles.push(formatting.backgroundColor)
   }
   if (formatting.italic === true) {
-    styles.push(ansi.style.italic as ansi.Style)
+    styles.push('italic')
   }
   if (formatting.underline === true) {
-    styles.push(ansi.style.underline as ansi.Style)
+    styles.push('underline')
   }
   if (styles.length > 0) {
     outputText = ansi.format(text, styles)

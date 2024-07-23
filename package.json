@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "type": "module",
   "scripts": {
-    "config": "node -r ts-node/register ./cli/config.ts",
+    "config": "tsx ./cli/config.ts",
     "build": "tsc && npm run codegen && npm run build:appsync && npm run build:ui",
     "build:ui": "cd lib/user-interface/genai-newsletter-ui/ && vite build",
     "build:appsync": "tsx ./lib/api/functions/bundle.ts",

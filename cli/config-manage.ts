@@ -3,8 +3,12 @@ import { type DeployConfig } from '../lib/shared/common/deploy-config'
 import { formatText } from './consts'
 import prompt from 'prompt-sync'
 import { CONFIG_VERSION } from './config-version'
-import path from 'path'
+import path, { dirname } from 'path'
 import figlet from 'figlet'
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 const deployConfig = path.join(__dirname, '../bin/config.json')
 
 const prompter = prompt({ sigint: true })

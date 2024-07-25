@@ -58,7 +58,7 @@ export class DataFeedPollStepFunction extends Construct {
       description:
         'Function responsible for getting all enabled data feeds to poll',
       handler: 'handler',
-      entry: path.join(__dirname, 'data-feed-pool-step-function.get-data-feeds.ts'),
+      entry: path.join(__dirname, 'data-feed-poll-step-function.get-data-feeds.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,

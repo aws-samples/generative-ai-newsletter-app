@@ -32,6 +32,12 @@ import {
 import { SfnStateMachine as StateMachineTarget } from 'aws-cdk-lib/aws-events-targets'
 import { Construct } from 'constructs'
 import { NagSuppressions } from 'cdk-nag'
+import { fileURLToPath } from 'url'
+import path, { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 
 interface DataFeedPollStepFunctionProps extends StackProps {
   dataFeedTable: Table
@@ -52,9 +58,7 @@ export class DataFeedPollStepFunction extends Construct {
       description:
         'Function responsible for getting all enabled data feeds to poll',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'get-data-feeds' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'data-feed-pool-step-function.get-data-feeds.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,

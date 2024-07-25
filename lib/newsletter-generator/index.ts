@@ -34,6 +34,11 @@ import { PinpointApp } from './pinpoint-app'
 import { type IUserPool } from 'aws-cdk-lib/aws-cognito'
 import { type UIConfig } from '../shared'
 import { NagSuppressions } from 'cdk-nag'
+import { fileURLToPath } from 'url'
+import path, { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface NewsletterGeneratorProps {
   dataFeedTable: Table
@@ -126,12 +131,7 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for creating the newsletter campaigns for each unique email',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'newsletter-campaign-creator' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.newsletter-campaign-creator.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -161,9 +161,7 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for generating the newsletter HTML & Plain Text emails',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'email-generator' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'index.email-generator.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -221,12 +219,7 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for creating and scheduling the newsletter',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'newsletter-creator' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.newsletter-creator.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -268,9 +261,7 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for getting looking up a Newsletter and its associated details',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'get-newsletter' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'index.get-newsletter.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -293,9 +284,7 @@ export class NewsletterGenerator extends Construct {
       description:
         'Function responsible for subscribing a user to the newsletter',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'user-subscriber' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'index.user-subscriber.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -335,12 +324,7 @@ export class NewsletterGenerator extends Construct {
         description:
           'Function responsible for unsubscribing a user from the newsletter',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'user-unsubscriber' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.user-unsubscriber.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,

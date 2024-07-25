@@ -38,12 +38,17 @@ import {
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { NagSuppressions } from 'cdk-nag'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 interface AuthenticationProps {
   userPoolId?: string
   userPoolArn?: string
   userPoolClientId?: string
 }
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export class Authentication extends Construct {
   public readonly userPool: IUserPool
@@ -95,18 +100,14 @@ export class Authentication extends Construct {
         'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       )
     )
+
     const preTokenGenerationHookFunction = new NodejsFunction(
       this,
       'pre-token-generation-hook',
       {
         description:
           "Post Authentication, Pre-Token Generation Hook that creates a user's accountId",
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'pre-token-generation-hook' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.pre-token-generation-hook.ts'),
         handler: 'handler',
         role: preTokenGenerationHookFunctionRole,
         architecture: Architecture.ARM_64,

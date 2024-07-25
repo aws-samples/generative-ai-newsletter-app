@@ -19,6 +19,11 @@ import {
   Tracing
 } from 'aws-cdk-lib/aws-lambda'
 import { NagSuppressions } from 'cdk-nag'
+import { fileURLToPath } from 'url'
+import path, { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface RssAtomFeedProps {
   dataFeedTable: Table
@@ -71,9 +76,7 @@ export class RssAtomFeedConstruct extends Construct {
       description:
         'Function responsible for subscribing to a specified RSS/ATOM feed',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'feed-subscriber' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'index.feed-subscriber.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,

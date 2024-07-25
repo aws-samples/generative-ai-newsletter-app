@@ -33,6 +33,11 @@ import {
 } from 'aws-cdk-lib/aws-stepfunctions-tasks'
 import { NagSuppressions } from 'cdk-nag'
 import { Construct } from 'constructs'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface IngestionStepFunctionProps extends StackProps {
   dataFeedTable: Table
@@ -49,9 +54,7 @@ export class IngestionStepFunction extends Construct {
       description:
         'Function responsible for reading feeds and return the articles for ingestion',
       handler: 'handler',
-      entry: new URL(
-        import.meta.url.replace(/(.*)(\..+)/, '$1.' + 'feed-reader' + '$2')
-      ).pathname,
+      entry: path.join(__dirname, 'ingestion-step-function.feed-reader.ts'),
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_20_X,
       tracing: Tracing.ACTIVE,
@@ -71,12 +74,7 @@ export class IngestionStepFunction extends Construct {
         description:
           'Function responsible for filtering out already ingested articles',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'filter-ingested-articles' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'ingestion-step-function.filter-ingested-articles.ts'),
         runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         tracing: Tracing.ACTIVE,
@@ -98,12 +96,7 @@ export class IngestionStepFunction extends Construct {
         description:
           "Function responsible for ingesting each article's content, summarizing it, and storing the data in DDB",
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'article-ingestor' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'ingestion-step-function.article-ingestor.ts'),
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
         architecture: Architecture.ARM_64,
@@ -134,12 +127,7 @@ export class IngestionStepFunction extends Construct {
         description:
           'Function responsible for filtering out using a user provided prompt and Amazon Bedrock.',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'filter-articles-with-bedrock' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'ingestion-step-function.filter-articles-with-bedrock.ts'),
         runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         tracing: Tracing.ACTIVE,

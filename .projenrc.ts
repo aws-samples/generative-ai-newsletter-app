@@ -11,7 +11,10 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   sampleCode: false,
   gitignore: [
     'bin/config.json',
-    'pages/.vitepress/dist/*'
+    'pages/.vitepress/dist/*',
+    'misc/',
+    '.DS_Store',
+    'eslint-results.sarif',
   ],
   appEntrypoint: 'bin/genai-newsletter-app.ts',
   bin: {
@@ -84,6 +87,14 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     exclude: ['node_modules', 'lib/user-interface/genai-newsletter-ui/*'],
   },
 });
+
+project.addFields({
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+})
 
 // Existing tasks
 project.tasks.addTask('config', {

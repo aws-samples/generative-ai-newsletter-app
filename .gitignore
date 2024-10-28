@@ -32,6 +32,9 @@ jspm_packages/
 .cache
 bin/config.json
 pages/.vitepress/dist/*
+misc/
+.DS_Store
+eslint-results.sarif
 /test-reports/
 junit.xml
 /coverage/

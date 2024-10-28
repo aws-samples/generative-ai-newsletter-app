@@ -20,6 +20,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'lib/**/*.js',
     'lib/api/functions/out/',
   ],
+  github: false,
+  pullRequestTemplate: true,
   appEntrypoint: 'bin/genai-newsletter-app.ts',
   bin: {
     'genai-newsletter-app': 'bin/genai-newsletter-app.ts',

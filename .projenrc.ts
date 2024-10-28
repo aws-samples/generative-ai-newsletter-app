@@ -5,6 +5,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   cdkVersion: '2.164.1',
   srcdir: '.',
   outdir: '.',
+  libdir: 'out/',
   defaultReleaseBranch: 'main',
   name: 'generative-ai-newsletter-app',
   projenrcTs: true,
@@ -15,6 +16,9 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'misc/',
     '.DS_Store',
     'eslint-results.sarif',
+    '**/*.d.ts',
+    'lib/**/*.js',
+    'lib/api/functions/out/',
   ],
   appEntrypoint: 'bin/genai-newsletter-app.ts',
   bin: {
@@ -87,14 +91,16 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     exclude: ['node_modules', 'lib/user-interface/genai-newsletter-ui/*'],
   },
 });
+// projen auto adds lib/, but this project is laid out differently and needs to include lib/
+project.gitignore.removePatterns('lib');
 
 project.addFields({
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
-})
+  config: {
+    commitizen: {
+      path: './node_modules/cz-conventional-changelog',
+    },
+  },
+});
 
 // Existing tasks
 project.tasks.addTask('config', {

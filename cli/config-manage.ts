@@ -1,436 +1,305 @@
-import * as fs from 'fs'
-import { type DeployConfig } from '../lib/shared/common/deploy-config'
-import { formatText } from './consts'
-import prompt from 'prompt-sync'
-import { CONFIG_VERSION } from './config-version'
-import path, { dirname } from 'path'
-import figlet from 'figlet'
-import { fileURLToPath } from 'url'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+// config-manage.ts
+import * as fs from 'fs';
+import path from 'path';
+import figlet from 'figlet';
+import prompt from 'prompt-sync';
+import { CONFIG_VERSION } from './config-version';
+import { formatText } from './consts';
+import { type DeployConfig } from '../lib/shared/common/deploy-config';
 
-const deployConfig = path.join(__dirname, '../bin/config.json')
+const deployConfig = path.join(__dirname, '../bin/config.json');
+const prompter = prompt({ sigint: true });
 
-const prompter = prompt({ sigint: true })
+interface ValidatorResponse {
+  isValid: boolean;
+  message?: string;
+}
 
-let configStyle: 'EXISTING' | 'UPDATE' | 'NEW' = 'NEW'
-let config: DeployConfig | null = null
-if (fs.existsSync(deployConfig)) {
-  const configFromFile: DeployConfig = JSON.parse(
-    fs.readFileSync(deployConfig, 'utf8')
-  )
-  console.log(
-    formatText('A configuration already exists.', {
-      bold: true,
-      backgroundColor: 'bg-yellow'
-    })
-  )
-  let existingConfigChoice: string | null = null
-  let readyToProceed = false
-  while (!readyToProceed) {
-    console.log(formatText('\nDo you want to', { bold: true }))
-    console.log(
-      '   ▶️ (' +
-        formatText('e', { textColor: 'green' }) +
-        ') Use ' +
-        formatText('EXISTING', { textColor: 'green' }) +
-        ' configuration? \n' +
-        '   ▶️ (' +
-        formatText('u', { textColor: 'yellow' }) +
-        ') ' +
-        formatText('UPDATE', { textColor: 'yellow' }) +
-        ' existing configuration? \n' +
-        '   ▶️ (' +
-        formatText('n', { textColor: 'red' }) +
-        ') Create a ' +
-        formatText('NEW', { textColor: 'red' }) +
-        ' configuration that will replace the existing configuration?'
-    )
-    existingConfigChoice = prompter(formatText('(E/u/n):', { bold: true }), 'e')
-    if (existingConfigChoice.length > 0) {
-      existingConfigChoice = existingConfigChoice.toLowerCase()
+const validators = {
+  stackName: (value: string): ValidatorResponse => ({
+    isValid: value.length > 0,
+    message: 'Stack name cannot be empty',
+  }),
+
+  pinpointIdentity: (value: string): ValidatorResponse => {
+    const arnRegex = /^arn:aws:(ses|pinpoint):[a-z0-9-]+:\d{12}:/;
+    return {
+      isValid: arnRegex.test(value),
+      message: 'Invalid ARN format. Should be a valid SES/Pinpoint ARN',
+    };
+  },
+
+  email: (value: string): ValidatorResponse => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return {
+      isValid: emailRegex.test(value),
+      message: 'Invalid email format',
+    };
+  },
+
+  hostname: (value: string): ValidatorResponse => {
+    const hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]).)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
+    return {
+      isValid: hostnameRegex.test(value),
+      message: 'Invalid hostname format',
+    };
+  },
+
+  acmCert: (value: string): ValidatorResponse => {
+    const acmCertRegex = /^arn:aws:acm:\S+:\d+:\w+\/\S+$/;
+    return {
+      isValid: acmCertRegex.test(value),
+      message: 'Invalid ACM certificate ARN format',
+    };
+  },
+};
+
+async function promptForValue(
+  promptValue: string,
+  currentValue: string | undefined,
+  validator: (value: string) => ValidatorResponse,
+  isOptional = false,
+): Promise<string | undefined> {
+  let isValid = false;
+  let value = currentValue;
+
+  while (!isValid) {
+    const displayPrompt = formatText(promptValue, { textColor: 'blue', bold: true });
+    const currentValueDisplay = currentValue
+      ? formatText(` (current: ${currentValue})`, { textColor: 'gray', italic: true })
+      : '';
+
+    console.log(`\n${displayPrompt}${currentValueDisplay}`);
+    if (isOptional) {
+      console.log(formatText('Press Enter to skip', { textColor: 'gray', italic: true }));
     }
 
-    switch (existingConfigChoice) {
-      case 'u':
-        console.log(
-          formatText('Update existing configuration', {
-            bold: true
-          })
-        )
-        configStyle = 'UPDATE'
-        config = configFromFile
-        readyToProceed = true
-        break
-      case 'n':
-        console.log(formatText('Create a new configuration', { bold: true }))
-        configStyle = 'NEW'
-        readyToProceed = true
-        break
-      case 'e':
-        console.log(formatText('Use existing configuration', { bold: true }))
-        configStyle = 'EXISTING'
-        config = configFromFile
-        readyToProceed = true
-        break
-      default:
-        console.log(
-          formatText('Invalid Input!', {
-            bold: true,
-            backgroundColor: 'bg-red',
-            textColor: 'white'
-          })
-        )
-        break
+    const input = prompter('> ');
+
+    if (input === '' && currentValue) {
+      return currentValue;
+    }
+
+    if (input === '' && isOptional) {
+      return undefined;
+    }
+
+    const validation = validator(input);
+    if (validation.isValid) {
+      value = input;
+      isValid = true;
+    } else {
+      console.log(formatText(`❌ ${validation.message}`, {
+        textColor: 'red',
+        bold: true,
+      }));
     }
   }
+
+  return value;
 }
-console.log(
-  figlet.textSync('Requirements Check', {
-    font: 'Mini'
-  })
-)
-console.log(
-  'This app relies on certain resources to exist in your AWS environment prior to deployment.'
-)
-console.log(
-  'Please ensure that the following resources exist in your AWS environment before proceeding:\n'
-)
-console.log(
-  '   ▶️ SES/Pinpoint Verified Identity ARN for outbound email sending'
-)
-const requirementsMet = prompter(
-  formatText('Are you ready to proceed? (Y/n):', { bold: true }),
-  'Y'
-)
-if (requirementsMet.toLowerCase() !== 'y') {
+
+async function confirmAction(message: string, defaultValue = false): Promise<boolean> {
+  const response = prompter(
+    formatText(`${message} (${defaultValue ? 'Y/n' : 'y/N'}): `, { bold: true }),
+    defaultValue ? 'Y' : 'N',
+  );
+  return response.toLowerCase() === 'y';
+}
+
+export async function interactiveManage(): Promise<void> {
   console.log(
-    formatText('Exiting...', {
+    figlet.textSync('Configuration Manager', {
+      font: 'Mini',
+    }),
+  );
+
+  let config: DeployConfig | null = null;
+  let configStyle: 'EXISTING' | 'UPDATE' | 'NEW' = 'NEW';
+
+  // Check for existing configuration
+  if (fs.existsSync(deployConfig)) {
+    try {
+      const configFromFile: DeployConfig = JSON.parse(
+        fs.readFileSync(deployConfig, 'utf8'),
+      );
+
+      console.log(
+        formatText('\n📁 Existing configuration detected!', {
+          bold: true,
+          backgroundColor: 'bg-blue',
+          textColor: 'white',
+        }),
+      );
+
+      console.log(formatText('\nChoose an option:', { bold: true }));
+      console.log(
+        `   ▶️ (${formatText('e', { textColor: 'green' })}) Use ${formatText('EXISTING', { textColor: 'green' })} configuration` +
+        `\n   ▶️ (${formatText('u', { textColor: 'yellow' })}) ${formatText('UPDATE', { textColor: 'yellow' })} existing configuration` +
+        `\n   ▶️ (${formatText('n', { textColor: 'red' })}) Create ${formatText('NEW', { textColor: 'red' })} configuration`,
+      );
+
+      let readyToProceed = false;
+      while (!readyToProceed) {
+        const choice = prompter(formatText('(E/u/n):', { bold: true }), 'e');
+
+        switch (choice.toLowerCase()) {
+          case 'e':
+            console.log(formatText('\n✅ Using existing configuration', {
+              textColor: 'green',
+              bold: true,
+            }));
+            configStyle = 'EXISTING';
+            config = configFromFile;
+            readyToProceed = true;
+            break;
+          case 'u':
+            console.log(formatText('\n📝 Updating existing configuration', {
+              textColor: 'yellow',
+              bold: true,
+            }));
+            configStyle = 'UPDATE';
+            config = configFromFile;
+            readyToProceed = true;
+            break;
+          case 'n':
+            console.log(formatText('\n🆕 Creating new configuration', {
+              textColor: 'blue',
+              bold: true,
+            }));
+            configStyle = 'NEW';
+            readyToProceed = true;
+            break;
+          default:
+            console.log(formatText('❌ Invalid choice!', {
+              textColor: 'red',
+              bold: true,
+            }));
+        }
+      }
+    } catch (error) {
+      console.log(formatText('\n❌ Error reading existing configuration!', {
+        backgroundColor: 'bg-red',
+        textColor: 'white',
+        bold: true,
+      }));
+      configStyle = 'NEW';
+    }
+  }
+
+  // Requirements check
+  console.log(formatText('\n🔍 Requirements Check', { bold: true }));
+  console.log(formatText(
+    'This app requires certain AWS resources to exist before deployment:',
+    { italic: true },
+  ));
+  console.log(formatText('  • SES/Pinpoint Verified Identity for email sending', { textColor: 'blue' }));
+
+  const readyToProceed = await confirmAction('\nAre you ready to proceed?', true);
+  if (!readyToProceed) {
+    console.log(formatText('\n👋 Configuration cancelled', {
+      backgroundColor: 'bg-yellow',
+      textColor: 'black',
       bold: true,
-      backgroundColor: 'bg-red',
-      textColor: 'white'
-    })
-  )
-  process.exit(0)
-}
-if (['UPDATE', 'NEW'].includes(configStyle)) {
+    }));
+    return;
+  }
+
+  // Initialize new configuration if needed
   if (configStyle === 'NEW') {
     config = {
       stackName: 'GenAINewsletter',
       pinpointEmail: {
         senderAddress: '',
-        verifiedIdentity: ''
+        verifiedIdentity: '',
       },
       configVersion: CONFIG_VERSION,
-      selfSignUpEnabled: false
-    }
+      selfSignUpEnabled: false,
+    };
   }
-  if (config !== null) {
-    console.log(
-      formatText('Updating existing configuration....', { bold: true })
-    )
-    console.log(
-      formatText(
-        'If a property already exists, it will be shown in parenthesis (). Leave the response blank to keep the existing configuration value\n',
-        { bold: true }
-      )
-    )
-    let stackNameApproved = false
-    while (!stackNameApproved) {
-      console.log(formatText('Stack Name:', { textColor: 'blue' }))
-      const stackName = prompter(
-        `(${config?.stackName}):`,
-        config?.stackName ?? ''
-      )
-      if (stackName.length > 0) {
-        config.stackName = stackName
-        stackNameApproved = true
-      } else if (
-        config.stackName === undefined ||
-        (config.stackName.length < 1 && stackName.length < 1)
-      ) {
-        console.log(
-          formatText('Invalid Input!', {
-            backgroundColor: 'bg-white',
-            textColor: 'red',
-            bold: true
-          })
-        )
-      } else if (config.stackName.length > 0) {
-        stackNameApproved = true
+
+  if (config && ['UPDATE', 'NEW'].includes(configStyle)) {
+    console.log(formatText('\n📝 Configuration Setup', { bold: true }));
+
+    // Stack Configuration
+    console.log(formatText('\n🏗️  Stack Configuration', { textColor: 'blue', bold: true }));
+    config.stackName = await promptForValue(
+      'Stack Name:',
+      config.stackName,
+      validators.stackName,
+    ) || 'GenAINewsletter';
+
+    // Email Configuration
+    console.log(formatText('\n📧 Email Configuration', { textColor: 'blue', bold: true }));
+    config.pinpointEmail.verifiedIdentity = await promptForValue(
+      'SES/Pinpoint Verified Identity ARN:',
+      config.pinpointEmail.verifiedIdentity,
+      validators.pinpointIdentity,
+    ) || '';
+
+    config.pinpointEmail.senderAddress = await promptForValue(
+      'Sender Email Address:',
+      config.pinpointEmail.senderAddress,
+      validators.email,
+    ) || '';
+
+    // Authentication Configuration
+    console.log(formatText('\n🔐 Authentication Configuration', { textColor: 'blue', bold: true }));
+    config.selfSignUpEnabled = await confirmAction('Enable self sign-up?', false);
+
+    // Optional UI Configuration
+    if (await confirmAction('\nDo you want to configure a custom frontend hostname?', false)) {
+      if (!config.ui) config.ui = {};
+
+      config.ui.hostName = await promptForValue(
+        'Frontend Hostname:',
+        config.ui?.hostName,
+        validators.hostname,
+        true,
+      );
+
+      if (config.ui.hostName) {
+        config.ui.acmCertificateArn = await promptForValue(
+          'ACM Certificate ARN:',
+          config.ui?.acmCertificateArn,
+          validators.acmCert,
+        );
       }
     }
-    let pinpointIdentityApproved = false
-    while (!pinpointIdentityApproved) {
-      console.log(
-        formatText('SES/Pinpoint Verified Identity ARN:', {
-          textColor: 'blue'
-        })
-      )
-      const pinpointIdentity = prompter(
-        `(${config?.pinpointEmail.verifiedIdentity}):`,
-        config?.pinpointEmail.verifiedIdentity ?? ''
-      )
-      if (pinpointIdentity.length > 0) {
-        config.pinpointEmail.verifiedIdentity = pinpointIdentity
-        pinpointIdentityApproved = true
-      } else if (
-        config.pinpointEmail.verifiedIdentity.length < 1 &&
-        pinpointIdentity.length < 1
-      ) {
-        console.log(
-          formatText('Invalid Input!', {
-            backgroundColor: 'bg-white',
-            textColor: 'red',
-            bold: true
-          })
-        )
-      } else if (config.pinpointEmail.verifiedIdentity.length > 0) {
-        pinpointIdentityApproved = true
-      }
-    }
-    let pinpointSenderApproved = false
-    while (!pinpointSenderApproved) {
-      console.log(
-        formatText(
-          'What is the email address used to send Newsletter emails?',
-          { textColor: 'blue' }
-        )
-      )
-      console.log(
-        formatText(
-          'Note: this email should be part of the approved identity you provided',
-          { italic: true }
-        )
-      )
-      const pinpointSender = prompter(
-        `(${config?.pinpointEmail.senderAddress}):`,
-        config?.pinpointEmail.senderAddress ?? ''
-      )
-      if (pinpointSender.length > 0) {
-        config.pinpointEmail.senderAddress = pinpointSender
-        pinpointSenderApproved = true
-        break
-      }
-      console.log(
-        formatText('Invalid Input!', {
-          backgroundColor: 'bg-white',
-          textColor: 'red',
-          bold: true
-        })
-      )
-    }
-    let addEnvData = false
-    if (config.env === undefined) {
-      console.log(
-        formatText(
-          'Do you want to set the deployment AWS Account ID & Region?',
-          { textColor: 'blue' }
-        )
-      )
-      console.log(
-        formatText(
-          'Not typically needed, but useful if you want to persist deployment destintation outside of the CDK context',
-          { italic: true }
-        )
-      )
-      const addEnv = prompter(
-        formatText('Do you want to proceed? (y/N):', { bold: true }),
-        'N'
-      )
-      if (addEnv.toLowerCase() === 'y') {
-        addEnvData = true
-      }
-    }
-    if (
-      addEnvData ||
-      config.env?.account != null ||
-      config.env?.region != null
-    ) {
-      console.log(
-        formatText('Deployment AWS Account ID', { textColor: 'blue' })
-      )
+
+    // Optional Environment Configuration
+    if (await confirmAction('\nDo you want to set deployment account and region?', false)) {
+      if (!config.env) config.env = {};
+
       const accountId = prompter(
-        config?.env?.account !== undefined
-          ? `(${config?.env?.account}):`
-          : 'Account ID:',
-        config?.env?.account ?? ''
-      )
-      if (config.env == null) {
-        config.env = {}
-      }
-      config.env.account = accountId ?? ''
-      console.log(formatText('Deployment AWS Region', { textColor: 'blue' }))
+        formatText('\nAWS Account ID:', { textColor: 'blue', bold: true }) +
+        (config.env.account ? formatText(` (current: ${config.env.account})`, { textColor: 'gray', italic: true }) : '') +
+        '\n> ',
+      );
+      if (accountId) config.env.account = accountId;
+
       const region = prompter(
-        config?.env?.region !== undefined
-          ? `(${config?.env?.region}):`
-          : 'AWS Region:',
-        config?.env?.region ?? ''
-      )
-      config.env.region = region ?? ''
+        formatText('\nAWS Region:', { textColor: 'blue', bold: true }) +
+        (config.env.region ? formatText(` (current: ${config.env.region})`, { textColor: 'gray', italic: true }) : '') +
+        '\n> ',
+      );
+      if (region) config.env.region = region;
     }
-    let selfSignUpResponseApproved = false
-    while (!selfSignUpResponseApproved) {
-      const response = prompter(
-        formatText('Do you want to enable self sign up? (y/N):', {
-          bold: true,
-          textColor: 'blue'
-        }),
-        'N'
-      )
-      if (response.toLowerCase() === 'y') {
-        config.selfSignUpEnabled = true
-        selfSignUpResponseApproved = true
-      } else if (response.toLowerCase() === 'n') {
-        selfSignUpResponseApproved = true
-        config.selfSignUpEnabled = false
-      } else {
-        console.log(
-          formatText('Invalid Input!', {
-            backgroundColor: 'bg-white',
-            textColor: 'red',
-            bold: true
-          })
-        )
-      }
-    }
-    /**
-     * Does the user want to configure a Host Name & ACM Cert for the Frontend Cloudfront
-     */
-    let configHostname = false
-    if (
-      config.ui?.acmCertificateArn === undefined ||
-      config.ui.hostName === undefined
-    ) {
-      console.log(
-        formatText(
-          'Do you want to configure a custom hostname for the frontend?',
-          { textColor: 'blue' }
-        )
-      )
-      console.log(
-        formatText(
-          'Requires a hostname & a pre-existing AWS Certificate Manager public cert ARN.' +
-            'For more information, visit https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html',
-          { italic: true }
-        )
-      )
-      let loopA = true
-      while (loopA) {
-        const response = prompter(
-          formatText('Do you want to proceed? (y/N):', {
-            bold: true,
-            textColor: 'blue'
-          }),
-          'N'
-        )
-        if (response.toLowerCase() === 'y') {
-          configHostname = true
-          loopA = false
-          break
-        } else if (response.toLowerCase() === 'n') {
-          loopA = false
-          break
-        } else {
-          console.log(
-            formatText('Invalid Input!', {
-              backgroundColor: 'bg-white',
-              textColor: 'red',
-              bold: true
-            })
-          )
-        }
-      }
-      if (configHostname) {
-        let loopB = true
-        while (loopB) {
-          const existingHostname =
-            config.ui?.hostName != null ? config.ui.hostName : ''
-          const response = prompter(
-            formatText(
-              `Enter the hostname you want to use for the frontend:(${existingHostname})`,
-              { textColor: 'blue' }
-            )
-          )
-          const hostnameRegex =
-            /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]).)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
-          if (response.length > 0 && hostnameRegex.test(response)) {
-            if (config.ui === undefined) {
-              config.ui = {}
-            }
-            config.ui.hostName = response
-            loopB = false
-            break
-          } else if (
-            response.length < 1 &&
-            config.ui?.hostName !== undefined &&
-            config.ui.hostName !== null
-          ) {
-            loopB = false
-            break
-          } else {
-            console.log(
-              formatText('Invalid Input!', {
-                backgroundColor: 'bg-white',
-                textColor: 'red',
-                bold: true
-              })
-            )
-          }
-        }
-        let loopC = true
-        while (loopC) {
-          const existingAcmCert =
-            config.ui?.acmCertificateArn != null
-              ? config.ui.acmCertificateArn
-              : ''
-          const response = prompter(
-            formatText(
-              `Enter the ACM Certificate ARN you want to use for the frontend:(${existingAcmCert})`,
-              { textColor: 'blue' }
-            )
-          )
-          const acmCertRegex = /^arn:aws:acm:\S+:\d+:\w+\/\S+$/
-          if (response.length > 0 && acmCertRegex.test(response)) {
-            if (config.ui === undefined) {
-              config.ui = {}
-            }
-            config.ui.acmCertificateArn = response
-            loopC = false
-            break
-          } else if (
-            response.length < 1 &&
-            config.ui?.acmCertificateArn !== undefined &&
-            config.ui.acmCertificateArn !== null
-          ) {
-            loopC = false
-            break
-          } else {
-            console.log(
-              formatText('Invalid Input!', {
-                backgroundColor: 'bg-white',
-                textColor: 'red',
-                bold: true
-              })
-            )
-          }
-        }
-      }
-    }
-  }
-  fs.writeFileSync(deployConfig, JSON.stringify(config, null, '\t'))
-}
-if (config !== null) {
-  console.log(
-    formatText('Configuration Complete! 💫', {
+
+    // Save configuration
+    fs.writeFileSync(deployConfig, JSON.stringify(config, null, 2));
+
+    console.log(formatText('\n✅ Configuration saved successfully!', {
       backgroundColor: 'bg-green',
       textColor: 'white',
-      bold: true
-    })
-  )
-  console.log(
-    formatText('You GenAI Newsletter App Stack is ready for deployment. 🥳', {
-      bold: true
-    })
-  )
+      bold: true,
+    }));
+  }
+
+  if (config) {
+    console.log(formatText('\n🚀 Your GenAI Newsletter App Stack is ready for deployment!', {
+      bold: true,
+      textColor: 'green',
+    }));
+  }
 }

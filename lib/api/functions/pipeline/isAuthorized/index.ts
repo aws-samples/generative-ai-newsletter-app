@@ -8,37 +8,37 @@ import {
   type LambdaRequest,
   util,
   type Context,
-  type AppSyncIdentityLambda
-} from '@aws-appsync/utils'
-import { convertAvpObjectToGraphql } from '../../resolver-helper'
+  type AppSyncIdentityLambda,
+} from '@aws-appsync/utils';
+import { convertAvpObjectToGraphql } from '../../resolver-helper';
 
 export function request (ctx: Context): LambdaRequest {
-  const { source, args } = ctx
-  const identity = ctx.identity as AppSyncIdentityLambda
+  const { source, args } = ctx;
+  const identity = ctx.identity as AppSyncIdentityLambda;
   return {
     operation: 'Invoke',
     payload: {
       userId: identity.resolverContext.userId,
       accountId: identity.resolverContext.accountId,
       requestContext: JSON.parse(
-        identity.resolverContext.requestContext as string
+        identity.resolverContext.requestContext as string,
       ),
       result: ctx.prev.result,
       arguments: args,
       source,
       root: ctx.stash.root,
-      contingentAction: ctx.stash.contingentAction
-    }
-  }
+      contingentAction: ctx.stash.contingentAction,
+    },
+  };
 }
 
 export function response (ctx: Context): any {
-  const { error, result } = ctx
+  const { error, result } = ctx;
   if (error !== undefined && error !== null) {
-    util.error(error.message, error.type, result)
+    util.error(error.message, error.type, result);
   }
   if (result.isAuthorized !== true) {
-    util.unauthorized()
+    util.unauthorized();
   }
-  return convertAvpObjectToGraphql(result.returnResult)
+  return convertAvpObjectToGraphql(result.returnResult);
 }

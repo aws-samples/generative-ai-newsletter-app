@@ -3,58 +3,54 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   aws_verifiedpermissions as verifiedpermissions,
   Duration,
-  RemovalPolicy
-} from 'aws-cdk-lib'
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import * as fs from 'fs'
-import * as path from 'path'
-import { Construct } from 'constructs'
+  RemovalPolicy,
+} from 'aws-cdk-lib';
+import {
+  PolicyStatement,
+  Effect,
+  Policy,
+  PolicyDocument,
+} from 'aws-cdk-lib/aws-iam';
 import {
   ApplicationLogLevel,
   Architecture,
   LambdaInsightsVersion,
   LoggingFormat,
   Runtime,
-  Tracing
-} from 'aws-cdk-lib/aws-lambda'
-import {
-  PolicyStatement,
-  Effect,
-  Policy,
-  PolicyDocument
-} from 'aws-cdk-lib/aws-iam'
-import { type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions'
-import { NagSuppressions } from 'cdk-nag'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+  Tracing,
+} from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { type CfnPolicy } from 'aws-cdk-lib/aws-verifiedpermissions';
+import { NagSuppressions } from 'cdk-nag';
+import { Construct } from 'constructs';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 interface PermissionsProps {
-  userPoolId: string
-  userPoolClientId: string
-  userPoolArn: string
+  userPoolId: string;
+  userPoolClientId: string;
+  userPoolArn: string;
 }
 
 export class Authorization extends Construct {
-  public readonly policyStore: verifiedpermissions.CfnPolicyStore
-  public readonly graphqlActionAuthorizerFunction: NodejsFunction
-  public readonly graphqlReadAuthorizerFunction: NodejsFunction
-  public readonly graphqlFilterReadAuthorizerFunction: NodejsFunction
-  public readonly avpAuthorizerValidationRegex: string = '^Bearer AUTH(.*)'
-  readonly policyDefinitions: CfnPolicy[]
+  public readonly policyStore: verifiedpermissions.CfnPolicyStore;
+  public readonly graphqlActionAuthorizerFunction: NodejsFunction;
+  public readonly graphqlReadAuthorizerFunction: NodejsFunction;
+  public readonly graphqlFilterReadAuthorizerFunction: NodejsFunction;
+  public readonly avpAuthorizerValidationRegex: string = '^Bearer AUTH(.*)';
+  readonly policyDefinitions: CfnPolicy[];
   constructor (scope: Construct, id: string, props: PermissionsProps) {
-    const { userPoolId, userPoolClientId, userPoolArn } = props
-    super(scope, id)
+    const { userPoolId, userPoolClientId, userPoolArn } = props;
+    super(scope, id);
 
     const validationSettings: verifiedpermissions.CfnPolicyStore.ValidationSettingsProperty =
       {
-        mode: 'STRICT'
-      }
+        mode: 'STRICT',
+      };
 
     const policyStore = new verifiedpermissions.CfnPolicyStore(
       this,
@@ -63,12 +59,12 @@ export class Authorization extends Construct {
         schema: {
           cedarJson: fs
             .readFileSync(path.join(__dirname, 'cedarschema.json'))
-            .toString('utf-8')
+            .toString('utf-8'),
         },
-        validationSettings
-      }
-    )
-    this.policyStore = policyStore
+        validationSettings,
+      },
+    );
+    this.policyStore = policyStore;
 
     new verifiedpermissions.CfnIdentitySource(this, 'IdentitySource', {
       policyStoreId: policyStore.ref,
@@ -76,32 +72,32 @@ export class Authorization extends Construct {
       configuration: {
         cognitoUserPoolConfiguration: {
           userPoolArn,
-          clientIds: [userPoolClientId]
-        }
-      }
-    })
+          clientIds: [userPoolClientId],
+        },
+      },
+    });
 
-    const policiesFolder = path.join(__dirname, 'policies')
+    const policiesFolder = path.join(__dirname, 'policies');
     this.policyDefinitions = fs
       .readdirSync(policiesFolder)
       .filter((p) => {
-        const f = path.join(policiesFolder, p)
-        return fs.statSync(f).isFile() && p.endsWith('.cedar')
+        const f = path.join(policiesFolder, p);
+        return fs.statSync(f).isFile() && p.endsWith('.cedar');
       })
       .map((p) => {
-        const f = path.join(policiesFolder, p)
+        const f = path.join(policiesFolder, p);
         const policy = new verifiedpermissions.CfnPolicy(this, p, {
           policyStoreId: policyStore.ref,
           definition: {
             static: {
               description: p,
-              statement: fs.readFileSync(f).toString('utf-8')
-            }
-          }
-        })
-        policy.applyRemovalPolicy(RemovalPolicy.DESTROY)
-        return policy
-      })
+              statement: fs.readFileSync(f).toString('utf-8'),
+            },
+          },
+        });
+        policy.applyRemovalPolicy(RemovalPolicy.DESTROY);
+        return policy;
+      });
 
     const avpAccessPolicy = new Policy(this, 'AuthCheckAVPAccess', {
       document: new PolicyDocument({
@@ -109,14 +105,14 @@ export class Authorization extends Construct {
           new PolicyStatement({
             actions: [
               'verifiedpermissions:IsAuthorized',
-              'verifiedpermissions:GetSchema'
+              'verifiedpermissions:GetSchema',
             ],
             resources: [policyStore.attrArn],
-            effect: Effect.ALLOW
-          })
-        ]
-      })
-    })
+            effect: Effect.ALLOW,
+          }),
+        ],
+      }),
+    });
 
     const graphqlActionAuthorizerFunction = new NodejsFunction(
       this,
@@ -125,12 +121,6 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to create items using Amazon Verified Permissions',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'action-authorization' + '$2'
-          )
-        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -143,12 +133,12 @@ export class Authorization extends Construct {
           USER_POOL_CLIENT_ID: userPoolClientId,
           USER_POOL_ID: userPoolId,
           POLICY_STORE_ID: policyStore.ref,
-          VALIDATION_REGEX: this.avpAuthorizerValidationRegex
-        }
-      }
-    )
+          VALIDATION_REGEX: this.avpAuthorizerValidationRegex,
+        },
+      },
+    );
 
-    graphqlActionAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy)
+    graphqlActionAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy);
 
     const graphqlReadAuthorizerFunction = new NodejsFunction(
       this,
@@ -157,12 +147,6 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to read/view data items using Amazon Verified Permissions',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'read-authorization' + '$2'
-          )
-        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -175,11 +159,11 @@ export class Authorization extends Construct {
           USER_POOL_CLIENT_ID: userPoolClientId,
           USER_POOL_ID: userPoolId,
           POLICY_STORE_ID: policyStore.ref,
-          VALIDATION_REGEX: this.avpAuthorizerValidationRegex
-        }
-      }
-    )
-    graphqlReadAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy)
+          VALIDATION_REGEX: this.avpAuthorizerValidationRegex,
+        },
+      },
+    );
+    graphqlReadAuthorizerFunction.role?.attachInlinePolicy(avpAccessPolicy);
 
     const graphqlFilterReadAuthorizerFunction = new NodejsFunction(
       this,
@@ -188,12 +172,6 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requested resources are authorized for viewing data and filtering out unauthorized data from the list.',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'list-filter-authorization' + '$2'
-          )
-        ).pathname,
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -205,33 +183,33 @@ export class Authorization extends Construct {
           POWERTOOLS_LOG_LEVEL: 'DEBUG',
           USER_POOL_CLIENT_ID: userPoolClientId,
           USER_POOL_ID: userPoolId,
-          POLICY_STORE_ID: policyStore.ref
-        }
-      }
-    )
+          POLICY_STORE_ID: policyStore.ref,
+        },
+      },
+    );
     graphqlFilterReadAuthorizerFunction.role?.attachInlinePolicy(
-      avpAccessPolicy
-    )
+      avpAccessPolicy,
+    );
 
-    this.graphqlActionAuthorizerFunction = graphqlActionAuthorizerFunction
-    this.graphqlReadAuthorizerFunction = graphqlReadAuthorizerFunction
+    this.graphqlActionAuthorizerFunction = graphqlActionAuthorizerFunction;
+    this.graphqlReadAuthorizerFunction = graphqlReadAuthorizerFunction;
     this.graphqlFilterReadAuthorizerFunction =
-      graphqlFilterReadAuthorizerFunction
+      graphqlFilterReadAuthorizerFunction;
 
     NagSuppressions.addResourceSuppressions(
       [
         graphqlActionAuthorizerFunction,
         graphqlReadAuthorizerFunction,
-        graphqlFilterReadAuthorizerFunction
+        graphqlFilterReadAuthorizerFunction,
       ],
       [
         {
           id: 'AwsSolutions-IAM5',
           reason:
-            'The policy is restricted to the verifiedpermissions:IsAuthorized and verifiedpermissions:GetSchema actions'
-        }
+            'The policy is restricted to the verifiedpermissions:IsAuthorized and verifiedpermissions:GetSchema actions',
+        },
       ],
-      true
-    )
+      true,
+    );
   }
 }

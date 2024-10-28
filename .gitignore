@@ -30,6 +30,8 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
+bin/config.json
+pages/.vitepress/dist/*
 /test-reports/
 junit.xml
 /coverage/
@@ -40,7 +42,7 @@ junit.xml
 !/test/
 !/tsconfig.json
 !/tsconfig.dev.json
-!/src/
+!/./
 /lib
 /dist/
 !/.eslintrc.json

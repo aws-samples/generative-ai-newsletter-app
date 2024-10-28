@@ -3,8 +3,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import { type PluginFunction } from '@graphql-codegen/plugin-helpers'
-import { type GraphQLSchema } from 'graphql'
+import { type PluginFunction } from '@graphql-codegen/plugin-helpers';
+import { type GraphQLSchema } from 'graphql';
 import {
   factory,
   SyntaxKind,
@@ -17,72 +17,72 @@ import {
   NewLineKind,
   createPrinter,
   EmitHint,
-  type ClassElement
-} from 'typescript'
+  type ClassElement,
+} from 'typescript';
 
 export const plugin: PluginFunction = async (
-  schema: GraphQLSchema
+  schema: GraphQLSchema,
 ): Promise<string> => {
-  const queryFields = schema.getQueryType()?.getFields()
-  const declarations: PropertyDeclaration[] = []
-  const allResolvers = []
+  const queryFields = schema.getQueryType()?.getFields();
+  const declarations: PropertyDeclaration[] = [];
+  const allResolvers = [];
   if (queryFields !== undefined) {
-    console.log('Adding Query Type to Permission Map')
-    const resolvers = []
+    console.log('Adding Query Type to Permission Map');
+    const resolvers = [];
     for (const resolver in queryFields) {
-      resolvers.push(resolver)
-      allResolvers.push(resolver)
+      resolvers.push(resolver);
+      allResolvers.push(resolver);
     }
-    declarations.push(...generateReadDeclarations(resolvers))
+    declarations.push(...generateReadDeclarations(resolvers));
   } else {
-    console.log('No Query Types to Need Permissions')
+    console.log('No Query Types to Need Permissions');
   }
-  const mutationFields = schema.getMutationType()?.getFields()
+  const mutationFields = schema.getMutationType()?.getFields();
   if (mutationFields !== undefined) {
-    console.log('Adding Mutation Type to Permission Map')
-    const resolvers = []
+    console.log('Adding Mutation Type to Permission Map');
+    const resolvers = [];
     for (const resolver in mutationFields) {
-      resolvers.push(resolver)
-      allResolvers.push(resolver)
+      resolvers.push(resolver);
+      allResolvers.push(resolver);
     }
-    declarations.push(...generateWriteDeclarations(resolvers))
+    declarations.push(...generateWriteDeclarations(resolvers));
   } else {
-    console.log('No Mutation Types to Need Permissions')
+    console.log('No Mutation Types to Need Permissions');
   }
-  const subscriptionFields = schema.getSubscriptionType()?.getFields()
+  const subscriptionFields = schema.getSubscriptionType()?.getFields();
   if (subscriptionFields !== undefined) {
-    const resolvers = []
+    const resolvers = [];
     for (const resolver in subscriptionFields) {
-      resolvers.push(resolver)
-      allResolvers.push(resolver)
+      resolvers.push(resolver);
+      allResolvers.push(resolver);
     }
-    declarations.push(...generateReadDeclarations(resolvers))
+    declarations.push(...generateReadDeclarations(resolvers));
   } else {
-    console.log('No Subscription Types to Need Permissions')
+    console.log('No Subscription Types to Need Permissions');
   }
-  declarations.push(generateMethodGetter(allResolvers))
-  const printer = createPrinter({ newLine: NewLineKind.LineFeed })
+  declarations.push(generateMethodGetter(allResolvers));
+  const printer = createPrinter({ newLine: NewLineKind.LineFeed });
   const sourceFile = createSourceFile(
     'action-authorizer.ts',
     '',
     ScriptTarget.Latest,
     false,
-    ScriptKind.TS
-  )
+    ScriptKind.TS,
+  );
   return (
     printer.printNode(EmitHint.Unspecified, importDefinition(), sourceFile) +
     printer.printNode(
       EmitHint.Unspecified,
       generateTypescript(declarations),
-      sourceFile
+      sourceFile,
     )
-  )
-}
+  );
+};
 
 const generateReadDeclarations = (
-  resolvers: string[]
+  resolvers: string[],
 ): PropertyDeclaration[] => {
-  const declarations = []
+  const declarations = [];
   for (const resolver of resolvers) {
     declarations.push(
       factory.createPropertyDeclaration(
@@ -92,24 +92,24 @@ const generateReadDeclarations = (
         factory.createUnionTypeNode([
           factory.createTypeReferenceNode(
             factory.createIdentifier('ReadActionStatement'),
-            undefined
+            undefined,
           ),
           factory.createTypeReferenceNode(
             factory.createIdentifier('ListActionStatement'),
-            undefined
-          )
+            undefined,
+          ),
         ]),
-        undefined
-      )
-    )
+        undefined,
+      ),
+    );
   }
-  return declarations
-}
+  return declarations;
+};
 
 const generateWriteDeclarations = (
-  resolvers: string[]
+  resolvers: string[],
 ): PropertyDeclaration[] => {
-  const declarations = []
+  const declarations = [];
   for (const resolver of resolvers) {
     declarations.push(
       factory.createPropertyDeclaration(
@@ -119,19 +119,19 @@ const generateWriteDeclarations = (
         factory.createUnionTypeNode([
           factory.createTypeReferenceNode(
             factory.createIdentifier('CreateActionStatement'),
-            undefined
+            undefined,
           ),
           factory.createTypeReferenceNode(
             factory.createIdentifier('UpdateActionStatement'),
-            undefined
-          )
+            undefined,
+          ),
         ]),
-        undefined
-      )
-    )
+        undefined,
+      ),
+    );
   }
-  return declarations
-}
+  return declarations;
+};
 
 const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
   const resolverCases = resolvers.map((resolver) => {
@@ -139,11 +139,11 @@ const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
       factory.createReturnStatement(
         factory.createPropertyAccessExpression(
           factory.createThis(),
-          factory.createIdentifier(resolver)
-        )
-      )
-    ])
-  })
+          factory.createIdentifier(resolver),
+        ),
+      ),
+    ]);
+  });
   return factory.createPropertyDeclaration(
     undefined,
     factory.createIdentifier('getResolverPermission'),
@@ -159,22 +159,22 @@ const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
           factory.createIdentifier('resolverName'),
           undefined,
           factory.createKeywordTypeNode(SyntaxKind.StringKeyword),
-          undefined
-        )
+          undefined,
+        ),
       ],
       factory.createUnionTypeNode([
         factory.createTypeReferenceNode(
           factory.createIdentifier('ReadActionStatement'),
-          undefined
+          undefined,
         ),
         factory.createTypeReferenceNode(
           factory.createIdentifier('UpdateActionStatement'),
-          undefined
+          undefined,
         ),
         factory.createTypeReferenceNode(
           factory.createIdentifier('CreateActionStatement'),
-          undefined
-        )
+          undefined,
+        ),
       ]),
       factory.createToken(SyntaxKind.EqualsGreaterThanToken),
       factory.createBlock(
@@ -191,36 +191,36 @@ const generateMethodGetter = (resolvers: string[]): PropertyDeclaration => {
                     [
                       factory.createBinaryExpression(
                         factory.createStringLiteral(
-                          'Resolver Permission not found for '
+                          'Resolver Permission not found for ',
                         ),
                         factory.createToken(SyntaxKind.PlusToken),
-                        factory.createIdentifier('resolverName')
-                      )
-                    ]
-                  )
-                )
-              ])
-            ])
-          )
+                        factory.createIdentifier('resolverName'),
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
+            ]),
+          ),
         ],
-        true
-      )
-    )
-  )
-}
+        true,
+      ),
+    ),
+  );
+};
 
 const generateTypescript = (declarations: ClassElement[]): ClassDeclaration => {
   return factory.createClassDeclaration(
     [
       factory.createToken(SyntaxKind.ExportKeyword),
-      factory.createToken(SyntaxKind.AbstractKeyword)
+      factory.createToken(SyntaxKind.AbstractKeyword),
     ],
     factory.createIdentifier('ResolverPermissionMapBase'),
     undefined,
     undefined,
-    declarations
-  )
-}
+    declarations,
+  );
+};
 
 const importDefinition = (): ImportDeclaration => {
   return factory.createImportDeclaration(
@@ -232,26 +232,26 @@ const importDefinition = (): ImportDeclaration => {
         factory.createImportSpecifier(
           false,
           undefined,
-          factory.createIdentifier('ReadActionStatement')
+          factory.createIdentifier('ReadActionStatement'),
         ),
         factory.createImportSpecifier(
           false,
           undefined,
-          factory.createIdentifier('ListActionStatement')
+          factory.createIdentifier('ListActionStatement'),
         ),
         factory.createImportSpecifier(
           false,
           undefined,
-          factory.createIdentifier('CreateActionStatement')
+          factory.createIdentifier('CreateActionStatement'),
         ),
         factory.createImportSpecifier(
           false,
           undefined,
-          factory.createIdentifier('UpdateActionStatement')
-        )
-      ])
+          factory.createIdentifier('UpdateActionStatement'),
+        ),
+      ]),
     ),
     factory.createStringLiteral('./permission-map'),
-    undefined
-  )
-}
+    undefined,
+  );
+};

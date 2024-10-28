@@ -3,122 +3,122 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import { Tracer } from '@aws-lambda-powertools/tracer'
-import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware'
-import { Logger } from '@aws-lambda-powertools/logger'
-import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware'
-import middy from '@middy/core'
-import { type FeedArticle } from '../../shared/common'
-import {
-  DynamoDBClient,
-  GetItemCommand,
-  GetItemCommandInput
-} from '@aws-sdk/client-dynamodb'
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+import { Logger } from '@aws-lambda-powertools/logger';
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
-  InvokeModelCommandInput
-} from '@aws-sdk/client-bedrock-runtime'
+  InvokeModelCommandInput,
+} from '@aws-sdk/client-bedrock-runtime';
+import {
+  DynamoDBClient,
+  GetItemCommand,
+  GetItemCommandInput,
+} from '@aws-sdk/client-dynamodb';
+import middy from '@middy/core';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import { type FeedArticle } from '../../shared/common';
 
-const SERVICE_NAME = 'filter-articles-with-bedrock'
+const SERVICE_NAME = 'filter-articles-with-bedrock';
 
-const tracer = new Tracer({ serviceName: SERVICE_NAME })
-const logger = new Logger({ serviceName: SERVICE_NAME })
+const tracer = new Tracer({ serviceName: SERVICE_NAME });
+const logger = new Logger({ serviceName: SERVICE_NAME });
 
-const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient())
+const dynamodb = tracer.captureAWSv3Client(new DynamoDBClient());
 const bedrockRuntimeClient = tracer.captureAWSv3Client(
-  new BedrockRuntimeClient()
-)
+  new BedrockRuntimeClient(),
+);
 
-const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE
-const BEDROCK_MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0'
+const DATA_FEED_TABLE = process.env.DATA_FEED_TABLE;
+const BEDROCK_MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0';
 
 interface FilterArticlesWithBedrockInput {
-  dataFeedId: string
-  articles: FeedArticle[]
+  dataFeedId: string;
+  articles: FeedArticle[];
 }
 
 const lambdaHandler = async (
-  event: FilterArticlesWithBedrockInput
+  event: FilterArticlesWithBedrockInput,
 ): Promise<FeedArticle[]> => {
-  const { dataFeedId, articles } = event
-  logger.debug('Filtering articles with Bedrock for Data Feed ID ', dataFeedId)
+  const { dataFeedId, articles } = event;
+  logger.debug('Filtering articles with Bedrock for Data Feed ID ', dataFeedId);
   logger.debug('Unfiltered new article count = ', {
-    articleLength: articles.length
-  })
-  const filteredArticles = await filterArticlesWithBedrock(articles, dataFeedId)
-  logger.debug('Filtered article count = ' + filteredArticles.length)
-  return filteredArticles
-}
+    articleLength: articles.length,
+  });
+  const filteredArticles = await filterArticlesWithBedrock(articles, dataFeedId);
+  logger.debug('Filtered article count = ' + filteredArticles.length);
+  return filteredArticles;
+};
 
 const filterArticlesWithBedrock = async (
   articles: FeedArticle[],
-  dataFeedId: string
+  dataFeedId: string,
 ): Promise<FeedArticle[]> => {
-  const filteredArticles: FeedArticle[] = []
-  const filterPrompt = await getFilterPrompt(dataFeedId)
+  const filteredArticles: FeedArticle[] = [];
+  const filterPrompt = await getFilterPrompt(dataFeedId);
   if (filterPrompt === null) {
-    return articles
+    return articles;
   }
   for (const article of articles) {
-    logger.debug('Working on article', { article })
-    const siteContent = await getSiteContent(article.url)
+    logger.debug('Working on article', { article });
+    const siteContent = await getSiteContent(article.url);
     if (siteContent !== null) {
       const isFiltered = await isArticleFilteredWithBedrock(
         siteContent,
-        filterPrompt
-      )
+        filterPrompt,
+      );
       if (!isFiltered) {
-        console.debug('Article passed filter: ' + article.title)
-        filteredArticles.push(article)
+        console.debug('Article passed filter: ' + article.title);
+        filteredArticles.push(article);
       } else {
-        console.debug('Article filtered out: ' + article.title)
+        console.debug('Article filtered out: ' + article.title);
       }
     }
   }
-  return filteredArticles
-}
+  return filteredArticles;
+};
 
 const getFilterPrompt = async (dataFeedId: string): Promise<string | null> => {
   // Get the filter prompt from dynamoDB using the dataFeedId
-  logger.debug('Getting filter prompt for data feed ', dataFeedId)
+  logger.debug('Getting filter prompt for data feed ', dataFeedId);
   const input: GetItemCommandInput = {
     Key: {
       dataFeedId: {
-        S: dataFeedId
+        S: dataFeedId,
       },
       sk: {
-        S: 'dataFeed'
-      }
+        S: 'dataFeed',
+      },
     },
     TableName: DATA_FEED_TABLE,
-    AttributesToGet: ['articleFilterPrompt']
-  }
-  const command = new GetItemCommand(input)
-  const result = await dynamodb.send(command)
+    AttributesToGet: ['articleFilterPrompt'],
+  };
+  const command = new GetItemCommand(input);
+  const result = await dynamodb.send(command);
   if (
     result.Item !== undefined &&
     result.Item.articleFilterPrompt?.S !== undefined
   ) {
     logger.debug(
       'Filter prompt found for data feed ' + result.Item.articleFilterPrompt.S,
-      dataFeedId
-    )
-    return result.Item.articleFilterPrompt.S
+      dataFeedId,
+    );
+    return result.Item.articleFilterPrompt.S;
   } else {
-    logger.debug('No filter prompt found for data feed ', dataFeedId)
-    return null
+    logger.debug('No filter prompt found for data feed ', dataFeedId);
+    return null;
   }
-}
+};
 
 const isArticleFilteredWithBedrock = async (
   articleContent: string,
-  filterPrompt: string
+  filterPrompt: string,
 ): Promise<boolean> => {
   if (filterPrompt === null) {
-    return false
+    return false;
   }
   const prompt =
     'You are an agent responsible for reading articles and determining if the article should be filtered out based on the filter prompt.' +
@@ -133,7 +133,7 @@ const isArticleFilteredWithBedrock = async (
     filterPrompt +
     '</filter_prompt>' +
     "Only return 'true' if the article is filtered out based on the filter prompt. Do not return any other content." +
-    'Place the response in a <filter_response> xml tag.'
+    'Place the response in a <filter_response> xml tag.';
 
   const input: InvokeModelCommandInput = {
     modelId: BEDROCK_MODEL_ID,
@@ -149,70 +149,69 @@ const isArticleFilteredWithBedrock = async (
             content: [
               {
                 type: 'text',
-                text: prompt
-              }
-            ]
-          }
-        ]
-      })
-    )
-  }
-  const command = new InvokeModelCommand(input)
-  const response = await bedrockRuntimeClient.send(command)
-  const responseText = new TextDecoder().decode(response.body)
-  console.debug('Response from Bedrock: ' + responseText)
-  const responseObject = JSON.parse(responseText)
-  return extractResponseValue(responseObject.content[0].text, 'filter_response')
-}
+                text: prompt,
+              },
+            ],
+          },
+        ],
+      }),
+    ),
+  };
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockRuntimeClient.send(command);
+  const responseText = new TextDecoder().decode(response.body);
+  console.debug('Response from Bedrock: ' + responseText);
+  const responseObject = JSON.parse(responseText);
+  return extractResponseValue(responseObject.content[0].text, 'filter_response');
+};
 
 const getSiteContent = async (url: string): Promise<string | null> => {
-  logger.debug(`getSiteContent Called; url = ${url}`)
-  tracer.putMetadata('url', url)
-  let $: cheerio.Root
+  logger.debug(`getSiteContent Called; url = ${url}`);
+  tracer.putMetadata('url', url);
+  let $: cheerio.Root;
   try {
-    logger.debug('URL of Provided Site = ' + url)
-    const response = await axios.get(url)
-    tracer.putAnnotation('url', 'Successfully Crawled')
-    const text = response.data as string
-    $ = cheerio.load(text)
+    logger.debug('URL of Provided Site = ' + url);
+    const response = await axios.get(url);
+    tracer.putAnnotation('url', 'Successfully Crawled');
+    const text = response.data as string;
+    $ = cheerio.load(text);
     // Cutting out elements that aren't needed
-    $('footer').remove()
-    $('header').remove()
-    $('script').remove()
-    $('style').remove()
-    $('nav').remove()
+    $('footer').remove();
+    $('header').remove();
+    $('script').remove();
+    $('style').remove();
+    $('nav').remove();
   } catch (error) {
-    logger.error(`Failed to crawl; url = ${url}`)
-    logger.error(JSON.stringify(error))
-    tracer.addErrorAsMetadata(error as Error)
-    throw error
+    logger.error(`Failed to crawl; url = ${url}`);
+    logger.error(JSON.stringify(error));
+    tracer.addErrorAsMetadata(error as Error);
+    throw error;
   }
-  let articleText: string = ''
+  let articleText: string = '';
   if ($('article').length > 0) {
-    articleText = $('article').text()
+    articleText = $('article').text();
   } else {
-    articleText = $('body').text()
+    articleText = $('body').text();
   }
   if (articleText !== undefined) {
-    return articleText
+    return articleText;
   } else {
-    return null
+    return null;
   }
-}
+};
 
 const extractResponseValue = (response: string, xml_tag: string): boolean => {
   const formattedInput = response
     .replace(/(\r\n|\n|\r)/gm, '')
-    .replace(/\\n/g, '')
-  const open_tag = `<${xml_tag}>`
-  const close_tag = `</${xml_tag}>`
-  const regex = new RegExp(`(?<=${open_tag})(.*?)(?=${close_tag})`, 'g')
-  const match = formattedInput.match(regex)
-  const isFiltered = match?.[0].toLocaleLowerCase() === 'true'
-  return isFiltered
-}
+    .replace(/\\n/g, '');
+  const open_tag = `<${xml_tag}>`;
+  const close_tag = `</${xml_tag}>`;
+  const regex = new RegExp(`(?<=${open_tag})(.*?)(?=${close_tag})`, 'g');
+  const match = formattedInput.match(regex);
+  const isFiltered = match?.[0].toLocaleLowerCase() === 'true';
+  return isFiltered;
+};
 
-export const handler = middy()
-  .handler(lambdaHandler)
+export const handler = middy(lambdaHandler)
   .use(captureLambdaHandler(tracer, { captureResponse: false }))
-  .use(injectLambdaContext(logger))
+  .use(injectLambdaContext(logger));

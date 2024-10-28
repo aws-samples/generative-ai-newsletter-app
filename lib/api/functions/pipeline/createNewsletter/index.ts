@@ -2,31 +2,31 @@ import {
   type Context,
   util,
   type LambdaRequest,
-  type AppSyncIdentityLambda
-} from '@aws-appsync/utils'
+  type AppSyncIdentityLambda,
+} from '@aws-appsync/utils';
 
 export function request (ctx: Context): LambdaRequest {
-  const { args } = ctx
-  const identity = ctx.identity as AppSyncIdentityLambda
-  const input = args.input
+  const { args } = ctx;
+  const identity = ctx.identity as AppSyncIdentityLambda;
+  const input = args.input;
   if (input.isPrivate === undefined || input.isPrivate === null) {
-    input.isPrivate = true
+    input.isPrivate = true;
   }
   return {
     operation: 'Invoke',
     payload: {
       createdBy: {
         accountId: identity.resolverContext.accountId,
-        userId: identity.resolverContext.userId
+        userId: identity.resolverContext.userId,
       },
-      input
-    }
-  }
+      input,
+    },
+  };
 }
 
 export function response (ctx: Context): any {
   if (ctx.error !== undefined) {
-    util.error(ctx.error.message, ctx.error.type)
+    util.error(ctx.error.message, ctx.error.type);
   }
-  return ctx.result
+  return ctx.result;
 }

@@ -8,7 +8,9 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "lib": [
-      "es2019"
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
     ],
     "module": "CommonJS",
     "noEmitOnError": false,
@@ -23,15 +25,20 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "ES2019"
+    "target": "ES2019",
+    "outDir": "out",
+    "rootDir": ".",
+    "jsx": "react-jsx",
+    "noEmit": true
   },
   "include": [
-    "src/**/*.ts",
+    "./**/*.ts",
     "test/**/*.ts",
     ".projenrc.ts",
     "projenrc/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "lib/user-interface/genai-newsletter-ui/*"
   ]
 }

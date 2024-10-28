@@ -24,6 +24,15 @@
         }
       ]
     },
+    "build:appsync": {
+      "name": "build:appsync",
+      "description": "Build the appsync",
+      "steps": [
+        {
+          "exec": "tsx ./lib/api/functions/bundle.ts"
+        }
+      ]
+    },
     "bundle": {
       "name": "bundle",
       "description": "Prepare assets"
@@ -60,9 +69,59 @@
       ],
       "condition": "git diff --exit-code > /dev/null"
     },
+    "codegen": {
+      "name": "codegen",
+      "description": "Run the codegen tasks",
+      "steps": [
+        {
+          "spawn": "codegen:api"
+        },
+        {
+          "spawn": "codegen:auth"
+        }
+      ]
+    },
+    "codegen:api": {
+      "name": "codegen:api",
+      "description": "Generate the API code",
+      "steps": [
+        {
+          "exec": "npx @aws-amplify/cli codegen"
+        }
+      ],
+      "cwd": "lib/shared/api"
+    },
+    "codegen:auth": {
+      "name": "codegen:auth",
+      "description": "Generate the Auth code",
+      "steps": [
+        {
+          "exec": "npx graphql-codegen ./codegen.ts"
+        }
+      ],
+      "cwd": "lib/shared/api/schema-to-avp"
+    },
+    "commit": {
+      "name": "commit",
+      "description": "Commit the code",
+      "steps": [
+        {
+          "exec": "git-cz"
+        }
+      ]
+    },
     "compile": {
       "name": "compile",
       "description": "Only compile"
+    },
+    "config": {
+      "name": "config",
+      "description": "Run the CLI to configure the project",
+      "steps": [
+        {
+          "exec": "ts-node ./cli/config.ts"
+        }
+      ]
     },
     "default": {
       "name": "default",
@@ -102,6 +161,33 @@
         }
       ]
     },
+    "docs:build": {
+      "name": "docs:build",
+      "description": "Build the docs",
+      "steps": [
+        {
+          "exec": "vitepress build pages"
+        }
+      ]
+    },
+    "docs:dev": {
+      "name": "docs:dev",
+      "description": "Run the docs in dev mode",
+      "steps": [
+        {
+          "exec": "vitepress dev pages"
+        }
+      ]
+    },
+    "docs:preview": {
+      "name": "docs:preview",
+      "description": "Preview the docs",
+      "steps": [
+        {
+          "exec": "vitepress preview pages"
+        }
+      ]
+    },
     "eject": {
       "name": "eject",
       "description": "Remove projen from the project",
@@ -114,13 +200,32 @@
         }
       ]
     },
+    "email:start": {
+      "name": "email:start",
+      "description": "Start the email generator",
+      "steps": [
+        {
+          "exec": "npm run start"
+        }
+      ],
+      "cwd": "lib/shared/email-generator"
+    },
     "eslint": {
       "name": "eslint",
       "description": "Runs eslint against the codebase",
       "steps": [
         {
-          "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ src test build-tools projenrc .projenrc.ts",
+          "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ . test build-tools projenrc .projenrc.ts",
           "receiveArgs": true
+        }
+      ]
+    },
+    "format": {
+      "name": "format",
+      "description": "Format the code",
+      "steps": [
+        {
+          "exec": "npm run prettier && npm run lint"
         }
       ]
     },
@@ -139,6 +244,15 @@
       "steps": [
         {
           "exec": "npm ci"
+        }
+      ]
+    },
+    "lint": {
+      "name": "lint",
+      "description": "Lint the code",
+      "steps": [
+        {
+          "exec": "eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --fix"
         }
       ]
     },
@@ -161,7 +275,24 @@
     },
     "pre-compile": {
       "name": "pre-compile",
-      "description": "Prepare the project for compilation"
+      "description": "Prepare the project for compilation",
+      "steps": [
+        {
+          "spawn": "build:appsync"
+        },
+        {
+          "spawn": "compile"
+        }
+      ]
+    },
+    "prettier": {
+      "name": "prettier",
+      "description": "Run prettier",
+      "steps": [
+        {
+          "exec": "prettier --write \"**/*.{ts,tsx}\""
+        }
+      ]
     },
     "synth": {
       "name": "synth",
@@ -203,6 +334,16 @@
         }
       ]
     },
+    "ui:start": {
+      "name": "ui:start",
+      "description": "Start the UI",
+      "steps": [
+        {
+          "exec": "vite"
+        }
+      ],
+      "cwd": "lib/user-interface/genai-newsletter-ui/"
+    },
     "upgrade": {
       "name": "upgrade",
       "description": "upgrade dependencies",
@@ -211,13 +352,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/cheerio,@types/jest,@types/node,@types/prompt-sync,@types/uuid,cz-conventional-changelog,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,figlet,git-cz,jest,prettier,projen,ts-jest,ts-node,typescript,@aws-amplify/cli,@aws-appsync/utils,@aws-lambda-powertools/logger,@aws-lambda-powertools/metrics,@aws-lambda-powertools/tracer,@aws-sdk/client-bedrock-runtime,@aws-sdk/client-cognito-identity-provider,@aws-sdk/client-dynamodb,@aws-sdk/client-lambda,@aws-sdk/client-pinpoint,@aws-sdk/client-s3,@aws-sdk/client-scheduler,@aws-sdk/client-sfn,@aws-sdk/client-verifiedpermissions,@aws-sdk/lib-storage,@aws-sdk/util-dynamodb,@middy/core,ansi-escape-sequences,aws-jwt-verify,axios,cdk-nag,cheerio,commander,graphql,mui-color-input,react,react-email,source-map-support,tsx,uuid"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/ansi-escape-sequences,@types/cheerio,@types/figlet,@types/jest,@types/node,@types/prompt-sync,@types/uuid,aws-lambda,cz-conventional-changelog,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,figlet,git-cz,jest,prettier,projen,ts-jest,ts-node,typescript,vitepress,@aws-amplify/cli,@aws-appsync/utils,@aws-cdk/aws-cognito-identitypool-alpha,@aws-lambda-powertools/logger,@aws-lambda-powertools/metrics,@aws-lambda-powertools/tracer,@aws-sdk/client-bedrock-runtime,@aws-sdk/client-cognito-identity-provider,@aws-sdk/client-dynamodb,@aws-sdk/client-lambda,@aws-sdk/client-pinpoint,@aws-sdk/client-s3,@aws-sdk/client-scheduler,@aws-sdk/client-sfn,@aws-sdk/client-verifiedpermissions,@aws-sdk/lib-storage,@aws-sdk/util-dynamodb,@graphql-codegen/cli,@graphql-codegen/plugin-helpers,@middy/core,@react-email/components,@react-email/render,ansi-escape-sequences,aws-jwt-verify,axios,cdk-nag,cheerio,commander,graphql,mui-color-input,prompt-sync,react,react-email,source-map-support,tsx,uuid"
         },
         {
           "exec": "npm install"
         },
         {
-          "exec": "npm update @types/cheerio @types/jest @types/node @types/prompt-sync @types/uuid @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk cz-conventional-changelog esbuild eslint-import-resolver-typescript eslint-plugin-import eslint figlet git-cz jest jest-junit prettier projen ts-jest ts-node typescript @aws-amplify/cli @aws-appsync/utils @aws-lambda-powertools/logger @aws-lambda-powertools/metrics @aws-lambda-powertools/tracer @aws-sdk/client-bedrock-runtime @aws-sdk/client-cognito-identity-provider @aws-sdk/client-dynamodb @aws-sdk/client-lambda @aws-sdk/client-pinpoint @aws-sdk/client-s3 @aws-sdk/client-scheduler @aws-sdk/client-sfn @aws-sdk/client-verifiedpermissions @aws-sdk/lib-storage @aws-sdk/util-dynamodb @middy/core ansi-escape-sequences aws-cdk-lib aws-jwt-verify axios cdk-nag cheerio commander constructs graphql mui-color-input react react-email source-map-support tsx uuid"
+          "exec": "npm update @types/ansi-escape-sequences @types/cheerio @types/figlet @types/jest @types/node @types/prompt-sync @types/uuid @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk aws-lambda cz-conventional-changelog esbuild eslint-import-resolver-typescript eslint-plugin-import eslint figlet git-cz jest jest-junit prettier projen ts-jest ts-node typescript vitepress @aws-amplify/cli @aws-appsync/utils @aws-cdk/aws-cognito-identitypool-alpha @aws-lambda-powertools/logger @aws-lambda-powertools/metrics @aws-lambda-powertools/tracer @aws-sdk/client-bedrock-runtime @aws-sdk/client-cognito-identity-provider @aws-sdk/client-dynamodb @aws-sdk/client-lambda @aws-sdk/client-pinpoint @aws-sdk/client-s3 @aws-sdk/client-scheduler @aws-sdk/client-sfn @aws-sdk/client-verifiedpermissions @aws-sdk/lib-storage @aws-sdk/util-dynamodb @graphql-codegen/cli @graphql-codegen/plugin-helpers @middy/core @react-email/components @react-email/render ansi-escape-sequences aws-cdk-lib aws-jwt-verify axios cdk-nag cheerio commander constructs graphql mui-color-input prompt-sync react react-email source-map-support tsx uuid"
         },
         {
           "exec": "npx projen"

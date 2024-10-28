@@ -4,14 +4,9 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-import path from 'path'
-import { type DeployConfig } from '../lib/shared/common/deploy-config'
-import { existsSync, readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { existsSync, readFileSync } from 'fs';
+import path from 'path';
+import { type DeployConfig } from '../lib/shared/common/deploy-config';
 
 export default function getConfig (pathValue?: string): DeployConfig {
   if (
@@ -19,12 +14,12 @@ export default function getConfig (pathValue?: string): DeployConfig {
   ) {
     return JSON.parse(
       readFileSync(
-        pathValue ?? path.join(__dirname, '..', 'bin', 'config.json')
-      ).toString('utf8')
-    ) as DeployConfig
+        pathValue ?? path.join(__dirname, '..', 'bin', 'config.json'),
+      ).toString('utf8'),
+    ) as DeployConfig;
   } else {
     throw new Error(
-      'Deploy config not found. Run `npm run config create` to configure the deployment.'
-    )
+      'Deploy config not found. Run `npm run config` to configure the deployment.',
+    );
   }
 }

@@ -1,7 +1,15 @@
 {
   "dependencies": [
     {
+      "name": "@types/ansi-escape-sequences",
+      "type": "build"
+    },
+    {
       "name": "@types/cheerio",
+      "type": "build"
+    },
+    {
+      "name": "@types/figlet",
       "type": "build"
     },
     {
@@ -33,6 +41,10 @@
     {
       "name": "aws-cdk",
       "version": "^2.164.1",
+      "type": "build"
+    },
+    {
+      "name": "aws-lambda",
       "type": "build"
     },
     {
@@ -94,11 +106,19 @@
       "type": "build"
     },
     {
+      "name": "vitepress",
+      "type": "build"
+    },
+    {
       "name": "@aws-amplify/cli",
       "type": "runtime"
     },
     {
       "name": "@aws-appsync/utils",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-cognito-identitypool-alpha",
       "type": "runtime"
     },
     {
@@ -158,7 +178,23 @@
       "type": "runtime"
     },
     {
+      "name": "@graphql-codegen/cli",
+      "type": "runtime"
+    },
+    {
+      "name": "@graphql-codegen/plugin-helpers",
+      "type": "runtime"
+    },
+    {
       "name": "@middy/core",
+      "type": "runtime"
+    },
+    {
+      "name": "@react-email/components",
+      "type": "runtime"
+    },
+    {
+      "name": "@react-email/render",
       "type": "runtime"
     },
     {
@@ -196,11 +232,23 @@
       "type": "runtime"
     },
     {
+      "name": "esbuild",
+      "type": "runtime"
+    },
+    {
+      "name": "figlet",
+      "type": "runtime"
+    },
+    {
       "name": "graphql",
       "type": "runtime"
     },
     {
       "name": "mui-color-input",
+      "type": "runtime"
+    },
+    {
+      "name": "prompt-sync",
       "type": "runtime"
     },
     {
@@ -217,6 +265,10 @@
     },
     {
       "name": "tsx",
+      "type": "runtime"
+    },
+    {
+      "name": "typescript",
       "type": "runtime"
     },
     {

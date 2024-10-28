@@ -3,10 +3,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import type React from 'react'
-import { ArticleSummaryType } from '../../api'
-import { MultiSizeFormattedResponse } from '../../prompts/prompt-processing'
-import NewsletterEmail from '../emails/newsletter'
+import type React from 'react';
+import { ArticleSummaryType } from '../../api';
+import { MultiSizeFormattedResponse } from '../../prompts/prompt-processing';
+import NewsletterEmail from '../emails/newsletter';
 
 export default function NewsletterEmailWrapper (): React.ReactElement {
   const content = new MultiSizeFormattedResponse({
@@ -14,8 +14,8 @@ export default function NewsletterEmailWrapper (): React.ReactElement {
     shortSummary:
       'This is a short summary about an article that could potentially be really interesting!',
     longSummary:
-      "This is a long summary about an article that could potentially be really interesting! Typically the text here could span up to 2 paragraphs. But this one probably won't!"
-  })
+      "This is a long summary about an article that could potentially be really interesting! Typically the text here could span up to 2 paragraphs. But this one probably won't!",
+  });
   return (
     <NewsletterEmail
       appHostName="XXXX"
@@ -29,23 +29,23 @@ export default function NewsletterEmailWrapper (): React.ReactElement {
           title: 'Sample Article A',
           url: '#',
           flagLink: '#',
-          createdAt: ''
+          createdAt: '',
         },
         {
           content,
           title: 'Sample Article',
           url: '#',
           flagLink: '#',
-          createdAt: ''
+          createdAt: '',
         },
         {
           content,
           title: 'Sample Article',
           url: '#',
           flagLink: '#',
-          createdAt: ''
-        }
+          createdAt: '',
+        },
       ]}
     />
-  )
+  );
 }

@@ -82,7 +82,9 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'figlet',
     'prettier',
     '@types/cheerio',
-    'eslint-plugin-react-hooks',
+    'eslint-plugin-react-hooks@latest',
+    'eslint-plugin-react',
+    'eslint-plugin-react-refresh',
   ],
   tsconfig: {
     compilerOptions: {
@@ -239,22 +241,6 @@ project.preCompileTask.exec('npm run build', {
   cwd: 'lib/user-interface/genai-newsletter-ui/',
 });
 project.preCompileTask.spawn(buildAppsync);
-
-// Formatting tasks
-project.tasks.addTask('format', {
-  description: 'Format the code',
-  exec: 'npm run prettier && npm run lint',
-});
-
-project.tasks.addTask('lint', {
-  description: 'Lint the code',
-  exec: 'eslint . --config .eslintrc.json --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif --fix',
-});
-
-project.tasks.addTask('prettier', {
-  description: 'Run prettier',
-  exec: 'prettier --write \"**/*.{ts,tsx}\"',
-});
 
 //Commit friendly messages!
 project.tasks.addTask('commit', {

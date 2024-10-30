@@ -64,7 +64,16 @@
       "type": "build"
     },
     {
+      "name": "eslint-plugin-react",
+      "type": "build"
+    },
+    {
       "name": "eslint-plugin-react-hooks",
+      "version": "latest",
+      "type": "build"
+    },
+    {
+      "name": "eslint-plugin-react-refresh",
       "type": "build"
     },
     {

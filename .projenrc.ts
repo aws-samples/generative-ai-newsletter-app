@@ -279,7 +279,7 @@ project.preCompileTask.spawn(buildAppsync);
 project.tasks.addTask('ci:deploy', {
   description: 'For use by CI/CD: CDK deploys the synthesized stack in cdk.out directory, without requiring approval. NOT RECOMMENDED DEV/NON-PROD.',
   exec: 'npx cdk --app ./cdk.out deploy --require-approval never',
-})
+});
 
 
 //Commit friendly messages!

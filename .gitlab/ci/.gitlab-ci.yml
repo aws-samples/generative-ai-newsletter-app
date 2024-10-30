@@ -89,15 +89,7 @@ ci-deploy-branch:
   before_script:
     - npm install -g aws-cdk@latest
   script:
-   - echo $(npx cdk --app ./cdk.out diff) > ./cdk-diff.txt
-   - cat ./cdk-diff.txt
-   - npx cdk --app ./cdk.out deploy --require-approval never
-  artifacts:
-    untracked: false
-    when: on_success
-    expire_in: 30 days
-    paths:
-      - ./cdk-diff.txt
+   - npm run ci:deploy
   rules:
     - if: ($CI_COMMIT_BRANCH == $CI_STABLE_ENV_BRANCH) && $DEPLOY_CONFIG
   cache:

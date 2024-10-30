@@ -7,6 +7,7 @@
     "build": "npx projen build",
     "build:appsync": "npx projen build:appsync",
     "bundle": "npx projen bundle",
+    "ci:deploy": "npx projen ci:deploy",
     "clobber": "npx projen clobber",
     "codegen": "npx projen codegen",
     "codegen:api": "npx projen codegen:api",

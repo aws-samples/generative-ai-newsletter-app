@@ -37,6 +37,15 @@
       "name": "bundle",
       "description": "Prepare assets"
     },
+    "ci:deploy": {
+      "name": "ci:deploy",
+      "description": "For use by CI/CD: CDK deploys the synthesized stack in cdk.out directory, without requiring approval. NOT RECOMMENDED DEV/NON-PROD.",
+      "steps": [
+        {
+          "exec": "npx cdk --app ./cdk.out deploy --require-approval never"
+        }
+      ]
+    },
     "clobber": {
       "name": "clobber",
       "description": "hard resets to HEAD of origin and cleans the local repo",
@@ -71,7 +80,7 @@
     },
     "codegen": {
       "name": "codegen",
-      "description": "Run the codegen tasks",
+      "description": "Generates the AppSync GraphQL Types & the AVP Permissions structure",
       "steps": [
         {
           "spawn": "codegen:api"
@@ -83,7 +92,7 @@
     },
     "codegen:api": {
       "name": "codegen:api",
-      "description": "Generate the API code",
+      "description": "Generate the GraphQL API Types for the frontend",
       "steps": [
         {
           "exec": "npx @aws-amplify/cli codegen"
@@ -93,7 +102,7 @@
     },
     "codegen:auth": {
       "name": "codegen:auth",
-      "description": "Generate the Auth code",
+      "description": "Generate the definitions for the Amazon Verified Permissions schema based on the GraphQL Schema",
       "steps": [
         {
           "exec": "npx graphql-codegen ./codegen.ts"
@@ -103,10 +112,10 @@
     },
     "commit": {
       "name": "commit",
-      "description": "Commit the code",
+      "description": "Runs the Git Commit process using interactive CLI that generates conventional commit messages. (recommended for clean commits!)",
       "steps": [
         {
-          "exec": "git-cz"
+          "exec": "cz"
         }
       ]
     },
@@ -202,7 +211,7 @@
     },
     "email:start": {
       "name": "email:start",
-      "description": "Start the email generator",
+      "description": "Starts the Email Preview UI to view Email Templates and modify them",
       "steps": [
         {
           "exec": "npm run start"

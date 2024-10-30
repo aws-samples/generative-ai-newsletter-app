@@ -109,39 +109,51 @@ project.addFields({
   },
 });
 
-// Existing tasks
+/**
+ * Configuration CLI Tasks
+ */
+
 project.tasks.addTask('config', {
   description: 'Run the CLI to configure the project',
   exec: 'ts-node ./cli/config.ts',
 });
 
+/**
+ * Code Generation Tasks
+ */
+
 const codegenApi = project.tasks.addTask('codegen:api', {
   cwd: 'lib/shared/api',
-  description: 'Generate the API code',
+  description: 'Generate the GraphQL API Types for the frontend',
   exec: 'npx @aws-amplify/cli codegen',
 });
 
 const codegenAuth = project.tasks.addTask('codegen:auth', {
   cwd: 'lib/shared/api/schema-to-avp',
-  description: 'Generate the Auth code',
+  description: 'Generate the definitions for the Amazon Verified Permissions schema based on the GraphQL Schema',
   exec: 'npx graphql-codegen ./codegen.ts',
 });
 
 const codegenTask = project.tasks.addTask('codegen', {
-  description: 'Run the codegen tasks',
+  description: 'Generates the AppSync GraphQL Types & the AVP Permissions structure',
 });
 
 codegenTask.spawn(codegenApi);
 codegenTask.spawn(codegenAuth);
 
+/**
+ * React Email Template Development Tasks
+ */
+
 
 project.tasks.addTask('email:start', {
-  description: 'Start the email generator',
+  description: 'Starts the Email Preview UI to view Email Templates and modify them',
   cwd: 'lib/shared/email-generator',
   exec: 'npm run start',
 });
 
-// Updated frontend project with Vite configuration
+
+// The UI project for the solution
 const frontend = new typescript.TypeScriptProject({
   parent: project,
   outdir: 'lib/user-interface/genai-newsletter-ui/',
@@ -196,32 +208,44 @@ const frontend = new typescript.TypeScriptProject({
 
 });
 
-// Update UI tasks to use Vite
+/**
+ * GenAI Newsletter App UI Tasks
+ */
+
+// Start frontend in dev mode
 frontend.tasks.addTask('dev', {
   description: 'Start the UI in development mode',
   exec: 'vite',
 });
 
+// Preview the compiled UI
 frontend.tasks.addTask('preview', {
   description: 'Preview the UI build',
   exec: 'vite preview',
 });
 
+// Starts the UI, allows for UI file updates to be reflected as they are changed.
 frontend.tasks.addTask('start', {
   description: 'Start the UI',
   exec: 'vite',
 });
 
+// This allows the user to start the UI from the root project with an npm run command
 project.tasks.addTask('ui:start', {
   description: 'Start the UI',
   exec: 'vite',
   cwd: 'lib/user-interface/genai-newsletter-ui/',
 });
 
+// AppSync Resolvers are written in TypeScript, but AppSync requires compiled JS
 const buildAppsync = project.tasks.addTask('build:appsync', {
   description: 'Build the appsync',
   exec: 'tsx ./lib/api/functions/bundle.ts',
 });
+
+/**
+ * GitHub Pages tasks
+ */
 
 project.tasks.addTask('docs:dev', {
   description: 'Run the docs in dev mode',
@@ -238,15 +262,31 @@ project.tasks.addTask('docs:preview', {
   exec: 'vitepress preview pages',
 });
 
+// End GitHub Pages tasks
+
+
+// The main cdk synthesis relies on the UI & Appsync Resolvers to have been compiled first.
+// Running build on the UI
 project.preCompileTask.exec('npm run build', {
   cwd: 'lib/user-interface/genai-newsletter-ui/',
 });
+// Running build on the Appsync Resolvers
 project.preCompileTask.spawn(buildAppsync);
 
+/**
+ * CI/CD Tasks
+ */
+project.tasks.addTask('ci:deploy', {
+  description: 'For use by CI/CD: CDK deploys the synthesized stack in cdk.out directory, without requiring approval. NOT RECOMMENDED DEV/NON-PROD.',
+  exec: 'npx cdk --app ./cdk.out deploy --require-approval never',
+})
+
+
 //Commit friendly messages!
+//Commitzen!
 project.tasks.addTask('commit', {
-  description: 'Commit the code',
-  exec: 'git-cz',
+  description: 'Runs the Git Commit process using interactive CLI that generates conventional commit messages. (recommended for clean commits!)',
+  exec: 'cz',
 });
 
 frontend.synth();

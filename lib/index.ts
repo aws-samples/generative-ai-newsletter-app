@@ -7,7 +7,7 @@
 import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha';
 import { Stack } from 'aws-cdk-lib';
 import { type IUserPool, type IUserPoolClient } from 'aws-cdk-lib/aws-cognito';
-import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BucketAccessControl, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { type Construct } from 'constructs';
 import { API } from './api';
 import { Authentication } from './authentication';
@@ -40,6 +40,7 @@ export class GenAINewsletter extends Stack {
     const loggingBucket = new Bucket(this, 'GenAINewsletter-LoggingBucket', {
       encryption: BucketEncryption.S3_MANAGED,
       enforceSSL: true,
+      accessControl: BucketAccessControl.LOG_DELIVERY_WRITE,
     });
 
     const authentication = new Authentication(this, 'AuthenticationStack');

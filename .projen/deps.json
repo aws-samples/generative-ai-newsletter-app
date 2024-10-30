@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@microsoft/eslint-formatter-sarif",
+      "type": "build"
+    },
+    {
       "name": "@types/ansi-escape-sequences",
       "type": "build"
     },

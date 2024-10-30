@@ -81,6 +81,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'cz-conventional-changelog',
     'figlet',
     'prettier',
+    '@microsoft/eslint-formatter-sarif',
     '@types/cheerio',
     'eslint-plugin-react-hooks@latest',
     'eslint-plugin-react',

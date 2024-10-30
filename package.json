@@ -38,6 +38,7 @@
     "projen": "npx projen"
   },
   "devDependencies": {
+    "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "@types/ansi-escape-sequences": "^4.0.4",
     "@types/cheerio": "^0.22.35",
     "@types/figlet": "^1.7.0",

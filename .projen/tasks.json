@@ -278,10 +278,11 @@
       "description": "Prepare the project for compilation",
       "steps": [
         {
-          "spawn": "build:appsync"
+          "exec": "npm run build",
+          "cwd": "lib/user-interface/genai-newsletter-ui/"
         },
         {
-          "spawn": "compile"
+          "spawn": "build:appsync"
         }
       ]
     },

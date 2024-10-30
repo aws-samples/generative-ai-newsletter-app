@@ -234,8 +234,10 @@ project.tasks.addTask('docs:preview', {
   exec: 'vitepress preview pages',
 });
 
+project.preCompileTask.exec('npm run build', {
+  cwd: 'lib/user-interface/genai-newsletter-ui/',
+});
 project.preCompileTask.spawn(buildAppsync);
-project.preCompileTask.spawn(frontend.compileTask);
 
 // Formatting tasks
 project.tasks.addTask('format', {

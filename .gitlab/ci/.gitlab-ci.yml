@@ -29,6 +29,7 @@ build-branch:
   - arch:arm64
   - size:large
   before_script:
+    - echo $DEPLOY_CONFIG > ./bin/config.json
     - npm ci --save-dev
   script:
     - echo "Executing build..."

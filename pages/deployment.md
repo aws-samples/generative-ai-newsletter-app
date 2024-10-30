@@ -18,25 +18,30 @@ The solution is developed using AWS Cloud Development Kit (CDK), TypeScript, & N
 	git clone https://github.com/aws-samples/generative-ai-newsletter-app/
 	```
 1. Change directory into the cloned repository
-	```
+	```shell
 	cd generative-ai-newsletter-app
 	```
-1. Install the project dependencies & build the project
-	```
-	npm install && npm run build
+1. Install the project dependencies
+	```shell
+	npm install
 	```
 1. Run the configuration wizard to create a deployment configuration file.
-	```
+	```shell
 	npm run config manage
 	```
 	The configuration wizard will generate a configuration file in `bin/config.json`. This file will be used during the deployment. Unless you need to change the configuration file, you do not need to run the configuration wizard for future deployments. If you change the **Stack Name**, it will cause a new deployment to occur. 
+
+1. Build and synthesize the code with the newly created configurations
+	```shell
+	npm run build
+	```
 
 1. [*Optional*] Bootstrap AWS CDK on the target AWS Account & Region. 
 	> Note: This is required if you have never used AWS CDK on this account and region combination. ([More information on CDK bootstrapping](https://docs.aws.amazon.com/cdk/latest/guide/cli.html#cli-bootstrap)).
 
 1. Deploy the solution
-	```
-	npx cdk deploy
+	```shell
+	npm run deploy
 	```
 	You can view the progress of your CDK deployment in the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home) in the selected region.
 

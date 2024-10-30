@@ -6,25 +6,25 @@
 import {
   TaggedElement,
   type PromptElementContext,
-  MultiSizeFormattedResponse
-} from './prompt-processing'
+  MultiSizeFormattedResponse,
+} from './prompt-processing';
 
 export class ArticleSummaryBuilder {
-  private readonly articleSummarizationPrompt: string | null
-  private readonly articleContent: string
-  private readonly articleTag = new TaggedElement('article')
+  private readonly articleSummarizationPrompt: string | null;
+  private readonly articleContent: string;
+  private readonly articleTag = new TaggedElement('article');
   private readonly articleSummarizationPromptTag = new TaggedElement(
-    'articleSummarizationPrompt'
-  )
+    'articleSummarizationPrompt',
+  );
 
-  private readonly response = new MultiSizeFormattedResponse()
+  private readonly response = new MultiSizeFormattedResponse();
 
   constructor (
     articleContent: string,
-    articleSummarizationPrompt: string | null
+    articleSummarizationPrompt: string | null,
   ) {
-    this.articleSummarizationPrompt = articleSummarizationPrompt
-    this.articleContent = articleContent
+    this.articleSummarizationPrompt = articleSummarizationPrompt;
+    this.articleContent = articleContent;
   }
 
   public getCompiledPrompt (): string {
@@ -41,26 +41,26 @@ export class ArticleSummaryBuilder {
       this.getErrorHandling() +
       this.getFinalInstructionsPrompt() // +
       // '\n\nAssistant:'
-    )
+    );
   }
 
   public getProcessedResponse (response: string): MultiSizeFormattedResponse {
-    this.response.processResponse(response)
-    return this.response
+    this.response.processResponse(response);
+    return this.response;
   }
 
   private getBaseContextPrompt (): PromptElementContext {
     return {
       before:
         'You are in charge of summarizing content from articles.' +
-        'Read the article and follow the guidance and instructions for creating a summarization.'
-    }
+        'Read the article and follow the guidance and instructions for creating a summarization.',
+    };
   }
 
   private getPromptFormattedArticle (): string {
     return (
       this.articleTag.openTag + this.articleContent + this.articleTag.closeTag
-    )
+    );
   }
 
   private getPromptFormattedArticleSummarization (): string {
@@ -69,13 +69,13 @@ export class ArticleSummaryBuilder {
       this.articleSummarizationPrompt +
       this.articleSummarizationPromptTag.closeTag +
       '\n'
-    )
+    );
   }
 
   private getArticleSummarizationPrompt (): PromptElementContext {
     return {
-      before: 'TONE:\n'
-    }
+      before: 'TONE:\n',
+    };
   }
 
   private getInstructions (): string {
@@ -85,7 +85,7 @@ export class ArticleSummaryBuilder {
       '2. Create a single sentence that clearly summarizes the article contents. (shortSummary)\n' +
       '3. Create a 1 - 2 paragraph summary that clearly summaries the article. (longSummary)\n' +
       '---\nThink about your answer. It should match tone and instructions stated above.\n---\n'
-    )
+    );
   }
 
   private getErrorHandling (): string {
@@ -97,13 +97,13 @@ export class ArticleSummaryBuilder {
       'this is considered a failure and you should output the error inside of the error tag.\n' +
       'Do not output errors or problems in any other tag besides the <error> tag.\n' +
       'Error messages in side of the <error> tag should be clear, descriptive error messages.\n---\n'
-    )
+    );
   }
 
   private getFinalInstructionsPrompt (): string {
     return (
       'The only valid XML tags you can respond with are:\n' +
       '<keywords>, <shortSummary>, <longSummary>, <error>\n'
-    )
+    );
   }
 }

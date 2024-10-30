@@ -1,25 +1,25 @@
-import { ArticleSummaryType } from '../api'
-import { type MultiSizeFormattedResponse, type ArticleData } from '../prompts'
+import { ArticleSummaryType } from '../api';
+import { type MultiSizeFormattedResponse, type ArticleData } from '../prompts';
 
 interface NewsletterJSONProps {
-  articles: ArticleData[]
-  newsletterId: string
-  title: string
-  newsletterSummary: MultiSizeFormattedResponse
-  articleSummaryType: ArticleSummaryType
+  articles: ArticleData[];
+  newsletterId: string;
+  title: string;
+  newsletterSummary: MultiSizeFormattedResponse;
+  articleSummaryType: ArticleSummaryType;
 }
 
 export interface NewsletterJSONData {
-  newsletterId: string
-  title: string
-  newsletterSummary: string
+  newsletterId: string;
+  title: string;
+  newsletterSummary: string;
   articles: Array<{
-    title: string
-    url: string
-    content: string
-    flagLink: string | null
-    createdAt: string
-  }>
+    title: string;
+    url: string;
+    content: string;
+    flagLink: string | null;
+    createdAt: string;
+  }>;
 }
 
 export const generateNewsletterJSON = (props: NewsletterJSONProps): string => {
@@ -28,8 +28,8 @@ export const generateNewsletterJSON = (props: NewsletterJSONProps): string => {
     title,
     newsletterSummary,
     articles,
-    articleSummaryType
-  } = props
+    articleSummaryType,
+  } = props;
   const newsletterJSONData: NewsletterJSONData = {
     newsletterId,
     title,
@@ -37,22 +37,22 @@ export const generateNewsletterJSON = (props: NewsletterJSONProps): string => {
       newsletterSummary.longSummary.response ??
       'Error with Newsletter Summary!',
     articles: articles.map((article) => {
-      let content
+      let content;
       if (articleSummaryType === ArticleSummaryType.KEYWORDS) {
-        content = article.content.keywords.response
+        content = article.content.keywords.response;
       } else if (articleSummaryType === ArticleSummaryType.SHORT_SUMMARY) {
-        content = article.content.shortSummary.response
+        content = article.content.shortSummary.response;
       } else {
-        content = article.content.longSummary.response
+        content = article.content.longSummary.response;
       }
       return {
         title: article.title,
         url: article.url,
         content: content ?? 'ERROR',
         flagLink: article.flagLink ?? null,
-        createdAt: article.createdAt
-      }
-    })
-  }
-  return JSON.stringify(newsletterJSONData)
-}
+        createdAt: article.createdAt,
+      };
+    }),
+  };
+  return JSON.stringify(newsletterJSONData);
+};

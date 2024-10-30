@@ -3,44 +3,44 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import { type ArticleSummaryType } from '../../shared/api/API'
-import { type ArticleData, type MultiSizeFormattedResponse } from '../prompts'
-import { type NewsletterStyle } from './newsletter-style'
+import { type ArticleSummaryType } from '../../shared/api/API';
+import { type ArticleData, type MultiSizeFormattedResponse } from '../prompts';
+import { type NewsletterStyle } from './newsletter-style';
 
 export interface ReadAuthCheckInput {
-  resolverName: string
+  resolverName: string;
   user: {
-    userId: string
-    accountId: string
-  }
-  data: Record<string, any>
+    userId: string;
+    accountId: string;
+  };
+  data: Record<string, any>;
 }
 
 export interface ListFilterAuthInput {
-  resolverName: string
+  resolverName: string;
   user: {
-    userId: string
-    accountId: string
-  }
-  data: Record<string, any>
-  dataKey: string
+    userId: string;
+    accountId: string;
+  };
+  data: Record<string, any>;
+  dataKey: string;
 }
 
 export interface CreateAuthCheckInput {
-  resolverName: string
+  resolverName: string;
   user: {
-    userId: string
-    accountId: string
-  }
+    userId: string;
+    accountId: string;
+  };
 }
 export interface FeedArticle {
-  url: string
-  title: string
-  guid: string
-  subscriptionId?: string
-  description: string
-  publishDate: string
-  categories?: string
+  url: string;
+  title: string;
+  guid: string;
+  subscriptionId?: string;
+  description: string;
+  publishDate: string;
+  categories?: string;
 }
 
 export enum SubscriberType {
@@ -49,18 +49,18 @@ export enum SubscriberType {
 }
 
 export interface PinpointEmailConfig {
-  verifiedIdentity: string
-  senderAddress: string
-  senderName: string
+  verifiedIdentity: string;
+  senderAddress: string;
+  senderName: string;
 }
 export interface NewsletterEmailProps {
-  title?: string
-  newsletterId?: string
-  articles?: ArticleData[]
-  newsletterSummary?: MultiSizeFormattedResponse
-  appHostName?: string
-  footerOverride?: string
-  articleSummaryType?: ArticleSummaryType
-  styleProps?: NewsletterStyle
-  previewMode?: boolean
+  title?: string;
+  newsletterId?: string;
+  articles?: ArticleData[];
+  newsletterSummary?: MultiSizeFormattedResponse;
+  appHostName?: string;
+  footerOverride?: string;
+  articleSummaryType?: ArticleSummaryType;
+  styleProps?: NewsletterStyle;
+  previewMode?: boolean;
 }

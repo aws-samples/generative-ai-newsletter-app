@@ -8,29 +8,29 @@ import {
   type Context,
   util,
   type LambdaRequest,
-  type AppSyncIdentityLambda
-} from '@aws-appsync/utils'
+  type AppSyncIdentityLambda,
+} from '@aws-appsync/utils';
 
 export function request (ctx: Context): LambdaRequest {
-  ctx.stash.root = 'Newsletter'
-  const { args } = ctx
-  const identity = ctx.identity as AppSyncIdentityLambda
-  const input = args.input
+  ctx.stash.root = 'Newsletter';
+  const { args } = ctx;
+  const identity = ctx.identity as AppSyncIdentityLambda;
+  const input = args.input;
   return {
     operation: 'Invoke',
     payload: {
       input,
       createdBy: {
         accountId: identity.resolverContext.accountId,
-        userId: identity.resolverContext.userId
-      }
-    }
-  }
+        userId: identity.resolverContext.userId,
+      },
+    },
+  };
 }
 
 export function response (ctx: Context): any {
   if (ctx.error !== undefined) {
-    util.error(ctx.error.message, ctx.error.type)
+    util.error(ctx.error.message, ctx.error.type);
   }
-  return ctx.result
+  return ctx.result;
 }

@@ -4,61 +4,60 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-import { Stack } from 'aws-cdk-lib'
-import { NewsSubscriptionIngestion } from './data-feed-ingestion'
-import { NewsletterGenerator } from './newsletter-generator'
-import { Authentication } from './authentication'
-import { API } from './api'
-import { UserInterface } from './user-interface'
-import { type Construct } from 'constructs'
+import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha';
+import { Stack } from 'aws-cdk-lib';
+import { type IUserPool, type IUserPoolClient } from 'aws-cdk-lib/aws-cognito';
+import { Bucket, BucketAccessControl, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { type Construct } from 'constructs';
+import { API } from './api';
+import { Authentication } from './authentication';
+import { Authorization } from './authorization';
+import getConfig from './config';
+import { NewsSubscriptionIngestion } from './data-feed-ingestion';
+import { NewsletterGenerator } from './newsletter-generator';
+import { UserInterface } from './user-interface';
 
-import { Authorization } from './authorization'
-import getConfig from './config'
-import { type IUserPool, type IUserPoolClient } from 'aws-cdk-lib/aws-cognito'
-import { type IIdentityPool } from '@aws-cdk/aws-cognito-identitypool-alpha'
-import { type IGraphqlApi } from 'aws-cdk-lib/aws-appsync'
-import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 
 export class GenAINewsletter extends Stack {
-  public readonly userPool: IUserPool
-  public readonly userPoolClient: IUserPoolClient
-  public readonly identityPool: IIdentityPool
-  public readonly apiUrl: string
-  public readonly graphqlApi: IGraphqlApi
+  public readonly userPool: IUserPool;
+  public readonly userPoolClient: IUserPoolClient;
+  public readonly identityPool: IIdentityPool;
+  public readonly apiUrl: string;
   constructor (scope: Construct, id: string) {
-    super(scope, id)
+    super(scope, id);
 
-    const config = getConfig()
-    const { auth } = config
+    const config = getConfig();
+    const { auth } = config;
     if (auth !== undefined) {
-      this.node.setContext('auth', auth)
+      this.node.setContext('auth', auth);
     }
 
-    this.node.setContext('pinpointEmail', config.pinpointEmail)
-    this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled)
-    this.node.setContext('authConfig', config.auth)
-    this.node.setContext('ui', config.ui)
+    this.node.setContext('pinpointEmail', config.pinpointEmail);
+    this.node.setContext('selfSignUpEnabled', config.selfSignUpEnabled);
+    this.node.setContext('authConfig', config.auth);
+    this.node.setContext('ui', config.ui);
 
     const loggingBucket = new Bucket(this, 'GenAINewsletter-LoggingBucket', {
       encryption: BucketEncryption.S3_MANAGED,
-      enforceSSL: true
-    })
+      enforceSSL: true,
+      accessControl: BucketAccessControl.LOG_DELIVERY_WRITE,
+    });
 
-    const authentication = new Authentication(this, 'AuthenticationStack')
+    const authentication = new Authentication(this, 'AuthenticationStack');
 
     const authorization = new Authorization(this, 'AuthorizationConstruct', {
       userPoolId: authentication.userPoolId,
       userPoolArn: authentication.userPoolArn,
-      userPoolClientId: authentication.userPoolClientId
-    })
+      userPoolClientId: authentication.userPoolClientId,
+    });
 
     const dataFeedIngestion = new NewsSubscriptionIngestion(
       this,
       'NewsletterIngestionStack',
       {
-        loggingBucket
-      }
-    )
+        loggingBucket,
+      },
+    );
 
     const newsletterGenerator = new NewsletterGenerator(
       this,
@@ -69,9 +68,9 @@ export class GenAINewsletter extends Stack {
         accountTable: authentication.accountTable,
         accountTableUserIndex: authentication.accountTableUserIndex,
         userPool: authentication.userPool,
-        loggingBucket
-      }
-    )
+        loggingBucket,
+      },
+    );
 
     const api = new API(this, 'API', {
       userPoolId: authentication.userPoolId,
@@ -98,9 +97,9 @@ export class GenAINewsletter extends Stack {
         userSubscriberFunction: newsletterGenerator.userSubscriberFunction,
         userUnsubscriberFunction: newsletterGenerator.userUnsubscriberFunction,
         feedSubscriberFunction: dataFeedIngestion.feedSubscriberFunction,
-        getNewsletterFunction: newsletterGenerator.getNewsletterFunction
-      }
-    })
+        getNewsletterFunction: newsletterGenerator.getNewsletterFunction,
+      },
+    });
 
     new UserInterface(this, 'UI', {
       emailBucket: newsletterGenerator.emailBucket,
@@ -108,8 +107,13 @@ export class GenAINewsletter extends Stack {
       userPoolClientId: authentication.userPoolClientId,
       graphqlApiUrl: api.graphqlApiUrl,
       identityPoolId: authentication.identityPoolId,
-      loggingBucket
-    })
-    // userInterfaceStack.addDependency(api., 'UI Requires Endpoints Defined in API')
+      loggingBucket,
+    });
+
+    this.identityPool = authentication?.identityPool;
+    this.userPool = authentication.userPool;
+    this.userPoolClient = authentication.userPoolClient;
+    this.apiUrl = api.graphqlApiUrl;
   }
+
 }

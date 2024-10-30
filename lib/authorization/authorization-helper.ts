@@ -4,202 +4,202 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-import * as schemaMap from '../shared/api/types.json'
-import { Kind, type OperationDefinitionNode, parse } from 'graphql'
-
+import { type Logger } from '@aws-lambda-powertools/logger';
 import {
   type EntityItem,
-  type AttributeValue
-} from '@aws-sdk/client-verifiedpermissions'
-import { type Logger } from '@aws-lambda-powertools/logger'
+  type AttributeValue,
+} from '@aws-sdk/client-verifiedpermissions';
+import { Kind, type OperationDefinitionNode, parse } from 'graphql';
+import * as schemaMap from '../shared/api/types.json';
+
 
 export const getEntityItem = (
   schema: Record<string, any>,
   entityId: string,
   entityType: string,
   entityData?: Record<string, any>,
-  optionals?: { logger?: Logger }
+  optionals?: { logger?: Logger },
 ): EntityItem => {
-  const { logger } = optionals ?? {}
+  const { logger } = optionals ?? {};
   if (logger !== undefined) {
-    logger.debug(`getEntityItem: ${entityId} ${entityType}`)
+    logger.debug(`getEntityItem: ${entityId} ${entityType}`);
   }
   const item: EntityItem = {
     identifier: {
       entityType: `GenAINewsletter::${entityType}`,
-      entityId
-    }
-  }
+      entityId,
+    },
+  };
   if (entityData !== undefined) {
-    item.attributes = getEntityAttributes(schema, entityType, entityData)
+    item.attributes = getEntityAttributes(schema, entityType, entityData);
   }
-  return item
-}
+  return item;
+};
 
 export const getEntityAttributes = (
   schema: Record<string, any>,
   entityType: string,
-  entityData: Record<string, any>
+  entityData: Record<string, any>,
 ): Record<string, AttributeValue> => {
-  const avpSchema = schema.GenAINewsletter
-  const entityAttributes: Record<string, AttributeValue> = {}
+  const avpSchema = schema.GenAINewsletter;
+  const entityAttributes: Record<string, AttributeValue> = {};
   if (avpSchema !== undefined && avpSchema.entityTypes !== undefined) {
-    const entity = avpSchema.entityTypes[entityType]
+    const entity = avpSchema.entityTypes[entityType];
     if (entity !== undefined && entity.shape !== undefined) {
-      const shape = entity.shape
+      const shape = entity.shape;
       if (shape !== undefined) {
-        const attributes = shape.attributes as Record<string, any>
+        const attributes = shape.attributes as Record<string, any>;
         if (attributes !== undefined) {
           Object.entries(attributes).forEach(([key, value]) => {
-            let entityDataForKey
+            let entityDataForKey;
             if (value.type === 'Entity') {
               Object.keys(entityData).forEach((dataKey) => {
                 if (
                   entityData[dataKey].__typename !== undefined &&
                   entityData[dataKey].__typename === key
                 ) {
-                  entityDataForKey = entityData[dataKey]
+                  entityDataForKey = entityData[dataKey];
                 }
-              })
+              });
             } else {
-              entityDataForKey = entityData[key]
+              entityDataForKey = entityData[key];
             }
             if (entityDataForKey !== undefined && value.type !== undefined) {
               switch (value.type) {
                 case 'Boolean':
                   entityAttributes[key] = {
-                    boolean: entityDataForKey
-                  }
-                  break
+                    boolean: entityDataForKey,
+                  };
+                  break;
                 case 'Entity':
                   entityAttributes[key] = {
                     entityIdentifier: {
                       entityId: entityDataForKey.id,
-                      entityType: `GenAINewsletter::${key}`
-                    }
-                  }
-                  break
+                      entityType: `GenAINewsletter::${key}`,
+                    },
+                  };
+                  break;
                 case 'Long':
                   entityAttributes[key] = {
-                    long: entityDataForKey
-                  }
-                  break
+                    long: entityDataForKey,
+                  };
+                  break;
                 case 'String':
                   entityAttributes[key] = {
-                    string: entityDataForKey
-                  }
-                  break
+                    string: entityDataForKey,
+                  };
+                  break;
                 case 'Set':
                   // entityAttributes[key] = {
                   //   set: [...entityData[key]]
                   // }
-                  break
+                  break;
                 case 'Record':
-                  break
+                  break;
               }
             }
-          })
+          });
         }
       }
     }
   }
-  return entityAttributes
-}
+  return entityAttributes;
+};
 
 export const lowercaseFirstLetter = (stringVal: string): string => {
-  return stringVal.charAt(0).toLowerCase() + stringVal.slice(1)
-}
+  return stringVal.charAt(0).toLowerCase() + stringVal.slice(1);
+};
 
 export const queryToActionAuth = (query: string): string => {
-  const ast = parse(query)
+  const ast = parse(query);
   const operationDefinition = ast.definitions.find((value) => {
-    return value.kind === Kind.OPERATION_DEFINITION
-  }) as OperationDefinitionNode
+    return value.kind === Kind.OPERATION_DEFINITION;
+  }) as OperationDefinitionNode;
   if (operationDefinition.selectionSet.kind === Kind.SELECTION_SET) {
     const queryFieldSelection =
       operationDefinition.selectionSet.selections.find((selection) => {
-        return selection.kind === Kind.FIELD
-      })
+        return selection.kind === Kind.FIELD;
+      });
     if (
       queryFieldSelection !== undefined &&
       queryFieldSelection !== null &&
       queryFieldSelection.kind === Kind.FIELD
     ) {
-      return queryFieldSelection.name.value
+      return queryFieldSelection.name.value;
     }
   }
-  throw new Error('Unable to locate definition')
-}
+  throw new Error('Unable to locate definition');
+};
 
 export const queryToResourceEntity = (query: string): string => {
-  const action = queryToActionAuth(query)
+  const action = queryToActionAuth(query);
   const queries = schemaMap.__schema.types.find((type) => {
-    return type.name === 'Query' && type.kind === 'OBJECT'
-  })
+    return type.name === 'Query' && type.kind === 'OBJECT';
+  });
   if (queries === undefined || queries === null) {
-    throw new Error('Unable to locate Query type')
+    throw new Error('Unable to locate Query type');
   }
   const queryField = queries.fields?.find((field) => {
-    return field.name === action
-  })
+    return field.name === action;
+  });
   if (queryField?.type.name === null) {
-    return mutationToResourceEntity(query)
+    return mutationToResourceEntity(query);
   }
   if (queryField !== undefined) {
-    return queryField.type.name
+    return queryField.type.name;
   } else {
-    throw new Error('Unable to locate resource Entity')
+    throw new Error('Unable to locate resource Entity');
   }
-}
+};
 
 export const queryToResourcesEntity = (query: string): string => {
-  const action = queryToActionAuth(query)
+  const action = queryToActionAuth(query);
   const queries = schemaMap.__schema.types.find((type) => {
-    return type.name === 'Query' && type.kind === 'OBJECT'
-  })
+    return type.name === 'Query' && type.kind === 'OBJECT';
+  });
   if (queries === undefined || queries === null) {
-    throw new Error('Unable to locate Query type')
+    throw new Error('Unable to locate Query type');
   }
   const queryFieldType = queries.fields?.find((field) => {
-    return field.name === action
-  })
+    return field.name === action;
+  });
   if (queryFieldType !== undefined) {
     const queryFieldTypeObject = schemaMap.__schema.types.find((type) => {
-      return type.name === queryFieldType.type.name
-    })
+      return type.name === queryFieldType.type.name;
+    });
     const itemObject = queryFieldTypeObject?.fields?.find((fieldItem) => {
-      return fieldItem.name === 'items'
-    })
+      return fieldItem.name === 'items';
+    });
     if (
       itemObject !== undefined &&
       itemObject.type.kind === 'LIST' &&
       itemObject?.type?.ofType?.name !== undefined &&
       itemObject?.type?.ofType?.name !== null
     ) {
-      return itemObject.type.ofType?.name
+      return itemObject.type.ofType?.name;
     }
   }
-  throw new Error('Unable to locate resource Entity')
-}
+  throw new Error('Unable to locate resource Entity');
+};
 
 export const mutationToResourceEntity = (query: string): string => {
-  const action = queryToActionAuth(query)
+  const action = queryToActionAuth(query);
   const queries = schemaMap.__schema.types.find((type) => {
-    return type.name === 'Mutation' && type.kind === 'OBJECT'
-  })
+    return type.name === 'Mutation' && type.kind === 'OBJECT';
+  });
   if (queries === undefined || queries === null) {
-    throw new Error('Unable to locate Query type')
+    throw new Error('Unable to locate Query type');
   }
   const queryField = queries.fields?.find((field) => {
-    return field.name === action
-  })
+    return field.name === action;
+  });
   if (
     queryField === undefined ||
     queryField === null ||
     queryField.type.kind !== Kind.OBJECT ||
     queryField.type.name === null
   ) {
-    throw new Error('Unable to locate action')
+    throw new Error('Unable to locate action');
   }
-  return queryField.type.name
-}
+  return queryField.type.name;
+};

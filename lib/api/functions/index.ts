@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: MIT-0
  */
 
-export * from './resolver-helper'
+export * from './resolver-helper';

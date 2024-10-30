@@ -1,38 +1,63 @@
-import { Command } from 'commander'
-import { CONFIG_VERSION } from './config-version'
-import figlet from 'figlet'
+// config.ts
+import figlet from 'figlet';
+import prompt from 'prompt-sync';
+import { interactiveManage } from './config-manage';
+import { showConfig } from './config-show';
+import { formatText } from './consts';
 
-const program = new Command()
+const prompter = prompt({ sigint: true });
 
 console.log(
   figlet.textSync('GenAI Newsletter', {
-    font: 'Slant'
-  })
-)
+    font: 'Slant',
+  }),
+);
 
-program
-  .name('npm run config')
-  .description(
-    'CLI utility for creating, viewing, and updating you GenAI Newsletter deployment configuration.'
-  )
-  .version(CONFIG_VERSION)
-  .configureOutput({
-    writeOut: (str) => {
-      try {
-        const config = JSON.parse(str)
-        console.log(JSON.stringify(config, null, '\t'))
-      } catch (e) {
-        console.log(str)
-      }
+// Main interactive menu
+async function mainMenu(): Promise<void> {
+  let exit = false;
+  while (!exit) {
+    console.log(formatText('\nWhat would you like to do?', { bold: true }));
+    console.log(
+      '   ▶️ (' +
+      formatText('m', { textColor: 'green' }) +
+      ') ' +
+      formatText('MANAGE', { textColor: 'green' }) +
+      ' configuration\n' +
+      '   ▶️ (' +
+      formatText('s', { textColor: 'blue' }) +
+      ') ' +
+      formatText('SHOW', { textColor: 'blue' }) +
+      ' current configuration\n' +
+      '   ▶️ (' +
+      formatText('x', { textColor: 'red' }) +
+      ') ' +
+      formatText('EXIT', { textColor: 'red' }),
+    );
+
+    const choice = prompter(formatText('(M/s/x):', { bold: true }), 'm');
+
+    switch (choice.toLowerCase()) {
+      case 'm':
+        await interactiveManage();
+        break;
+      case 's':
+        showConfig();
+        break;
+      case 'x':
+        exit = true;
+        break;
+      default:
+        console.log(
+          formatText('Invalid Input!', {
+            bold: true,
+            backgroundColor: 'bg-red',
+            textColor: 'white',
+          }),
+        );
     }
-  })
+  }
+}
 
-program
-  .command('show', '🖨️ Show the current deployment configuration details')
-  .description('Show the current deployment configuration details')
-
-program
-  .command('manage', '📝 Create or Manage the deployment configuration')
-  .description('Create a new deployment configuration')
-
-program.parse()
+// Start the CLI
+mainMenu().catch(console.error);

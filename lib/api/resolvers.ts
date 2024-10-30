@@ -3,6 +3,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
+import * as path from 'path';
 import {
   type GraphqlApi,
   AppsyncFunction,
@@ -10,48 +11,43 @@ import {
   Resolver,
   LambdaDataSource,
   DynamoDbDataSource,
-  AssetCode
-} from 'aws-cdk-lib/aws-appsync'
-import { Construct } from 'constructs'
-import * as path from 'path'
-import { type ApiProps } from '.'
+  AssetCode,
+} from 'aws-cdk-lib/aws-appsync';
 import {
   Effect,
   Policy,
   PolicyDocument,
   PolicyStatement,
   Role,
-  ServicePrincipal
-} from 'aws-cdk-lib/aws-iam'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+  ServicePrincipal,
+} from 'aws-cdk-lib/aws-iam';
+import { Construct } from 'constructs';
+import { type ApiProps } from '.';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 interface ApiResolversProps extends ApiProps {
-  api: GraphqlApi
+  api: GraphqlApi;
 }
 
 export class ApiResolvers extends Construct {
-  constructor (scope: Construct, id: string, props: ApiResolversProps) {
-    super(scope, id)
+  constructor(scope: Construct, id: string, props: ApiResolversProps) {
+    super(scope, id);
     const { api, dataFeedTable, newsletterTable, unauthenticatedUserRole } =
-      props
+      props;
 
-    const functionsPath = path.join(__dirname, 'functions')
+    const functionsPath = path.join(__dirname, 'functions');
     const getFunctionPath = (
       functionName: string,
-      functionType: 'pipeline' | 'resolver'
+      functionType: 'pipeline' | 'resolver',
     ): string => {
       return path.join(
         functionsPath,
         'out',
         functionType,
         functionName,
-        'index.js'
-      )
-    }
+        'index.js',
+      );
+    };
 
     /** ****** DATA SOURCES FOR AppSync ******* **/
 
@@ -71,18 +67,18 @@ export class ApiResolvers extends Construct {
                   'dynamodb:DeleteItem',
                   'dynamodb:Query',
                   'dynamodb:Scan',
-                  'dynamodb:BatchGetItem'
+                  'dynamodb:BatchGetItem',
                 ],
                 resources: [
                   newsletterTable.tableArn,
-                  `${newsletterTable.tableArn}/index/${props.newsletterTableItemTypeGSI}`
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
+                  `${newsletterTable.tableArn}/index/${props.newsletterTableItemTypeGSI}`,
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const newsletterTableSource = new DynamoDbDataSource(
       this,
@@ -92,9 +88,9 @@ export class ApiResolvers extends Construct {
         table: newsletterTable,
         serviceRole: newsletterTableSourceRole.withoutPolicyUpdates(),
         name: 'NewsletterTableSource',
-        description: 'DynamoDB data source for newsletter table'
-      }
-    )
+        description: 'DynamoDB data source for newsletter table',
+      },
+    );
 
     const dataFeedTableSourceRole = new Role(this, 'DataFeedTableSourceRole', {
       assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
@@ -109,17 +105,17 @@ export class ApiResolvers extends Construct {
                 'dynamodb:DeleteItem',
                 'dynamodb:Query',
                 'dynamodb:Scan',
-                'dynamodb:BatchGetItem'
+                'dynamodb:BatchGetItem',
               ],
               resources: [
                 dataFeedTable.tableArn,
-                `${dataFeedTable.tableArn}/index/${props.dataFeedTableTypeIndex}`
-              ]
-            })
-          ]
-        })
-      }
-    })
+                `${dataFeedTable.tableArn}/index/${props.dataFeedTableTypeIndex}`,
+              ],
+            }),
+          ],
+        }),
+      },
+    });
 
     const dataFeedTableSource = new DynamoDbDataSource(
       this,
@@ -129,9 +125,9 @@ export class ApiResolvers extends Construct {
         table: dataFeedTable,
         description: 'DynamoDB data source for Data Feed table',
         serviceRole: dataFeedTableSourceRole.withoutPolicyUpdates(),
-        name: 'DataFeedTableSource'
-      }
-    )
+        name: 'DataFeedTableSource',
+      },
+    );
 
     const dataFeedSubscriberLambdaSourceRole = new Role(
       this,
@@ -143,13 +139,13 @@ export class ApiResolvers extends Construct {
             statements: [
               new PolicyStatement({
                 actions: ['lambda:InvokeFunction'],
-                resources: [props.functions.feedSubscriberFunction.functionArn]
-              })
-            ]
-          })
-        }
-      }
-    )
+                resources: [props.functions.feedSubscriberFunction.functionArn],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const dataFeedSubscriberLambdaSource = new LambdaDataSource(
       this,
@@ -159,9 +155,9 @@ export class ApiResolvers extends Construct {
         lambdaFunction: props.functions.feedSubscriberFunction,
         name: 'DataFeedSubscriberLambdaSource',
         description: 'Lambda data source for feedSubscriber function',
-        serviceRole: dataFeedSubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+        serviceRole: dataFeedSubscriberLambdaSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     const newsletterCreatorLambdaSourceRole = new Role(
       this,
@@ -174,14 +170,14 @@ export class ApiResolvers extends Construct {
               new PolicyStatement({
                 actions: ['lambda:InvokeFunction'],
                 resources: [
-                  props.functions.createNewsletterFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
+                  props.functions.createNewsletterFunction.functionArn,
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const newsletterCreatorLambdaSource = new LambdaDataSource(
       this,
@@ -191,9 +187,9 @@ export class ApiResolvers extends Construct {
         lambdaFunction: props.functions.createNewsletterFunction,
         name: 'NewsletterCreatorLambdaSource',
         description: 'Lambda data source for createNewsletter function',
-        serviceRole: newsletterCreatorLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+        serviceRole: newsletterCreatorLambdaSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     const userSubscriberLambdaSourceRole = new Role(
       this,
@@ -205,13 +201,13 @@ export class ApiResolvers extends Construct {
             statements: [
               new PolicyStatement({
                 actions: ['lambda:InvokeFunction'],
-                resources: [props.functions.userSubscriberFunction.functionArn]
-              })
-            ]
-          })
-        }
-      }
-    )
+                resources: [props.functions.userSubscriberFunction.functionArn],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const userSubscriberLambdaSource = new LambdaDataSource(
       this,
@@ -221,9 +217,9 @@ export class ApiResolvers extends Construct {
         lambdaFunction: props.functions.userSubscriberFunction,
         name: 'UserSubscriberLambdaSource',
         description: 'Lambda data source for userSubscriber function',
-        serviceRole: userSubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+        serviceRole: userSubscriberLambdaSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     const userUnsubscriberLambdaSourceRole = new Role(
       this,
@@ -236,14 +232,14 @@ export class ApiResolvers extends Construct {
               new PolicyStatement({
                 actions: ['lambda:InvokeFunction'],
                 resources: [
-                  props.functions.userUnsubscriberFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
+                  props.functions.userUnsubscriberFunction.functionArn,
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const userUnsubscriberLambdaSource = new LambdaDataSource(
       this,
@@ -253,9 +249,9 @@ export class ApiResolvers extends Construct {
         lambdaFunction: props.functions.userUnsubscriberFunction,
         name: 'UserUnsubscriberLambdaSource',
         description: 'Lambda data source for userUnsubscriber function',
-        serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates()
-      }
-    )
+        serviceRole: userUnsubscriberLambdaSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     const isAuthorizedFunctionSourceRole = new Role(
       this,
@@ -268,14 +264,14 @@ export class ApiResolvers extends Construct {
               new PolicyStatement({
                 actions: ['lambda:InvokeFunction'],
                 resources: [
-                  props.functions.graphqlReadAuthorizerFunction.functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
+                  props.functions.graphqlReadAuthorizerFunction.functionArn,
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const isAuthorizedFunctionSource = new LambdaDataSource(
       this,
@@ -285,9 +281,9 @@ export class ApiResolvers extends Construct {
         lambdaFunction: props.functions.graphqlReadAuthorizerFunction,
         name: 'isAuthorizedFunctionSource',
         description: 'Lambda data source for isAuthorized function',
-        serviceRole: isAuthorizedFunctionSourceRole.withoutPolicyUpdates()
-      }
-    )
+        serviceRole: isAuthorizedFunctionSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     const filterListByAuthorizationFunctionSourceRole = new Role(
       this,
@@ -301,14 +297,14 @@ export class ApiResolvers extends Construct {
                 actions: ['lambda:InvokeFunction'],
                 resources: [
                   props.functions.graphqlFilterReadAuthorizerFunction
-                    .functionArn
-                ]
-              })
-            ]
-          })
-        }
-      }
-    )
+                    .functionArn,
+                ],
+              }),
+            ],
+          }),
+        },
+      },
+    );
 
     const filterListByAuthorizationSource = new LambdaDataSource(
       this,
@@ -319,9 +315,9 @@ export class ApiResolvers extends Construct {
         name: 'filterIsAuthorizedFunctionSource',
         description: 'Lambda data source for isAuthorized function',
         serviceRole:
-          filterListByAuthorizationFunctionSourceRole.withoutPolicyUpdates()
-      }
-    )
+          filterListByAuthorizationFunctionSourceRole.withoutPolicyUpdates(),
+      },
+    );
 
     /** AppSync Resolver Pipeline Functions */
 
@@ -333,9 +329,9 @@ export class ApiResolvers extends Construct {
         dataSource: newsletterTableSource,
         name: 'getNewsletter',
         code: AssetCode.fromAsset(getFunctionPath('getNewsletter', 'pipeline')),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listNewslettersOwned = new AppsyncFunction(
       this,
@@ -345,11 +341,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersOwned', 'pipeline')
+          getFunctionPath('listNewslettersOwned', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listNewslettersDiscoverable = new AppsyncFunction(
       this,
@@ -360,10 +356,10 @@ export class ApiResolvers extends Construct {
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
         code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersDiscoverable', 'pipeline')
-        )
-      }
-    )
+          getFunctionPath('listNewslettersDiscoverable', 'pipeline'),
+        ),
+      },
+    );
 
     const listNewslettersShared = new AppsyncFunction(
       this,
@@ -374,10 +370,10 @@ export class ApiResolvers extends Construct {
         dataSource: newsletterTableSource,
         runtime: FunctionRuntime.JS_1_0_0,
         code: AssetCode.fromAsset(
-          getFunctionPath('listNewslettersShared', 'pipeline')
-        )
-      }
-    )
+          getFunctionPath('listNewslettersShared', 'pipeline'),
+        ),
+      },
+    );
 
     // const listNewslettersById = new AppsyncFunction(
     //   this,
@@ -401,11 +397,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listPublications', 'pipeline')
+          getFunctionPath('listPublications', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
     const getPublication = new AppsyncFunction(
       this,
       'GetPublicationResolverFunction',
@@ -414,11 +410,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('getPublication', 'pipeline')
+          getFunctionPath('getPublication', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const updateNewsletterResolverFunction = new AppsyncFunction(
       this,
@@ -428,11 +424,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('updateNewsletter', 'pipeline')
+          getFunctionPath('updateNewsletter', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
     const subscribeToNewsletterFunction = new AppsyncFunction(
       this,
       'SubscribeToNewsletterResolverFunction',
@@ -441,11 +437,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: userSubscriberLambdaSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('subscribeToNewsletter', 'pipeline')
+          getFunctionPath('subscribeToNewsletter', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const unsubscribeFromNewsletter = new AppsyncFunction(
       this,
@@ -455,11 +451,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: userUnsubscriberLambdaSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('unsubscribeFromNewsletter', 'pipeline')
+          getFunctionPath('unsubscribeFromNewsletter', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listDataFeedsOwnedFunction = new AppsyncFunction(
       this,
@@ -469,11 +465,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsOwned', 'pipeline')
+          getFunctionPath('listDataFeedsOwned', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listDataFeedsSharedFunction = new AppsyncFunction(
       this,
@@ -483,11 +479,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsShared', 'pipeline')
+          getFunctionPath('listDataFeedsShared', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listDataFeedsDiscoverable = new AppsyncFunction(
       this,
@@ -497,11 +493,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listDataFeedsDiscoverable', 'pipeline')
+          getFunctionPath('listDataFeedsDiscoverable', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const createDataFeedFunction = new AppsyncFunction(
       this,
@@ -511,11 +507,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedSubscriberLambdaSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('createDataFeed', 'pipeline')
+          getFunctionPath('createDataFeed', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
     const getDataFeedFunction = new AppsyncFunction(
       this,
       'GetDataFeedResolverFunction',
@@ -524,9 +520,9 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(getFunctionPath('getDataFeed', 'pipeline')),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const updateDataFeedFunction = new AppsyncFunction(
       this,
@@ -536,11 +532,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('updateDataFeed', 'pipeline')
+          getFunctionPath('updateDataFeed', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listArticlesFunction = new AppsyncFunction(
       this,
@@ -550,9 +546,9 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(getFunctionPath('listArticles', 'pipeline')),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const checkSubscriptionToNewsletterFunction = new AppsyncFunction(
       this,
@@ -562,11 +558,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('checkSubscriptionToNewsletter', 'pipeline')
+          getFunctionPath('checkSubscriptionToNewsletter', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const getNewsletterSubscriberStatsFunction = new AppsyncFunction(
       this,
@@ -576,11 +572,11 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('getNewsletterSubscriberStats', 'pipeline')
+          getFunctionPath('getNewsletterSubscriberStats', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const flagArticleFunction = new AppsyncFunction(
       this,
@@ -590,9 +586,9 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: dataFeedTableSource,
         code: AssetCode.fromAsset(getFunctionPath('flagArticle', 'pipeline')),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const listUserSubscriptionsFunction = new AppsyncFunction(
       this,
@@ -602,19 +598,19 @@ export class ApiResolvers extends Construct {
         api,
         dataSource: newsletterTableSource,
         code: AssetCode.fromAsset(
-          getFunctionPath('listUserSubscriptions', 'pipeline')
+          getFunctionPath('listUserSubscriptions', 'pipeline'),
         ),
-        runtime: FunctionRuntime.JS_1_0_0
-      }
-    )
+        runtime: FunctionRuntime.JS_1_0_0,
+      },
+    );
 
     const isAuthorized = new AppsyncFunction(this, 'isAuthorized', {
       name: 'isAuthorized',
       api,
       dataSource: isAuthorizedFunctionSource,
       runtime: FunctionRuntime.JS_1_0_0,
-      code: AssetCode.fromAsset(getFunctionPath('isAuthorized', 'pipeline'))
-    })
+      code: AssetCode.fromAsset(getFunctionPath('isAuthorized', 'pipeline')),
+    });
 
     const filterListByAuthorization = new AppsyncFunction(
       this,
@@ -625,10 +621,10 @@ export class ApiResolvers extends Construct {
         dataSource: filterListByAuthorizationSource,
         runtime: FunctionRuntime.JS_1_0_0,
         code: AssetCode.fromAsset(
-          getFunctionPath('filterListByAuthorization', 'pipeline')
-        )
-      }
-    )
+          getFunctionPath('filterListByAuthorization', 'pipeline'),
+        ),
+      },
+    );
 
     /** AppSync GraphQL API Resolvers */
 
@@ -638,8 +634,8 @@ export class ApiResolvers extends Construct {
       fieldName: 'getNewsletter',
       code: AssetCode.fromAsset(getFunctionPath('getNewsletter', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsletterFunction, isAuthorized]
-    })
+      pipelineConfig: [getNewsletterFunction, isAuthorized],
+    });
 
     new Resolver(this, 'ListNewslettersResolver', {
       api,
@@ -651,24 +647,24 @@ export class ApiResolvers extends Construct {
         listNewslettersOwned,
         listNewslettersDiscoverable,
         listNewslettersShared,
-        filterListByAuthorization
-      ]
-    })
+        filterListByAuthorization,
+      ],
+    });
 
     new Resolver(this, 'ListPublicationsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'listPublications',
       code: AssetCode.fromAsset(
-        getFunctionPath('listPublications', 'resolver')
+        getFunctionPath('listPublications', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
         getNewsletterFunction,
         listPublicationsFunction,
-        filterListByAuthorization
-      ]
-    })
+        filterListByAuthorization,
+      ],
+    });
 
     new Resolver(this, 'getPublicationResolverFunction', {
       api,
@@ -676,23 +672,23 @@ export class ApiResolvers extends Construct {
       fieldName: 'getPublication',
       code: AssetCode.fromAsset(getFunctionPath('getPublication', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getPublication]
-    })
+      pipelineConfig: [getPublication],
+    });
 
     new Resolver(this, 'UpdateNewsletterResolver', {
       api,
       typeName: 'Mutation',
       fieldName: 'updateNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('updateNewsletter', 'resolver')
+        getFunctionPath('updateNewsletter', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
         getNewsletterFunction,
         isAuthorized,
-        updateNewsletterResolverFunction
-      ]
-    })
+        updateNewsletterResolverFunction,
+      ],
+    });
 
     new Resolver(this, 'ListDataFeedsResolver', {
       api,
@@ -704,9 +700,9 @@ export class ApiResolvers extends Construct {
         listDataFeedsOwnedFunction,
         listDataFeedsSharedFunction,
         listDataFeedsDiscoverable,
-        filterListByAuthorization
-      ]
-    })
+        filterListByAuthorization,
+      ],
+    });
 
     new Resolver(this, 'GetDataFeedResolver', {
       api,
@@ -714,8 +710,8 @@ export class ApiResolvers extends Construct {
       fieldName: 'getDataFeed',
       code: AssetCode.fromAsset(getFunctionPath('getDataFeed', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedFunction, isAuthorized]
-    })
+      pipelineConfig: [getDataFeedFunction, isAuthorized],
+    });
 
     new Resolver(this, 'UpdateDataFeedResolver', {
       api,
@@ -726,9 +722,9 @@ export class ApiResolvers extends Construct {
       pipelineConfig: [
         getDataFeedFunction,
         isAuthorized,
-        updateDataFeedFunction
-      ]
-    })
+        updateDataFeedFunction,
+      ],
+    });
 
     new Resolver(this, 'ListArticlesResolver', {
       api,
@@ -736,8 +732,8 @@ export class ApiResolvers extends Construct {
       fieldName: 'listArticles',
       code: AssetCode.fromAsset(getFunctionPath('listArticles', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedFunction, isAuthorized, listArticlesFunction]
-    })
+      pipelineConfig: [getDataFeedFunction, isAuthorized, listArticlesFunction],
+    });
 
     new Resolver(this, 'FlagArticleResolver', {
       api,
@@ -745,12 +741,12 @@ export class ApiResolvers extends Construct {
       fieldName: 'flagArticle',
       code: AssetCode.fromAsset(getFunctionPath('flagArticle', 'resolver')),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [flagArticleFunction]
-    })
+      pipelineConfig: [flagArticleFunction],
+    });
 
     props.functions.feedSubscriberFunction.grantInvoke(
-      dataFeedSubscriberLambdaSource
-    )
+      dataFeedSubscriberLambdaSource,
+    );
 
     new Resolver(this, 'DataFeedSubscriberResolver', {
       api,
@@ -758,8 +754,8 @@ export class ApiResolvers extends Construct {
       fieldName: 'createDataFeed',
       code: AssetCode.fromAsset(getFunctionPath('createDataFeed', 'resolver')),
       pipelineConfig: [createDataFeedFunction],
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
 
     new Resolver(this, 'CreateNewsletterResolver', {
       api,
@@ -767,36 +763,36 @@ export class ApiResolvers extends Construct {
       typeName: 'Mutation',
       fieldName: 'createNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('createNewsletter', 'resolver')
+        getFunctionPath('createNewsletter', 'resolver'),
       ),
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
 
     new Resolver(this, 'UserSubscriberResolver', {
       api,
       typeName: 'Mutation',
       fieldName: 'subscribeToNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('subscribeToNewsletter', 'resolver')
+        getFunctionPath('subscribeToNewsletter', 'resolver'),
       ),
       pipelineConfig: [
         getNewsletterFunction,
         isAuthorized,
-        subscribeToNewsletterFunction
+        subscribeToNewsletterFunction,
       ],
-      runtime: FunctionRuntime.JS_1_0_0
-    })
+      runtime: FunctionRuntime.JS_1_0_0,
+    });
 
     new Resolver(this, 'UserUnsubscriberResolver', {
       api,
       typeName: 'Mutation',
       fieldName: 'unsubscribeFromNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('unsubscribeFromNewsletter', 'resolver')
+        getFunctionPath('unsubscribeFromNewsletter', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [unsubscribeFromNewsletter]
-    })
+      pipelineConfig: [unsubscribeFromNewsletter],
+    });
 
     const externalUnsubscribeResolver = new Resolver(
       this,
@@ -806,85 +802,88 @@ export class ApiResolvers extends Construct {
         typeName: 'Mutation',
         fieldName: 'externalUnsubscribeFromNewsletter',
         code: AssetCode.fromAsset(
-          getFunctionPath('externalUnsubscribeFromNewsletter', 'resolver')
+          getFunctionPath('externalUnsubscribeFromNewsletter', 'resolver'),
         ),
         runtime: FunctionRuntime.JS_1_0_0,
-        pipelineConfig: [unsubscribeFromNewsletter]
-      }
-    )
-    unauthenticatedUserRole.attachInlinePolicy(
-      new Policy(this, 'UnauthRoleUnsubscribe', {
-        statements: [
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: ['appsync:GraphQL'],
-            resources: [externalUnsubscribeResolver.arn]
-          })
-        ]
-      })
-    )
+        pipelineConfig: [unsubscribeFromNewsletter],
+      },
+    );
+    if (unauthenticatedUserRole) {
+      unauthenticatedUserRole.attachInlinePolicy(
+        new Policy(this, 'UnauthRoleUnsubscribe', {
+          statements: [
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              actions: ['appsync:GraphQL'],
+              resources: [externalUnsubscribeResolver.arn],
+            }),
+          ],
+        }),
+      );
+    }
+
 
     new Resolver(this, 'CheckSubscriptionToNewsletterResolver', {
       api,
       typeName: 'Query',
       fieldName: 'checkSubscriptionToNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('checkSubscriptionToNewsletter', 'resolver')
+        getFunctionPath('checkSubscriptionToNewsletter', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
         getNewsletterFunction,
         isAuthorized,
-        checkSubscriptionToNewsletterFunction
-      ]
-    })
+        checkSubscriptionToNewsletterFunction,
+      ],
+    });
 
     new Resolver(this, 'ListUserSubscriptionsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'listUserSubscriptions',
       code: AssetCode.fromAsset(
-        getFunctionPath('listUserSubscriptions', 'resolver')
+        getFunctionPath('listUserSubscriptions', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [listUserSubscriptionsFunction, filterListByAuthorization]
-    })
+      pipelineConfig: [listUserSubscriptionsFunction, filterListByAuthorization],
+    });
 
     new Resolver(this, 'CanUpdateNewsletterResolver', {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateNewsletter',
       code: AssetCode.fromAsset(
-        getFunctionPath('canUpdateNewsletter', 'resolver')
+        getFunctionPath('canUpdateNewsletter', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getNewsletterFunction, isAuthorized]
-    })
+      pipelineConfig: [getNewsletterFunction, isAuthorized],
+    });
 
     new Resolver(this, 'CanUpdateDataFeedResolver', {
       api,
       typeName: 'Query',
       fieldName: 'canUpdateDataFeed',
       code: AssetCode.fromAsset(
-        getFunctionPath('canUpdateDataFeed', 'resolver')
+        getFunctionPath('canUpdateDataFeed', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
-      pipelineConfig: [getDataFeedFunction, isAuthorized]
-    })
+      pipelineConfig: [getDataFeedFunction, isAuthorized],
+    });
 
     new Resolver(this, 'getNewsletterSubscriberStatsResolver', {
       api,
       typeName: 'Query',
       fieldName: 'getNewsletterSubscriberStats',
       code: AssetCode.fromAsset(
-        getFunctionPath('getNewsletterSubscriberStats', 'resolver')
+        getFunctionPath('getNewsletterSubscriberStats', 'resolver'),
       ),
       runtime: FunctionRuntime.JS_1_0_0,
       pipelineConfig: [
         getNewsletterFunction,
         isAuthorized,
-        getNewsletterSubscriberStatsFunction
-      ]
-    })
+        getNewsletterSubscriberStatsFunction,
+      ],
+    });
   }
 }

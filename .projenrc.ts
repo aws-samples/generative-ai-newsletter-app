@@ -1,0 +1,293 @@
+import { awscdk, typescript } from 'projen';
+import { NodePackageManager, TypeScriptJsxMode, TypeScriptModuleResolution } from 'projen/lib/javascript';
+
+const project = new awscdk.AwsCdkTypeScriptApp({
+  cdkVersion: '2.164.1',
+  srcdir: '.',
+  outdir: '.',
+  libdir: 'out/',
+  defaultReleaseBranch: 'main',
+  name: 'generative-ai-newsletter-app',
+  projenrcTs: true,
+  sampleCode: false,
+  gitignore: [
+    'bin/config.json',
+    'pages/.vitepress/dist/*',
+    'misc/',
+    '.DS_Store',
+    'eslint-results.sarif',
+    '**/*.d.ts',
+    'lib/**/*.js',
+    'lib/api/functions/out/',
+  ],
+  github: false,
+  pullRequestTemplate: true,
+  appEntrypoint: 'bin/genai-newsletter-app.ts',
+  bin: {
+    'genai-newsletter-app': 'bin/genai-newsletter-app.ts',
+  },
+  packageManager: NodePackageManager.NPM,
+  deps: [
+    '@aws-cdk/aws-cognito-identitypool-alpha',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/client-cognito-identity-provider',
+    '@aws-sdk/client-lambda',
+    '@aws-sdk/client-verifiedpermissions',
+    '@aws-sdk/client-bedrock-runtime',
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/client-pinpoint',
+    '@aws-sdk/client-scheduler',
+    '@aws-sdk/client-sfn',
+    '@aws-sdk/lib-storage',
+    '@aws-sdk/util-dynamodb',
+    '@middy/core',
+    '@aws-amplify/cli',
+    '@aws-appsync/utils',
+    '@aws-lambda-powertools/logger',
+    '@aws-lambda-powertools/metrics',
+    '@aws-lambda-powertools/tracer',
+    'aws-jwt-verify',
+    'commander',
+    'graphql',
+    'mui-color-input',
+    'react',
+    'uuid',
+    'ansi-escape-sequences',
+    'react-email',
+    '@react-email/components',
+    '@react-email/render',
+    'react',
+    'cdk-nag',
+    'axios',
+    'tsx',
+    'source-map-support',
+    'cheerio',
+    'figlet',
+    'prompt-sync',
+    'esbuild',
+    '@graphql-codegen/plugin-helpers',
+    '@graphql-codegen/cli',
+    'typescript',
+    'ts-node',
+  ],
+  devDeps: [
+    'vitepress',
+    'aws-lambda',
+    '@types/ansi-escape-sequences',
+    '@types/prompt-sync',
+    '@types/figlet',
+    '@types/uuid',
+    'git-cz',
+    'cz-conventional-changelog',
+    'figlet',
+    'prettier',
+    '@microsoft/eslint-formatter-sarif',
+    '@types/cheerio',
+    'eslint-plugin-react-hooks@latest',
+    'eslint-plugin-react',
+    'eslint-plugin-react-refresh',
+  ],
+  tsconfig: {
+    compilerOptions: {
+      outDir: 'out',
+      rootDir: '.',
+      lib: ['DOM', 'DOM.Iterable', 'ESNext'],
+      jsx: TypeScriptJsxMode.REACT_JSX,
+      noEmit: true,
+    },
+    exclude: ['node_modules', 'lib/user-interface/genai-newsletter-ui/*'],
+  },
+});
+// projen auto adds lib/, but this project is laid out differently and needs to include lib/
+project.gitignore.removePatterns('lib');
+
+project.addFields({
+  config: {
+    commitizen: {
+      path: './node_modules/cz-conventional-changelog',
+    },
+  },
+});
+
+/**
+ * Configuration CLI Tasks
+ */
+
+project.tasks.addTask('config', {
+  description: 'Run the CLI to configure the project',
+  exec: 'ts-node ./cli/config.ts',
+});
+
+/**
+ * Code Generation Tasks
+ */
+
+const codegenApi = project.tasks.addTask('codegen:api', {
+  cwd: 'lib/shared/api',
+  description: 'Generate the GraphQL API Types for the frontend',
+  exec: 'npx @aws-amplify/cli codegen',
+});
+
+const codegenAuth = project.tasks.addTask('codegen:auth', {
+  cwd: 'lib/shared/api/schema-to-avp',
+  description: 'Generate the definitions for the Amazon Verified Permissions schema based on the GraphQL Schema',
+  exec: 'npx graphql-codegen ./codegen.ts',
+});
+
+const codegenTask = project.tasks.addTask('codegen', {
+  description: 'Generates the AppSync GraphQL Types & the AVP Permissions structure',
+});
+
+codegenTask.spawn(codegenApi);
+codegenTask.spawn(codegenAuth);
+
+/**
+ * React Email Template Development Tasks
+ */
+
+
+project.tasks.addTask('email:start', {
+  description: 'Starts the Email Preview UI to view Email Templates and modify them',
+  cwd: 'lib/shared/email-generator',
+  exec: 'npm run start',
+});
+
+
+// The UI project for the solution
+const frontend = new typescript.TypeScriptProject({
+  parent: project,
+  outdir: 'lib/user-interface/genai-newsletter-ui/',
+  name: 'genai-newsletter-ui',
+  defaultReleaseBranch: 'main',
+  packageManager: NodePackageManager.NPM,
+  sampleCode: false,
+  jestOptions: {
+    jestVersion: '29',
+  },
+  deps: [
+    'react',
+    'react-dom',
+    'react-router-dom',
+    'graphql',
+    'react-router',
+    'aws-amplify',
+    '@aws-amplify/ui-react',
+    '@cloudscape-design/chat-components',
+    '@cloudscape-design/collection-hooks',
+    '@cloudscape-design/component-toolkit',
+    '@cloudscape-design/global-styles',
+  ],
+  devDeps: [
+    '@types/react',
+    '@types/react-dom',
+    '@vitejs/plugin-react',
+    'vite',
+    'typescript',
+    'ts-jest@^29.2.5',
+    'eslint-plugin-react-hooks@latest',
+    'eslint-plugin-react',
+    'eslint-plugin-react-refresh',
+  ],
+  tsconfig: {
+    compilerOptions: {
+      paths: {
+        shared: ['../../../shared'],
+      },
+      rootDir: '../../../',
+      sourceRoot: 'src/',
+      lib: ['DOM', 'DOM.Iterable', 'ESNext'],
+      jsx: TypeScriptJsxMode.REACT_JSX,
+      noEmit: true,
+      module: 'ESNext',
+      resolveJsonModule: true,
+      moduleResolution: TypeScriptModuleResolution.NODE,
+      skipLibCheck: true,
+    },
+    exclude: ['node_modules/**/*', '../../../node_modules/**/*'],
+  },
+
+});
+
+/**
+ * GenAI Newsletter App UI Tasks
+ */
+
+// Start frontend in dev mode
+frontend.tasks.addTask('dev', {
+  description: 'Start the UI in development mode',
+  exec: 'vite',
+});
+
+// Preview the compiled UI
+frontend.tasks.addTask('preview', {
+  description: 'Preview the UI build',
+  exec: 'vite preview',
+});
+
+// Starts the UI, allows for UI file updates to be reflected as they are changed.
+frontend.tasks.addTask('start', {
+  description: 'Start the UI',
+  exec: 'vite',
+});
+
+// This allows the user to start the UI from the root project with an npm run command
+project.tasks.addTask('ui:start', {
+  description: 'Start the UI',
+  exec: 'vite',
+  cwd: 'lib/user-interface/genai-newsletter-ui/',
+});
+
+// AppSync Resolvers are written in TypeScript, but AppSync requires compiled JS
+const buildAppsync = project.tasks.addTask('build:appsync', {
+  description: 'Build the appsync',
+  exec: 'tsx ./lib/api/functions/bundle.ts',
+});
+
+/**
+ * GitHub Pages tasks
+ */
+
+project.tasks.addTask('docs:dev', {
+  description: 'Run the docs in dev mode',
+  exec: 'vitepress dev pages',
+});
+
+project.tasks.addTask('docs:build', {
+  description: 'Build the docs',
+  exec: 'vitepress build pages',
+});
+
+project.tasks.addTask('docs:preview', {
+  description: 'Preview the docs',
+  exec: 'vitepress preview pages',
+});
+
+// End GitHub Pages tasks
+
+
+// The main cdk synthesis relies on the UI & Appsync Resolvers to have been compiled first.
+// Running build on the UI
+project.preCompileTask.exec('npm run build', {
+  cwd: 'lib/user-interface/genai-newsletter-ui/',
+});
+// Running build on the Appsync Resolvers
+project.preCompileTask.spawn(buildAppsync);
+
+/**
+ * CI/CD Tasks
+ */
+project.tasks.addTask('ci:deploy', {
+  description: 'For use by CI/CD: CDK deploys the synthesized stack in cdk.out directory, without requiring approval. NOT RECOMMENDED DEV/NON-PROD.',
+  exec: 'npx cdk --app ./cdk.out deploy --require-approval never',
+});
+
+
+//Commit friendly messages!
+//Commitzen!
+project.tasks.addTask('commit', {
+  description: 'Runs the Git Commit process using interactive CLI that generates conventional commit messages. (recommended for clean commits!)',
+  exec: 'cz',
+});
+
+frontend.synth();
+project.synth();

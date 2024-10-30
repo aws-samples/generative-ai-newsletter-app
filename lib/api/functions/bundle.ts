@@ -10,28 +10,22 @@
  * to files dynamically without using 'globs' since they are not safe for windows
  */
 
-import esbuild from 'esbuild'
-import fs from 'fs'
-import path from 'path'
+import fs from 'fs';
+import path from 'path';
+import esbuild from 'esbuild';
 
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const outDir = path.join(__dirname, 'out')
+const outDir = path.join(__dirname, 'out');
 
 const resolverFunctions = fs
   .readdirSync(path.join(__dirname, 'resolver'))
   .map((functionName) => {
-    return path.join(__dirname, 'resolver', functionName, 'index.ts')
-  })
+    return path.join(__dirname, 'resolver', functionName, 'index.ts');
+  });
 const pipelineFunctions = fs
   .readdirSync(path.join(__dirname, 'pipeline'))
   .map((functionName) => {
-    return path.join(__dirname, 'pipeline', functionName, 'index.ts')
-  })
+    return path.join(__dirname, 'pipeline', functionName, 'index.ts');
+  });
 
 esbuild
   .build({
@@ -45,6 +39,6 @@ esbuild
     target: 'esnext',
     format: 'esm',
     minify: false,
-    logLevel: 'info'
+    logLevel: 'info',
   })
-  .catch(() => process.exit(1))
+  .catch(() => process.exit(1));

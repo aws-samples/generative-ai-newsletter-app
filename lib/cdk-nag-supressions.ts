@@ -1,5 +1,5 @@
-import { type Stack } from 'aws-cdk-lib'
-import { NagSuppressions } from 'cdk-nag'
+import { type Stack } from 'aws-cdk-lib';
+import { NagSuppressions } from 'cdk-nag';
 
 /**
  * Adds suppressions to the CDK Nag linter for the given stack.
@@ -13,16 +13,16 @@ export const addNagSuppressions = (stack: Stack): void => {
   NagSuppressions.addStackSuppressions(stack, [
     {
       id: 'AwsSolutions-IAM4',
-      reason: 'Allowing managed polices'
+      reason: 'Allowing managed polices',
     },
     {
       id: 'AwsSolutions-IAM5',
       appliesTo: [
-        'Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs'
+        'Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs',
       ],
-      reason: 'Allowing managed policy: AWSAppSyncPushToCloudWatchLogs'
-    }
-  ])
+      reason: 'Allowing managed policy: AWSAppSyncPushToCloudWatchLogs',
+    },
+  ]);
   /**
    * This is the Stack-Level Log Retention Custom Resource.
    * If cdk_nag throws an IAM5 error for LogRetention, confirm the logical ID hasn't changed.
@@ -33,10 +33,10 @@ export const addNagSuppressions = (stack: Stack): void => {
     [
       {
         id: 'AwsSolutions-IAM5',
-        reason: 'Allowing LogRetention to apply to any CloudWatch Resource'
-      }
-    ]
-  )
+        reason: 'Allowing LogRetention to apply to any CloudWatch Resource',
+      },
+    ],
+  );
   /**
    * CDKBucketDeployment Resource must be referenced by Path
    * If cdk_nag throws errors for this resource, confirm the logical ID hasn't changed.
@@ -47,10 +47,10 @@ export const addNagSuppressions = (stack: Stack): void => {
     [
       {
         id: 'AwsSolutions-IAM5',
-        reason: 'Allowing CDKBucketDeployment to have * policies'
-      }
-    ]
-  )
+        reason: 'Allowing CDKBucketDeployment to have * policies',
+      },
+    ],
+  );
   NagSuppressions.addResourceSuppressionsByPath(
     stack,
     `/${stack.stackName}/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource`,
@@ -58,8 +58,8 @@ export const addNagSuppressions = (stack: Stack): void => {
       {
         id: 'AwsSolutions-L1',
         reason:
-          'Allowing CDKBucketDeployment Lambda Runtime version to be managed by CDK version'
-      }
-    ]
-  )
-}
+          'Allowing CDKBucketDeployment Lambda Runtime version to be managed by CDK version',
+      },
+    ],
+  );
+};

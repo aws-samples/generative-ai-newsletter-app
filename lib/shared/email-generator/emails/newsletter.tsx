@@ -3,7 +3,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: MIT-0
  */
-import type React from 'react'
 import {
   Body,
   Container,
@@ -14,14 +13,15 @@ import {
   Row,
   Text,
   Link,
-  Hr
-} from '@react-email/components'
-import { ArticleSummaryType } from '../../../shared/api/API'
-import { type NewsletterEmailProps } from '../../../shared/common/types'
-import { NewsletterStyle } from '../../../shared/common/newsletter-style'
+  Hr,
+} from '@react-email/components';
+import type React from 'react';
+import { ArticleSummaryType } from '../../../shared/api/API';
+import { NewsletterStyle } from '../../../shared/common/newsletter-style';
+import { type NewsletterEmailProps } from '../../../shared/common/types';
 
 export default function NewsletterEmail (
-  props: NewsletterEmailProps
+  props: NewsletterEmailProps,
 ): React.ReactElement {
   const {
     title,
@@ -32,21 +32,21 @@ export default function NewsletterEmail (
     articleSummaryType,
     newsletterSummary,
     previewMode = false,
-    styleProps = new NewsletterStyle()
-  } = props
-  let newsletterSummaryContent = ''
+    styleProps = new NewsletterStyle(),
+  } = props;
+  let newsletterSummaryContent = '';
   if (
     articleSummaryType === ArticleSummaryType.LONG_SUMMARY &&
     newsletterSummary?.longSummary.response !== undefined &&
     newsletterSummary?.longSummary.response !== null
   ) {
-    newsletterSummaryContent = newsletterSummary.longSummary.response
+    newsletterSummaryContent = newsletterSummary.longSummary.response;
   }
   if (
     articleSummaryType === ArticleSummaryType.SHORT_SUMMARY &&
     newsletterSummary?.shortSummary.response != null
   ) {
-    newsletterSummaryContent = newsletterSummary.shortSummary.response
+    newsletterSummaryContent = newsletterSummary.shortSummary.response;
   }
   const body: React.ReactElement = (
     <Body style={styleProps.body}>
@@ -73,20 +73,20 @@ export default function NewsletterEmail (
                 appHostName.length > 0 &&
                 article.flagLink !== undefined &&
                 article.flagLink.length > 0 ? (
-                  <Text>
-                    <Link
-                      href={`https://${appHostName}${article.flagLink}`}
-                      target="_blank"
-                      style={flagLink}
-                    >
+                    <Text>
+                      <Link
+                        href={`https://${appHostName}${article.flagLink}`}
+                        target="_blank"
+                        style={flagLink}
+                      >
                       Flag this summary
-                    </Link>
-                  </Text>
-                ) : (
-                  <></>
-                )}
+                      </Link>
+                    </Text>
+                  ) : (
+                    <></>
+                  )}
               </Row>
-            )
+            );
           })}
         </Section>
         <Hr />
@@ -116,19 +116,19 @@ export default function NewsletterEmail (
         </Section>
       </Container>
     </Body>
-  )
+  );
 
   return !previewMode
     ? ((
-        <Html>
-          <Head>
-            <title>{title}</title>
-          </Head>
-          <Preview>Your latest news update!</Preview>
-          {body}
-        </Html>
-      ) as React.ReactElement)
-    : body
+      <Html>
+        <Head>
+          <title>{title}</title>
+        </Head>
+        <Preview>Your latest news update!</Preview>
+        {body}
+      </Html>
+    ) as React.ReactElement)
+    : body;
 }
 
 const footer = {
@@ -136,20 +136,20 @@ const footer = {
   width: '100%',
   fontSize: '12px',
   fontStyle: 'italic',
-  align: 'center'
-}
+  align: 'center',
+};
 
 const flagLink = {
   fontStyle: 'italic',
-  fontSize: '12px'
-}
+  fontSize: '12px',
+};
 
 const container = {
-  margin: 'auto'
-}
+  margin: 'auto',
+};
 const articleRow = {
   margin: '0 auto',
   paddingLeft: '10px',
   paddingRight: '10px',
-  minHeight: '50px'
-}
+  minHeight: '50px',
+};

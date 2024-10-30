@@ -1,0 +1,371 @@
+{
+  "tasks": {
+    "build": {
+      "name": "build",
+      "description": "Full release build",
+      "steps": [
+        {
+          "spawn": "default"
+        },
+        {
+          "spawn": "pre-compile"
+        },
+        {
+          "spawn": "compile"
+        },
+        {
+          "spawn": "post-compile"
+        },
+        {
+          "spawn": "test"
+        },
+        {
+          "spawn": "package"
+        }
+      ]
+    },
+    "build:appsync": {
+      "name": "build:appsync",
+      "description": "Build the appsync",
+      "steps": [
+        {
+          "exec": "tsx ./lib/api/functions/bundle.ts"
+        }
+      ]
+    },
+    "bundle": {
+      "name": "bundle",
+      "description": "Prepare assets"
+    },
+    "ci:deploy": {
+      "name": "ci:deploy",
+      "description": "For use by CI/CD: CDK deploys the synthesized stack in cdk.out directory, without requiring approval. NOT RECOMMENDED DEV/NON-PROD.",
+      "steps": [
+        {
+          "exec": "npx cdk --app ./cdk.out deploy --require-approval never"
+        }
+      ]
+    },
+    "clobber": {
+      "name": "clobber",
+      "description": "hard resets to HEAD of origin and cleans the local repo",
+      "env": {
+        "BRANCH": "$(git branch --show-current)"
+      },
+      "steps": [
+        {
+          "exec": "git checkout -b scratch",
+          "name": "save current HEAD in \"scratch\" branch"
+        },
+        {
+          "exec": "git checkout $BRANCH"
+        },
+        {
+          "exec": "git fetch origin",
+          "name": "fetch latest changes from origin"
+        },
+        {
+          "exec": "git reset --hard origin/$BRANCH",
+          "name": "hard reset to origin commit"
+        },
+        {
+          "exec": "git clean -fdx",
+          "name": "clean all untracked files"
+        },
+        {
+          "say": "ready to rock! (unpushed commits are under the \"scratch\" branch)"
+        }
+      ],
+      "condition": "git diff --exit-code > /dev/null"
+    },
+    "codegen": {
+      "name": "codegen",
+      "description": "Generates the AppSync GraphQL Types & the AVP Permissions structure",
+      "steps": [
+        {
+          "spawn": "codegen:api"
+        },
+        {
+          "spawn": "codegen:auth"
+        }
+      ]
+    },
+    "codegen:api": {
+      "name": "codegen:api",
+      "description": "Generate the GraphQL API Types for the frontend",
+      "steps": [
+        {
+          "exec": "npx @aws-amplify/cli codegen"
+        }
+      ],
+      "cwd": "lib/shared/api"
+    },
+    "codegen:auth": {
+      "name": "codegen:auth",
+      "description": "Generate the definitions for the Amazon Verified Permissions schema based on the GraphQL Schema",
+      "steps": [
+        {
+          "exec": "npx graphql-codegen ./codegen.ts"
+        }
+      ],
+      "cwd": "lib/shared/api/schema-to-avp"
+    },
+    "commit": {
+      "name": "commit",
+      "description": "Runs the Git Commit process using interactive CLI that generates conventional commit messages. (recommended for clean commits!)",
+      "steps": [
+        {
+          "exec": "cz"
+        }
+      ]
+    },
+    "compile": {
+      "name": "compile",
+      "description": "Only compile"
+    },
+    "config": {
+      "name": "config",
+      "description": "Run the CLI to configure the project",
+      "steps": [
+        {
+          "exec": "ts-node ./cli/config.ts"
+        }
+      ]
+    },
+    "default": {
+      "name": "default",
+      "description": "Synthesize project files",
+      "steps": [
+        {
+          "exec": "ts-node --project tsconfig.dev.json .projenrc.ts"
+        }
+      ]
+    },
+    "deploy": {
+      "name": "deploy",
+      "description": "Deploys your CDK app to the AWS cloud",
+      "steps": [
+        {
+          "exec": "cdk deploy",
+          "receiveArgs": true
+        }
+      ]
+    },
+    "destroy": {
+      "name": "destroy",
+      "description": "Destroys your cdk app in the AWS cloud",
+      "steps": [
+        {
+          "exec": "cdk destroy",
+          "receiveArgs": true
+        }
+      ]
+    },
+    "diff": {
+      "name": "diff",
+      "description": "Diffs the currently deployed app against your code",
+      "steps": [
+        {
+          "exec": "cdk diff"
+        }
+      ]
+    },
+    "docs:build": {
+      "name": "docs:build",
+      "description": "Build the docs",
+      "steps": [
+        {
+          "exec": "vitepress build pages"
+        }
+      ]
+    },
+    "docs:dev": {
+      "name": "docs:dev",
+      "description": "Run the docs in dev mode",
+      "steps": [
+        {
+          "exec": "vitepress dev pages"
+        }
+      ]
+    },
+    "docs:preview": {
+      "name": "docs:preview",
+      "description": "Preview the docs",
+      "steps": [
+        {
+          "exec": "vitepress preview pages"
+        }
+      ]
+    },
+    "eject": {
+      "name": "eject",
+      "description": "Remove projen from the project",
+      "env": {
+        "PROJEN_EJECTING": "true"
+      },
+      "steps": [
+        {
+          "spawn": "default"
+        }
+      ]
+    },
+    "email:start": {
+      "name": "email:start",
+      "description": "Starts the Email Preview UI to view Email Templates and modify them",
+      "steps": [
+        {
+          "exec": "npm run start"
+        }
+      ],
+      "cwd": "lib/shared/email-generator"
+    },
+    "eslint": {
+      "name": "eslint",
+      "description": "Runs eslint against the codebase",
+      "steps": [
+        {
+          "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ . test build-tools projenrc .projenrc.ts",
+          "receiveArgs": true
+        }
+      ]
+    },
+    "install": {
+      "name": "install",
+      "description": "Install project dependencies and update lockfile (non-frozen)",
+      "steps": [
+        {
+          "exec": "npm install"
+        }
+      ]
+    },
+    "install:ci": {
+      "name": "install:ci",
+      "description": "Install project dependencies using frozen lockfile",
+      "steps": [
+        {
+          "exec": "npm ci"
+        }
+      ]
+    },
+    "package": {
+      "name": "package",
+      "description": "Creates the distribution package"
+    },
+    "post-compile": {
+      "name": "post-compile",
+      "description": "Runs after successful compilation",
+      "steps": [
+        {
+          "spawn": "synth:silent"
+        }
+      ]
+    },
+    "post-upgrade": {
+      "name": "post-upgrade",
+      "description": "Runs after upgrading dependencies"
+    },
+    "pre-compile": {
+      "name": "pre-compile",
+      "description": "Prepare the project for compilation",
+      "steps": [
+        {
+          "exec": "npm run build",
+          "cwd": "lib/user-interface/genai-newsletter-ui/"
+        },
+        {
+          "spawn": "build:appsync"
+        }
+      ]
+    },
+    "synth": {
+      "name": "synth",
+      "description": "Synthesizes your cdk app into cdk.out",
+      "steps": [
+        {
+          "exec": "cdk synth"
+        }
+      ]
+    },
+    "synth:silent": {
+      "name": "synth:silent",
+      "description": "Synthesizes your cdk app into cdk.out and suppresses the template in stdout (part of \"yarn build\")",
+      "steps": [
+        {
+          "exec": "cdk synth -q"
+        }
+      ]
+    },
+    "test": {
+      "name": "test",
+      "description": "Run tests",
+      "steps": [
+        {
+          "exec": "jest --passWithNoTests --updateSnapshot",
+          "receiveArgs": true
+        },
+        {
+          "spawn": "eslint"
+        }
+      ]
+    },
+    "test:watch": {
+      "name": "test:watch",
+      "description": "Run jest in watch mode",
+      "steps": [
+        {
+          "exec": "jest --watch"
+        }
+      ]
+    },
+    "ui:start": {
+      "name": "ui:start",
+      "description": "Start the UI",
+      "steps": [
+        {
+          "exec": "vite"
+        }
+      ],
+      "cwd": "lib/user-interface/genai-newsletter-ui/"
+    },
+    "upgrade": {
+      "name": "upgrade",
+      "description": "upgrade dependencies",
+      "env": {
+        "CI": "0"
+      },
+      "steps": [
+        {
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@microsoft/eslint-formatter-sarif,@types/ansi-escape-sequences,@types/cheerio,@types/figlet,@types/jest,@types/node,@types/prompt-sync,@types/uuid,aws-lambda,cz-conventional-changelog,esbuild,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-react,eslint-plugin-react-refresh,figlet,git-cz,jest,prettier,projen,ts-jest,ts-node,typescript,vitepress,@aws-amplify/cli,@aws-appsync/utils,@aws-cdk/aws-cognito-identitypool-alpha,@aws-lambda-powertools/logger,@aws-lambda-powertools/metrics,@aws-lambda-powertools/tracer,@aws-sdk/client-bedrock-runtime,@aws-sdk/client-cognito-identity-provider,@aws-sdk/client-dynamodb,@aws-sdk/client-lambda,@aws-sdk/client-pinpoint,@aws-sdk/client-s3,@aws-sdk/client-scheduler,@aws-sdk/client-sfn,@aws-sdk/client-verifiedpermissions,@aws-sdk/lib-storage,@aws-sdk/util-dynamodb,@graphql-codegen/cli,@graphql-codegen/plugin-helpers,@middy/core,@react-email/components,@react-email/render,ansi-escape-sequences,aws-jwt-verify,axios,cdk-nag,cheerio,commander,graphql,mui-color-input,prompt-sync,react,react-email,source-map-support,tsx,uuid"
+        },
+        {
+          "exec": "npm install"
+        },
+        {
+          "exec": "npm update @microsoft/eslint-formatter-sarif @types/ansi-escape-sequences @types/cheerio @types/figlet @types/jest @types/node @types/prompt-sync @types/uuid @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk aws-lambda cz-conventional-changelog esbuild eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-refresh eslint figlet git-cz jest jest-junit prettier projen ts-jest ts-node typescript vitepress @aws-amplify/cli @aws-appsync/utils @aws-cdk/aws-cognito-identitypool-alpha @aws-lambda-powertools/logger @aws-lambda-powertools/metrics @aws-lambda-powertools/tracer @aws-sdk/client-bedrock-runtime @aws-sdk/client-cognito-identity-provider @aws-sdk/client-dynamodb @aws-sdk/client-lambda @aws-sdk/client-pinpoint @aws-sdk/client-s3 @aws-sdk/client-scheduler @aws-sdk/client-sfn @aws-sdk/client-verifiedpermissions @aws-sdk/lib-storage @aws-sdk/util-dynamodb @graphql-codegen/cli @graphql-codegen/plugin-helpers @middy/core @react-email/components @react-email/render ansi-escape-sequences aws-cdk-lib aws-jwt-verify axios cdk-nag cheerio commander constructs graphql mui-color-input prompt-sync react react-email source-map-support tsx uuid"
+        },
+        {
+          "exec": "npx projen"
+        },
+        {
+          "spawn": "post-upgrade"
+        }
+      ]
+    },
+    "watch": {
+      "name": "watch",
+      "description": "Watches changes in your source code and rebuilds and deploys to the current account",
+      "steps": [
+        {
+          "exec": "cdk deploy --hotswap"
+        },
+        {
+          "exec": "cdk watch"
+        }
+      ]
+    }
+  },
+  "env": {
+    "PATH": "$(npx -c \"node --print process.env.PATH\")"
+  },
+  "//": "~~ Generated by projen. To modify, edit .projenrc.ts and run \"npx projen\"."
+}

@@ -68,6 +68,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     '@graphql-codegen/plugin-helpers',
     '@graphql-codegen/cli',
     'typescript',
+    'ts-node',
   ],
   devDeps: [
     'vitepress',

@@ -264,6 +264,10 @@
       "type": "runtime"
     },
     {
+      "name": "ts-node",
+      "type": "runtime"
+    },
+    {
       "name": "tsx",
       "type": "runtime"
     },

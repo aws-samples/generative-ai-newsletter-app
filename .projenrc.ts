@@ -82,6 +82,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     'figlet',
     'prettier',
     '@types/cheerio',
+    'eslint-plugin-react-hooks',
   ],
   tsconfig: {
     compilerOptions: {

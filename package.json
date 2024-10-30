@@ -57,6 +57,7 @@
     "eslint": "^8",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "figlet": "^1.8.0",
     "git-cz": "^4.9.0",
     "jest": "^29.7.0",

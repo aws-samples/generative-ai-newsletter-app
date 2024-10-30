@@ -21,7 +21,9 @@ jobs:
         run: echo "${DEPLOY_CONFIG}" > ./bin/config.json
         env:
           DEPLOY_CONFIG: ${{ vars.DEPLOY_CONFIG }}
-
+      - name: Install Dependencies
+        run: npm ci
+        
       - name: Build project
         run: npm run build
 

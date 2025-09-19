@@ -93,7 +93,7 @@
     "@types/cheerio": "^0.22.35",
     "aws-cdk-lib": "^2.144.0",
     "aws-jwt-verify": "^4.0.1",
-    "axios": "^1.6.2",
+    "axios": "^1.12.2",
     "cdk-nag": "^2.28.109",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.1.0",

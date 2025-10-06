@@ -82,7 +82,7 @@
     "@aws-sdk/client-bedrock-runtime": "^3.590.0",
     "@aws-sdk/client-dynamodb": "^3.584.0",
     "@aws-sdk/client-pinpoint": "^3.478.0",
-    "@aws-sdk/client-scheduler": "^3.478.0",
+    "@aws-sdk/client-scheduler": "^3.901.0",
     "@aws-sdk/client-sfn": "^3.569.0",
     "@aws-sdk/lib-storage": "^3.472.0",
     "@aws-sdk/util-dynamodb": "^3.473.0",

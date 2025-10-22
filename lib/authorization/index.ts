@@ -125,12 +125,7 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to create items using Amazon Verified Permissions',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'action-authorization' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.action-authorization.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -157,12 +152,7 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requests are authorized to read/view data items using Amazon Verified Permissions',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'read-authorization' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.read-authorization.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
@@ -188,12 +178,7 @@ export class Authorization extends Construct {
         description:
           'Function responsible for checking if requested resources are authorized for viewing data and filtering out unauthorized data from the list.',
         handler: 'handler',
-        entry: new URL(
-          import.meta.url.replace(
-            /(.*)(\..+)/,
-            '$1.' + 'list-filter-authorization' + '$2'
-          )
-        ).pathname,
+        entry: path.join(__dirname, 'index.list-filter-authorization.ts'),
         architecture: Architecture.ARM_64,
         runtime: Runtime.NODEJS_20_X,
         tracing: Tracing.ACTIVE,
